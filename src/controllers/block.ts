@@ -2,7 +2,6 @@ import { JsonBlock } from 'casper-js-sdk';
 import { Response } from 'express';
 import Block from '../models/blocks';
 export const getBlocks = async (res: Response) => {
-  console.log('Getting blocks');
   await Block.find()
     .then((blocks) => {
       res.status(200).json(blocks);
