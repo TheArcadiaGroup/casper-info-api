@@ -1,19 +1,31 @@
-import { JsonBlock } from 'casper-js-sdk';
-import { Response } from 'express';
 import Block from '../models/blocks';
-export const getBlocks = async (res: Response) => {
+export const getBlocks = async (req: any, res: any) => {
+  const startIndex: number = req.query.startIndex;
+  const count: number = req.query.count;
   await Block.find()
+    .sort({ blockHeight: 'desc' })
+    .where('blockHeight')
+    .gt(startIndex - count)
+    .lte(startIndex)
     .then((blocks) => {
       res.status(200).json(blocks);
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      res.status(500);
+    });
 };
-
-export const setBlock = async (block: JsonBlock) => {
+export const setBlock = async (block: any) => {
   await Block.create({
-    blockHash: block.hash
+    blockHeight: block.header.height,
+    blockHash: block.hash,
+    eraID: block.header.era_id,
+    transfers: block.body?.transfer_hashes?.length || 0,
+    deploys: block.body?.deploy_hashes?.length || 0,
+    timestamp: block.header.timestamp,
+    validatorPublicKey: block.body.proposer,
+    rawData: block
   })
-    .then((block) => console.log(block))
+    .then((block) => console.log(`New block: ${block.blockHeight}: ${block.deploys}`))
     .catch((err) => {
       console.log(err);
     });
