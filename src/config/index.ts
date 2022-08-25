@@ -14,12 +14,12 @@ export const Init = async () => {
       } else {
         const eventStream = new EventStreamHandler();
         eventStream.connect();
-        const app: Application = express();
-        app.use(express.json());
-        app.use(express.urlencoded({ extended: true }));
-        app.use(router);
-        app.listen(process.env.PORT, () => console.log(`Server running at ${process.env.PORT}`));
       }
+      const app: Application = express();
+      app.use(express.json());
+      app.use(express.urlencoded({ extended: true }));
+      app.use(router);
+      app.listen(process.env.PORT, () => console.log(`Server running at ${process.env.PORT}`));
     })
     .catch((err) => {
       console.log(err);
