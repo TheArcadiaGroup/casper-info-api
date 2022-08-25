@@ -36,7 +36,9 @@
       "@models": ["models"],
       "@models/*": ["models/*"],
       "@v1-routes": ["api/v1/routes"],
-      "@v1-routes/*": ["api/v1/routes/*"]
+      "@v1-routes/*": ["api/v1/routes/*"],
+      "@indexer": ["src/indexer"],
+      "@indexer/*": ["src/indexer/*"]
     } /* Specify a set of entries that re-map imports to additional lookup locations. */,
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */

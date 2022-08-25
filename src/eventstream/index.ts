@@ -20,10 +20,10 @@ export class EventStreamHandler {
     const currentHeight: number = latestBlock && (latestBlock.block?.header.height as number);
     const eventStream = new EventStream(process.env.EVENT_STREAM_URL as string);
     eventStream.start();
-    eventStream.subscribe(EventName.BlockAdded, (result) => {
+    eventStream.subscribe(EventName.BlockAdded, async (result) => {
       const block = result.body.BlockAdded.block;
       if (currentHeight > 0 && block.header.height >= currentHeight) {
-        setBlock(block);
+        await setBlock(block);
         block.body?.deploy_hashes?.forEach(async (hash: string) => {
           await casperService.getDeployInfo(hash).then((deployResult: GetDeployResult) => {
             setDeploy(deployResult);

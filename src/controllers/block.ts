@@ -1,4 +1,4 @@
-import Block from '../models/blocks';
+import Block from '@models/blocks';
 export const getBlocks = async (req: any, res: any) => {
   const startIndex: number = req.query.startIndex;
   const count: number = req.query.count;
