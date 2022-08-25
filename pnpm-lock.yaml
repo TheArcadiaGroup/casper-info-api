@@ -8,6 +8,7 @@ specifiers:
   eslint: ^8.22.0
   ethers: ^5.7.0
   express: ^4.18.1
+  husky: ^8.0.0
   mongoose: ^6.5.2
   nodemon: ^2.0.19
   prettier: ^2.7.1
@@ -26,6 +27,7 @@ devDependencies:
   '@types/express': 4.17.13
   '@types/node': 18.7.11
   eslint: 8.22.0
+  husky: 8.0.1
   nodemon: 2.0.19
   prettier: 2.7.1
   ts-node: 10.9.1_yuzmdm4dwbtqx7oi4ad7vmtwja
@@ -1737,6 +1739,12 @@ packages:
   /humanize-duration/3.27.2:
     resolution: {integrity: sha512-A15OmA3FLFRnehvF4ZMocsxTZYvHq4ze7L+AgR1DeHw0xC9vMd4euInY83uqGU9/XXKNnVIEeKc1R8G8nKqtzg==}
     dev: false
+
+  /husky/8.0.1:
+    resolution: {integrity: sha512-xs7/chUH/CKdOCs7Zy0Aev9e/dKOMZf3K1Az1nar3tzlv0jfqnYtu235bstsWTmXOR0EfINrPa97yy4Lz6RiKw==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: true
 
   /iconv-lite/0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}

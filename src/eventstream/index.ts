@@ -7,7 +7,7 @@ import {
   GetDeployResult,
   JsonBlock
 } from 'casper-js-sdk';
-import { setBlock } from '../controllers/block';
+import { setBlock } from '@controllers/block';
 
 export class EventStreamHandler {
   constructor() {}
@@ -19,7 +19,6 @@ export class EventStreamHandler {
     const latestBlock: GetBlockResult = await casperService.getLatestBlockInfo();
     const currentHeight: number = latestBlock && (latestBlock.block?.header.height as number);
     const eventStream = new EventStream(process.env.EVENT_STREAM_URL as string);
-
     eventStream.start();
     eventStream.subscribe(EventName.BlockAdded, (result) => {
       const block = result.body.BlockAdded.block;

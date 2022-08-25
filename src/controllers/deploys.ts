@@ -1,6 +1,6 @@
 import Deploy from '@models/deploys';
 export const setDeploy = async (deployResult) => {
-  const entryPoint: string =
+  let entryPoint: string =
     deployResult?.deploy?.session?.StoredContractByHash ||
     deployResult?.deploy?.session?.StoredContractByName
       ? deployResult?.deploy?.session.StoredContractByHash?.entry_point ||
@@ -10,7 +10,7 @@ export const setDeploy = async (deployResult) => {
       : deployResult.deploy?.session?.ModuleBytes
       ? 'WASM Deploy'
       : 'N/A';
-  entryPoint.replace('_', ' ');
+  entryPoint = entryPoint.replace('_', ' ');
   await Deploy.create({
     deployHash: deployResult.deploy?.hash,
     publicKey: deployResult.deploy?.header?.account,
@@ -23,12 +23,12 @@ export const setDeploy = async (deployResult) => {
       deployResult.deploy?.session?.ModuleBytes?.args[0]?.[1]?.parsed ||
       0,
     cost:
-      deployResult?.execution_results[0].result.Success.cost ||
-      deployResult?.execution_results[0].result.Failure.cost ||
+      deployResult?.execution_results[0]?.result?.Success?.cost ||
+      deployResult?.execution_results[0]?.result?.Failure?.cost ||
       0,
     rawData: deployResult
   })
-    .then((deploy) => console.log(deploy))
+    .then((deploy) => console.log(deploy.deployHash))
     .catch((err) => {
       console.log(err);
     });
