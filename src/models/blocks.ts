@@ -15,8 +15,11 @@ const blockSchema = new mongoose.Schema({
   transfers: Number,
   deploys: Number,
   timestamp: Date,
-  validatorPublicKey: String,
-  rawData: {}
+  validatorPublicKey: String
 });
 
-export default mongoose.model('Block', blockSchema);
+const rawBlockSchema = new mongoose.Schema({
+  block: {}
+});
+export const Block = mongoose.model('Block', blockSchema);
+export const RawBlock = mongoose.model('RawBlock', rawBlockSchema);

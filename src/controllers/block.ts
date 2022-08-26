@@ -1,4 +1,5 @@
-import Block from '@models/blocks';
+import { Block, RawBlock } from '@models/blocks';
+import { logger } from 'logger';
 export const getBlocks = async (req: any, res: any) => {
   const startIndex: number = req.query.startIndex;
   const count: number = req.query.count;
@@ -22,11 +23,23 @@ export const setBlock = async (block: any) => {
     transfers: block.body?.transfer_hashes?.length || 0,
     deploys: block.body?.deploy_hashes?.length || 0,
     timestamp: block.header.timestamp,
-    validatorPublicKey: block.body.proposer,
-    rawData: block
+    validatorPublicKey: block.body.proposer
   })
-    .then((block) => console.log(`New block: ${block.blockHeight}: ${block.deploys}`))
+    .then((block) =>
+      console.log(`New block: ${Date.now()} --> ${block.blockHeight}: ${block.deploys}`)
+    )
     .catch((err) => {
       console.log(err);
     });
+  await RawBlock.create({
+    block
+  }).catch((err) => {
+    logger.error({
+      rawBlock: {
+        deployHash: block.header.height,
+        errMessage: `${err}`,
+        rawData: block
+      }
+    });
+  });
 };

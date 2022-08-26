@@ -23,11 +23,12 @@ export class BlockIndexer {
           const block: any = blockInfoResult.block;
           await setBlock(block);
           // Loop through all deploy hashes query the block and save the data to the DB
-          block.block?.deploy_hashes?.forEach(async (hash) => {
+          block.body?.deploy_hashes?.forEach(async (hash) => {
             await this.casperService
               .getDeployInfo(hash)
               .then(async (deployResult) => {
                 await setDeploy(deployResult);
+                // getAmount(deployResult.deploy.session);
               })
               .catch((err) => {
                 logger.error({ deployRPC: { deployHash: hash, errMessage: `${err}` } });

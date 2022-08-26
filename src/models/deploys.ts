@@ -11,8 +11,12 @@ const deploySchema = new mongoose.Schema({
   timestamp: Date,
   entryPoint: String,
   amount: Number,
-  cost: Number,
-  rawData: {}
+  cost: Number
 });
 
-export default mongoose.model('Deploy', deploySchema);
+const rawDeploySchema = new mongoose.Schema({
+  deploy: {}
+});
+
+export const Deploy = mongoose.model('Deploy', deploySchema);
+export const RawDeploy = mongoose.model('RawDeploy', rawDeploySchema);
