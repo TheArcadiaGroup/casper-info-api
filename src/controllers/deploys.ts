@@ -15,21 +15,25 @@ export const setDeploy = async (deployResult) => {
       ? 'WASM Deploy'
       : 'N/A';
   entryPoint = entryPoint.replace('_', ' ');
-  await Deploy.create({
-    deployHash: deployResult.deploy?.hash,
-    publicKey: deployResult.deploy?.header?.account,
-    blockHash: deployResult?.execution_results[0].block_hash,
-    timestamp: deployResult.deploy.header.timestamp,
-    entryPoint: entryPoint.charAt(0).toUpperCase() + entryPoint.slice(1),
-    amount: getAmount(deployResult.deploy.session),
-    cost: Number(
-      ethers.utils.formatUnits(
-        deployResult?.execution_results[0]?.result?.Success?.cost ||
-          deployResult?.execution_results[0]?.result?.Failure?.cost,
-        9
+  await Deploy.findOneAndUpdate(
+    { deployHash: deployResult.deploy?.hash },
+    {
+      deployHash: deployResult.deploy?.hash,
+      publicKey: deployResult.deploy?.header?.account,
+      blockHash: deployResult?.execution_results[0].block_hash,
+      timestamp: deployResult.deploy.header.timestamp,
+      entryPoint: entryPoint.charAt(0).toUpperCase() + entryPoint.slice(1),
+      amount: getAmount(deployResult.deploy.session),
+      cost: Number(
+        ethers.utils.formatUnits(
+          deployResult?.execution_results[0]?.result?.Success?.cost ||
+            deployResult?.execution_results[0]?.result?.Failure?.cost,
+          9
+        )
       )
-    )
-  })
+    },
+    { new: true, upsert: true }
+  )
     .then((deploy) => console.log(deploy.deployHash))
     .catch((err) => {
       logger.error({

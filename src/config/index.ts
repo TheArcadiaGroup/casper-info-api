@@ -1,3 +1,4 @@
+import { CasperServiceByJsonRPC, ValidatorsInfoResult } from 'casper-js-sdk';
 import express, { Application } from 'express';
 import { BlockIndexer } from 'indexer';
 import mongoose from 'mongoose';
@@ -10,11 +11,17 @@ export const Init = async () => {
     .then(async () => {
       if (process.env.INDEXER) {
         // const casperService = new CasperServiceByJsonRPC(process.env.RPC_URL as string);
-        // const deployResult = await casperService.getDeployInfo(
-        //   '5f0c925644bc2fc85ad7e6759951bdc31887c170405a9e86a6879e6d528afd80'
-        // );
-        // const amount = getAmount(deployResult.deploy.session);
-        // console.log(amount);
+        // await casperService
+        //   .getValidatorsInfo()
+        //   .then((validatorsInfoResult: ValidatorsInfoResult) => {
+        //     const { bids } = validatorsInfoResult.auction_state;
+        //     const validator = bids.find(
+        //       (bid) =>
+        //         bid.public_key ==
+        //         '0106ca7c39cd272dbf21a86eeb3b36b7c26e2e9b94af64292419f7862936bca2ca'
+        //     );
+        //     console.log(JSON.stringify(validator, null, 2));
+        //   });
         const indexer = new BlockIndexer();
         indexer.start();
       } else {
