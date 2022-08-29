@@ -2,3 +2,5 @@
 .env
 /dist
 thunder-file_048b9bde.json
+errors.json
+debug.json

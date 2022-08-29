@@ -1,9 +1,10 @@
 import { Deploy, RawDeploy } from '@models/deploys';
 import { logger } from 'logger';
 import { ethers } from 'ethers';
+import { CLPublicKey } from 'casper-js-sdk';
 let amountInNextParsed = false;
 let amount: number;
-export const setDeploy = async (deployResult) => {
+export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') => {
   let entryPoint: string =
     deployResult?.deploy?.session?.StoredContractByHash ||
     deployResult?.deploy?.session?.StoredContractByName
@@ -30,11 +31,23 @@ export const setDeploy = async (deployResult) => {
             deployResult?.execution_results[0]?.result?.Failure?.cost,
           9
         )
-      )
+      ),
+      fromAccountHash:
+        hashType === 'transfer'
+          ? CLPublicKey.fromHex(deployResult.deploy?.header?.account).toAccountHashStr()
+          : '',
+      toAccountHash:
+        hashType === 'transfer' ? deployResult.deploy.session?.Transfer?.args[1][1]?.parsed : '',
+      status: deployResult?.execution_results[0]?.result?.Success ? 'Success' : 'Failed',
+      deployType: hashType
     },
     { new: true, upsert: true }
   )
-    .then((deploy) => console.log(deploy.deployHash))
+    .then((deploy) => {
+      if (hashType == 'transfer') {
+        console.log(deploy.deployHash);
+      }
+    })
     .catch((err) => {
       logger.error({
         deployDB: {

@@ -3,6 +3,7 @@ import { BlockIndexer } from 'indexer';
 import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { EventStreamHandler } from '@eventstream';
+import { CasperServiceByJsonRPC } from 'casper-js-sdk';
 
 export const Init = async () => {
   return await mongoose

@@ -19,10 +19,17 @@ export class BlockIndexer {
       await this.casperService
         .getBlockInfoByHeight(i)
         .then(async (blockInfoResult) => {
+          // Type JsonBlock missing body.
           const block: any = blockInfoResult.block;
           // console.log(block);
+          // console.log(block.header.height + ': ' + block.header.era_end);
           queueWorker.addBlockToQueue(block);
-          queueWorker.addDeployHashes(block?.body?.deploy_hashes);
+          queueWorker.addDeployHashes(block?.body?.deploy_hashes, 'deploy');
+          queueWorker.addDeployHashes(block?.body?.transfer_hashes, 'transfer');
+          if (block.header.era_end) {
+            logger.error(block.header.era_end);
+            // queueWorker.addEraSwitchBlockHeight(block.header.height);
+          }
         })
         .catch((err) => {
           logger.error({ blockRPC: { blockHeight: i, errMessage: `${err}` } });

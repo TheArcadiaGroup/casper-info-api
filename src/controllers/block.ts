@@ -29,9 +29,9 @@ export const setBlock = async (block: any) => {
     },
     { new: true, upsert: true }
   )
-    .then((block) =>
-      console.log(`New block: ${Date.now()} --> ${block.blockHeight}: ${block.deploys}`)
-    )
+    // .then((block) =>
+    //   console.log(`New block: ${Date.now()} --> ${block.blockHeight}: ${block.deploys}`)
+    // )
     .catch((err) => {
       console.log(err);
     });

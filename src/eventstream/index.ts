@@ -26,7 +26,7 @@ export class EventStreamHandler {
         await setBlock(block);
         block.body?.deploy_hashes?.forEach(async (hash: string) => {
           await casperService.getDeployInfo(hash).then((deployResult: GetDeployResult) => {
-            setDeploy(deployResult);
+            // setDeploy(deployResult);
           });
         });
       }
