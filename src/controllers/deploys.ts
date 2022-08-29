@@ -45,17 +45,18 @@ export const setDeploy = async (deployResult) => {
       });
     });
   amount = 0;
-  await RawDeploy.create({
-    deploy: deployResult
-  }).catch((err) => {
-    logger.error({
-      rawDeployDB: {
-        deployHash: deployResult.deploy.hash,
-        errMessage: `${err}`,
-        rawData: deployResult
-      }
-    });
-  });
+  // TODO consider saving raw deploy data
+  // await RawDeploy.create({
+  //   deploy: deployResult
+  // }).catch((err) => {
+  //   logger.error({
+  //     rawDeployDB: {
+  //       deployHash: deployResult.deploy.hash,
+  //       errMessage: `${err}`,
+  //       rawData: deployResult
+  //     }
+  //   });
+  // });
 };
 
 export const getDeploys = async (req: any, res: any) => {

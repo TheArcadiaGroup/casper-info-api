@@ -1,7 +1,6 @@
 import { CasperServiceByJsonRPC } from 'casper-js-sdk';
-import { setBlock } from '@controllers/block';
 import { logger } from 'logger';
-import { setDeploy } from '@controllers/deploys';
+import { QueueWorker } from 'workers';
 export class BlockIndexer {
   casperService: CasperServiceByJsonRPC;
   constructor() {
@@ -13,27 +12,17 @@ export class BlockIndexer {
   Refresh top accounts at the end of each deploy iteration
   */
   async start() {
-    // TODO use a worker (bull queues)
     const startBlock = Number(process.env.START_BLOCK);
     const endBlock = Number(process.env.END_BLOCK);
+    const queueWorker = new QueueWorker();
     for (let i = startBlock; i >= endBlock; i--) {
       await this.casperService
         .getBlockInfoByHeight(i)
         .then(async (blockInfoResult) => {
           const block: any = blockInfoResult.block;
-          await setBlock(block);
-          // Loop through all deploy hashes query the block and save the data to the DB
-          block.body?.deploy_hashes?.forEach(async (hash) => {
-            await this.casperService
-              .getDeployInfo(hash)
-              .then(async (deployResult) => {
-                await setDeploy(deployResult);
-                // getAmount(deployResult.deploy.session);
-              })
-              .catch((err) => {
-                logger.error({ deployRPC: { deployHash: hash, errMessage: `${err}` } });
-              });
-          });
+          // console.log(block);
+          queueWorker.addBlockToQueue(block);
+          queueWorker.addDeployHashes(block?.body?.deploy_hashes);
         })
         .catch((err) => {
           logger.error({ blockRPC: { blockHeight: i, errMessage: `${err}` } });
