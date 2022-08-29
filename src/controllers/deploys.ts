@@ -43,11 +43,11 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
     },
     { new: true, upsert: true }
   )
-    .then((deploy) => {
-      if (hashType == 'transfer') {
-        console.log(deploy.deployHash);
-      }
-    })
+    // .then((deploy) => {
+    //   if (hashType == 'transfer') {
+    //     console.log(deploy.deployHash);
+    //   }
+    // })
     .catch((err) => {
       logger.error({
         deployDB: {

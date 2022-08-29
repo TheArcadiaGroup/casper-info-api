@@ -33,15 +33,21 @@ export const setBlock = async (block: any) => {
     //   console.log(`New block: ${Date.now()} --> ${block.blockHeight}: ${block.deploys}`)
     // )
     .catch((err) => {
-      console.log(err);
+      logger.error({
+        blockDB: {
+          blockHash: block.header.height,
+          errMessage: `${err}`,
+          rawData: block
+        }
+      });
     });
   // TODO consider saving raw block data
   // await RawBlock.create({
   //   block
   // }).catch((err) => {
   //   logger.error({
-  //     rawBlock: {
-  //       deployHash: block.header.height,
+  //     rawBlockDB: {
+  //       blockHash: block.header.height,
   //       errMessage: `${err}`,
   //       rawData: block
   //     }

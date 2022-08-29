@@ -27,8 +27,8 @@ export class BlockIndexer {
           queueWorker.addDeployHashes(block?.body?.deploy_hashes, 'deploy');
           queueWorker.addDeployHashes(block?.body?.transfer_hashes, 'transfer');
           if (block.header.era_end) {
-            logger.error(block.header.era_end);
-            // queueWorker.addEraSwitchBlockHeight(block.header.height);
+            // logger.info(block.header.era_end);
+            queueWorker.addEraSwitchBlockHeight(block.header.height);
           }
         })
         .catch((err) => {
