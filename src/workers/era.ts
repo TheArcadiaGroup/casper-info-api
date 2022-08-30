@@ -6,7 +6,6 @@ import { queueWorker } from 'workers';
 
 const casperService = new CasperServiceByJsonRPC(process.env.RPC_URL as string);
 export const QueryEraSummary = async (switchBlockHash: string) => {
-  console.log('Query summary invoked: ', switchBlockHash);
   await casperService
     .getEraInfoBySwitchBlock(switchBlockHash)
     .then(async (eraSummary: EraSummary) => {
