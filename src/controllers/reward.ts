@@ -55,6 +55,20 @@ export const getValidatorPerformanceAggregation = async (eraId: number) => {
     { $match: { eraId: { $gte: eraId - 360 } } },
     { $group: { _id: '$validatorPublicKey', count: { $sum: 1 } } }
   ]).catch((err) => {
+    // TODO handle error
+    throw new Error(err);
+  });
+};
+
+export const getTotalRewardsByPublicKey = async (
+  publicKey: string
+): Promise<{ id: string; totalReward: number }[]> => {
+  return await Reward.aggregate([
+    { $match: { $or: [{ validatorPublicKey: publicKey }, { delegatorPublicKey: publicKey }] } },
+    { $group: { _id: null, totalReward: { $sum: '$reward' } } },
+    { $limit: 1 }
+  ]).catch((err) => {
+    // TODO handle error
     throw new Error(err);
   });
 };

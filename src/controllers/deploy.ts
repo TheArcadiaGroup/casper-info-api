@@ -11,7 +11,7 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
       ? deployResult?.deploy?.session.StoredContractByHash?.entry_point ||
         deployResult?.deploy?.session.StoredContractByName?.entry_point
       : deployResult.deploy?.session?.Transfer
-      ? 'Transfer'
+      ? 'transfer'
       : deployResult.deploy?.session?.ModuleBytes
       ? 'WASM Deploy'
       : 'N/A';
@@ -23,7 +23,7 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
       publicKey: deployResult.deploy?.header?.account,
       blockHash: deployResult?.execution_results[0].block_hash,
       timestamp: deployResult.deploy.header.timestamp,
-      entryPoint: entryPoint.charAt(0).toUpperCase() + entryPoint.slice(1),
+      entryPoint,
       amount: getAmount(deployResult.deploy.session),
       cost: Number(
         ethers.utils.formatUnits(
@@ -38,7 +38,7 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
           : '',
       toAccountHash:
         hashType === 'transfer' ? deployResult.deploy.session?.Transfer?.args[1][1]?.parsed : '',
-      status: deployResult?.execution_results[0]?.result?.Success ? 'Success' : 'Failed',
+      status: deployResult?.execution_results[0]?.result?.Success ? 'success' : 'fail',
       deployType: hashType
     },
     { new: true, upsert: true }
@@ -103,4 +103,11 @@ export const getAmount = (session): number => {
   }
   // console.log(amount);
   return amount ?? 0;
+};
+
+export const getDeploysByTypeAndPublicKey = async (publicKey: string, type: string) => {
+  return await Deploy.find({ $and: [{ publicKey }, { entryPoint: type }] }).catch((err) => {
+    // TODO handle error
+    throw new Error(err);
+  });
 };

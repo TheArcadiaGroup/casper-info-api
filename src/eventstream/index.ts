@@ -1,11 +1,9 @@
-import { setDeploy } from '@controllers/deploys';
 import {
   CasperServiceByJsonRPC,
   EventName,
   EventStream,
   GetBlockResult,
-  GetDeployResult,
-  JsonBlock
+  GetDeployResult
 } from 'casper-js-sdk';
 import { setBlock } from '@controllers/block';
 
