@@ -1,5 +1,5 @@
-import { getValidatorPerformanceAggregation, setReward } from '@controllers/rewards';
-import { updateValidatorPerformance } from '@controllers/validators';
+import { getValidatorPerformanceAggregation, setReward } from '@controllers/reward';
+import { updateValidatorPerformance } from '@controllers/validator';
 import { CasperServiceByJsonRPC, EraSummary } from 'casper-js-sdk';
 import { logger } from 'logger';
 import { queueWorker } from 'workers';

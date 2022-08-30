@@ -1,4 +1,4 @@
-import { setDeploy } from '@controllers/deploys';
+import { setDeploy } from '@controllers/deploy';
 import { CasperServiceByJsonRPC } from 'casper-js-sdk';
 import { logger } from 'logger';
 

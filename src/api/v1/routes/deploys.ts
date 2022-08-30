@@ -1,4 +1,4 @@
-import { getDeploys } from '@controllers/deploys';
+import { getDeploys } from '@controllers/deploy';
 import { Router } from 'express';
 
 export const deployRouter: Router = Router();
