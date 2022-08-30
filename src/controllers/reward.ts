@@ -65,6 +65,7 @@ export const getTotalRewardsByPublicKey = async (
 ): Promise<{ id: string; totalReward: number }[]> => {
   return await Reward.aggregate([
     { $match: { $or: [{ validatorPublicKey: publicKey }, { delegatorPublicKey: publicKey }] } },
+    // { $match: { delegatorPublicKey: publicKey } },
     { $group: { _id: null, totalReward: { $sum: '$reward' } } },
     { $limit: 1 }
   ]).catch((err) => {

@@ -5,22 +5,21 @@ import { getAccountBalanceByPublicKey } from 'utils/accounts';
 import { getDeploysByTypeAndPublicKey } from './deploy';
 import { getTotalRewardsByPublicKey } from './reward';
 type Account = {
-  publicKey: string;
-  accountHash: string;
-  addressType: string;
-  availableBalance: number;
-  totalBalance: number;
-  totalStaked: number;
-  unstaking: number;
-  totalReward: number;
+  publicKey?: string;
+  accountHash?: string;
+  addressType?: string;
+  availableBalance?: number;
+  totalBalance?: number;
+  totalStaked?: number;
+  unstaking?: number;
+  totalReward?: number;
 };
 const casperService = new CasperServiceByJsonRPC(process.env.RPC_URL as string);
 export const getAccountDetails = async (req, res) => {
-  console.log('Fetching account details');
   const { address } = req.params;
-  let account: Account;
+  let account: Account = { totalStaked: 0 };
   // Check if public key or account hash
-  if (!!CLPublicKey.fromHex(address)) {
+  if (CLPublicKey.fromHex(address)) {
     account.publicKey = address;
     account.accountHash = CLPublicKey.fromHex(address)
       .toAccountHashStr()
@@ -36,6 +35,7 @@ export const getAccountDetails = async (req, res) => {
         if (account.publicKey === bid.public_key) {
           account.totalStaked += Number(ethers.utils.formatUnits(bid.bid.staked_amount, 9));
         }
+
         bid?.bid?.delegators?.forEach((delegator) => {
           if (account.publicKey === delegator.public_key) {
             account.totalStaked += Number(ethers.utils.formatUnits(delegator.staked_amount, 9));
@@ -51,7 +51,7 @@ export const getAccountDetails = async (req, res) => {
   account.totalReward = reward[0]?.totalReward;
   account.unstaking = await getUnstakingAmount(account.publicKey);
   account.availableBalance = await getAccountBalanceByPublicKey(account.publicKey);
-  account.totalBalance = account.availableBalance + account.totalStaked;
+  account.totalBalance = account.availableBalance + account.totalStaked + account.unstaking;
   // TODO determine address type
   res.status(200).json(account);
 };

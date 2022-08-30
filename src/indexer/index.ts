@@ -34,3 +34,4 @@ export class BlockIndexer {
     }
   }
 }
+export const indexer = new BlockIndexer();
