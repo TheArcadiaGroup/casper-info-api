@@ -11,5 +11,7 @@ const validatorSchema = new mongoose.Schema(
     totalValidatorRewards: Number,
     totalDelegatorRewards: Number
   },
-  { versionKey: false, _id: false }
+  { versionKey: false }
 );
+
+export const Validator = mongoose.model('Validator', validatorSchema);

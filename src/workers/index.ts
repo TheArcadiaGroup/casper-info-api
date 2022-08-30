@@ -1,8 +1,8 @@
 import { setBlock } from '@controllers/block';
 import Bull from 'bull';
 import { QueryAndSaveDeploys } from 'workers/deploys';
-import { QueryEraSummary } from './era';
-export class QueueWorker {
+import { CalculateValidatorPerformance, QueryEraSummary } from './era';
+class QueueWorker {
   queueWorker: Bull.Queue;
   constructor() {
     this.queueWorker = new Bull('queue-manager', {
@@ -21,6 +21,9 @@ export class QueueWorker {
     this.queueWorker.process('era-summary', async (job: any) => {
       await QueryEraSummary(job.data);
     });
+    this.queueWorker.process('validator-perfomance-calculation', async (job: any) => {
+      await CalculateValidatorPerformance(job.data);
+    });
   }
   addBlockToQueue = async (block: any) => {
     await this.queueWorker.add('save-block', block);
@@ -30,7 +33,12 @@ export class QueueWorker {
     await this.queueWorker.add('query-and-save-deploys', { hashes, hashType });
   };
 
-  addEraSwitchBlockHeight = async (switchBlockHeight: number) => {
-    await this.queueWorker.add('era-summary', switchBlockHeight);
+  addEraSwitchBlockHeight = async (switchBlockHash: string) => {
+    await this.queueWorker.add('era-summary', switchBlockHash);
+  };
+  addValidatorPerformanceCalculation = async (eraId: number) => {
+    await this.queueWorker.add('validator-perfomance-calculation', eraId);
   };
 }
+
+export const queueWorker = new QueueWorker();

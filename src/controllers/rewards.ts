@@ -4,21 +4,36 @@ import { ethers } from 'ethers';
 import { logger } from 'logger';
 
 export const setReward = async (seigniorageAllocation: SeigniorageAllocation, eraId: number) => {
-  await Reward.create({
-    validatorPublicKey: seigniorageAllocation.Delegator
-      ? seigniorageAllocation.Delegator.validatorPublicKey
-      : seigniorageAllocation.Validator.validatorPublicKey,
-    delegatorPublicKey: seigniorageAllocation.Delegator
-      ? seigniorageAllocation.Delegator.delegatorPublicKey
-      : '',
-    amount: ethers.utils.formatUnits(
-      seigniorageAllocation.Delegator
-        ? seigniorageAllocation.Delegator.amount
-        : seigniorageAllocation.Validator.amount,
-      9
-    ),
-    eraId
-  })
+  await Reward.findOneAndUpdate(
+    {
+      validatorPublicKey: seigniorageAllocation.Validator
+        ? seigniorageAllocation.Validator.validatorPublicKey
+        : '',
+      delegatorPublicKey: seigniorageAllocation.Delegator
+        ? seigniorageAllocation.Delegator.delegatorPublicKey
+        : '',
+      eraId
+    },
+    {
+      validatorPublicKey: seigniorageAllocation.Validator
+        ? seigniorageAllocation.Validator.validatorPublicKey
+        : '',
+      delegatorPublicKey: seigniorageAllocation.Delegator
+        ? seigniorageAllocation.Delegator.delegatorPublicKey
+        : '',
+      delegatorValidatorPublicKey: seigniorageAllocation.Delegator
+        ? seigniorageAllocation.Delegator.validatorPublicKey
+        : '',
+      amount: ethers.utils.formatUnits(
+        seigniorageAllocation.Delegator
+          ? seigniorageAllocation.Delegator.amount
+          : seigniorageAllocation.Validator.amount,
+        9
+      ),
+      eraId
+    },
+    { new: true, upsert: true }
+  )
     // .then((reward) => {
     //   logger.info(reward);
     // })
@@ -32,4 +47,14 @@ export const setReward = async (seigniorageAllocation: SeigniorageAllocation, er
         }
       });
     });
+};
+//  Promise<{ _id: string; count: number }[]>;
+export const getValidatorPerformanceAggregation = async (eraId: number) => {
+  console.log('Calculation');
+  return await Reward.aggregate([
+    { $match: { eraId: { $gte: eraId - 360 } } },
+    { $group: { _id: '$validatorPublicKey', count: { $sum: 1 } } }
+  ]).catch((err) => {
+    throw new Error(err);
+  });
 };
