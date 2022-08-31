@@ -1,0 +1,52 @@
+version: '3.3'
+services:
+  #REDIS 
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 6379:6379
+    restart: always
+    networks:
+      - casper-info
+  # Main Server
+  main-server:
+    container_name: main-server
+    build: .
+    ports:
+      - 6000:6000
+    environment:
+      - MONGO_URI=mongodb+srv://casper-trench:sXihiV4rEKbTRDjJ@caspertrench.3zk1dmc.mongodb.net/casper-trench?retryWrites=true&w=majority
+      - EVENT_STREAM_URL=http://135.181.208.231:9999/events/main
+      - RPC_URL=https://node-clarity-testnet.make.services/rpc
+      - PORT=6000
+      - INDEXER-false
+      - START_BLOCK=1055637
+      - END_BLOCK=999883
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - casper-info
+  indexer-1:
+    container_name: indexer-1
+    build: .
+    ports:
+      - 6001:6001
+    environment:
+      - MONGO_URI=mongodb+srv://casper-trench:sXihiV4rEKbTRDjJ@caspertrench.3zk1dmc.mongodb.net/casper-trench?retryWrites=true&w=majority
+      - EVENT_STREAM_URL=http://135.181.208.231:9999/events/main
+      - RPC_URL=https://node-clarity-testnet.make.services/rpc
+      - PORT=6001
+      - INDEXER-true
+      - START_BLOCK=1055637
+      - END_BLOCK=999883
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - casper-info
+networks:
+  casper-info:
+    
+  
