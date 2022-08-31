@@ -1,19 +1,11 @@
-import {
-  CasperServiceByJsonRPC,
-  EventName,
-  EventStream,
-  GetBlockResult,
-  GetDeployResult
-} from 'casper-js-sdk';
+import { EventName, EventStream, GetBlockResult, GetDeployResult } from 'casper-js-sdk';
 import { setBlock } from '@controllers/block';
+import { casperService } from 'utils';
 
-export class EventStreamHandler {
+class EventStreamHandler {
   constructor() {}
 
   async connect() {
-    const casperService: CasperServiceByJsonRPC = new CasperServiceByJsonRPC(
-      process.env.RPC_URL as string
-    );
     const latestBlock: GetBlockResult = await casperService.getLatestBlockInfo();
     const currentHeight: number = latestBlock && (latestBlock.block?.header.height as number);
     const eventStream = new EventStream(process.env.EVENT_STREAM_URL as string);
@@ -31,3 +23,5 @@ export class EventStreamHandler {
     });
   }
 }
+
+export const eventStream = new EventStreamHandler();

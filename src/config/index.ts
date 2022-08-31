@@ -2,16 +2,17 @@ import express, { Application } from 'express';
 import { indexer } from 'indexer';
 import mongoose from 'mongoose';
 import { router } from '@v1-routes';
-import { EventStreamHandler } from '@eventstream';
+import { eventStream } from '@eventstream';
 
 export const Init = async () => {
-  return await mongoose
+  await mongoose
     .connect(process.env.MONGO_URI as string)
     .then(async () => {
-      if (process.env.INDEXER) {
+      if (process.env.INDEXER == 'true') {
+        console.log('Indexing');
         indexer.start();
       } else {
-        const eventStream = new EventStreamHandler();
+        console.log('Events');
         eventStream.connect();
       }
       const app: Application = express();
