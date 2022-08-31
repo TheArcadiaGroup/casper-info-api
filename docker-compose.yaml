@@ -17,6 +17,8 @@ services:
       - 6000:6000
     environment:
       - MONGO_URI=mongodb+srv://casper-trench:sXihiV4rEKbTRDjJ@caspertrench.3zk1dmc.mongodb.net/casper-trench?retryWrites=true&w=majority
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - EVENT_STREAM_URL=http://135.181.208.231:9999/events/main
       - RPC_URL=https://node-clarity-testnet.make.services/rpc
       - PORT=6000
@@ -35,6 +37,8 @@ services:
       - 6001:6001
     environment:
       - MONGO_URI=mongodb+srv://casper-trench:sXihiV4rEKbTRDjJ@caspertrench.3zk1dmc.mongodb.net/casper-trench?retryWrites=true&w=majority
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - EVENT_STREAM_URL=http://135.181.208.231:9999/events/main
       - RPC_URL=https://node-clarity-testnet.make.services/rpc
       - PORT=6001
