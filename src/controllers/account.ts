@@ -2,8 +2,8 @@ import { CasperServiceByJsonRPC, CLPublicKey, GetStatusResult } from 'casper-js-
 import { ethers } from 'ethers';
 import { getBlockEra, getLatestState } from 'utils';
 import { getAccountBalanceByPublicKey } from 'utils/accounts';
-import { getDeploysByTypeAndPublicKey } from './deploy';
-import { getTotalRewardsByPublicKey } from './reward';
+import { getDeploysByTypeAndPublicKey } from '@controllers/deploy';
+import { getTotalRewardsByPublicKey } from '@controllers/reward';
 type Account = {
   publicKey?: string;
   accountHash?: string;

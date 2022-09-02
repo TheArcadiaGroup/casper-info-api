@@ -11,6 +11,7 @@ specifiers:
   ethers: ^5.7.0
   express: ^4.18.1
   husky: ^8.0.0
+  module-alias: ^2.2.2
   mongoose: ^6.5.2
   nodemon: ^2.0.19
   prettier: ^2.7.1
@@ -25,6 +26,7 @@ dependencies:
   dotenv: 16.0.1
   ethers: 5.7.0
   express: 4.18.1
+  module-alias: 2.2.2
   mongoose: 6.5.2
   winston: 3.8.1
 
@@ -2240,6 +2242,10 @@ packages:
   /minimist/1.2.6:
     resolution: {integrity: sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==}
     dev: true
+
+  /module-alias/2.2.2:
+    resolution: {integrity: sha512-A/78XjoX2EmNvppVWEhM2oGk3x4lLxnkEA4jTbaK97QKSDjkIoOsKQlfylt/d3kKKi596Qy3NP5XrXJ6fZIC9Q==}
+    dev: false
 
   /mongodb-connection-string-url/2.5.3:
     resolution: {integrity: sha512-f+/WsED+xF4B74l3k9V/XkTVj5/fxFH2o5ToKXd8Iyi5UhM+sO9u0Ape17Mvl/GkZaFtM0HQnzAG5OTmhKw+tQ==}

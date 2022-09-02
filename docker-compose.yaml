@@ -1,0 +1,151 @@
+version: '3.3'
+services:
+  #REDIS 
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 6379:6379
+    restart: always
+    networks:
+      - casper-info
+    
+  # Main Server
+  main-server:
+    container_name: main-server
+    build: .
+    ports:
+      - 5001:5001
+    env_file:
+      - ./.env
+    environment:
+      - PORT=5001
+      - INDEXER=false
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - casper-info
+  indexer-1:
+    container_name: indexer-1
+    build: .
+    ports:
+      - 6001:6001
+    env_file:
+      - ./.env
+    environment:
+      - PORT=6001
+      - INDEXER=true
+      - START_BLOCK=1058128
+      - END_BLOCK=1000000
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - casper-info
+  indexer-2:
+    container_name: indexer-2
+    build: .
+    ports:
+      - 6002:6002
+    env_file:
+      - ./.env
+    environment:
+      - PORT=6002
+      - INDEXER=true
+      - START_BLOCK=999999
+      - END_BLOCK=950000
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - casper-info
+  indexer-3:
+    container_name: indexer-3
+    build: .
+    ports:
+      - 6003:6003
+    env_file:
+      - ./.env
+    environment:
+      - PORT=6003
+      - INDEXER=true
+      - START_BLOCK=949999
+      - END_BLOCK=900000
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - casper-info
+  indexer-4:
+    container_name: indexer-4
+    build: .
+    ports:
+      - 6004:6004
+    env_file:
+      - ./.env
+    environment:
+      - PORT=6004
+      - INDEXER=true
+      - START_BLOCK=899999
+      - END_BLOCK=850000
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - casper-info
+  indexer-5:
+    container_name: indexer-5
+    build: .
+    ports:
+      - 6005:6005
+    env_file:
+      - ./.env
+    environment:
+      - PORT=6005
+      - INDEXER=true
+      - START_BLOCK=849999
+      - END_BLOCK=800000
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - casper-info
+  indexer-6:
+    container_name: indexer-6
+    build: .
+    ports:
+      - 6006:6006
+    env_file:
+      - ./.env
+    environment:
+      - PORT=6006
+      - INDEXER=true
+      - START_BLOCK=799999
+      - END_BLOCK=750000
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - casper-info
+  indexer-7:
+    container_name: indexer-7
+    build: .
+    ports:
+      - 6007:6007
+    env_file:
+      - ./.env
+    environment:
+      - PORT=6007
+      - INDEXER=true
+      - START_BLOCK=749999
+      - END_BLOCK=700000
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - casper-info
+networks:
+  casper-info:
+    
+  

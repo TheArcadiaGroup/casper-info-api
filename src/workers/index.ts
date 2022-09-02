@@ -1,17 +1,20 @@
 import { setBlock } from '@controllers/block';
 import Bull from 'bull';
 import { QueryAndSaveDeploys } from 'workers/deploys';
-import { CalculateValidatorPerformance, QueryEraSummary } from './era';
+import { QueryBlock } from 'workers/blocks';
+import { CalculateValidatorPerformance, QueryEraSummary } from 'workers/era';
 class QueueWorker {
   queueWorker: Bull.Queue;
   constructor() {
     this.queueWorker = new Bull('queue-manager', {
       redis: {
-        host: '127.0.0.1',
-        port: 6379
+        host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
+        port: Number(process.env.REDIS_PORT)
       }
     });
-
+    this.queueWorker.process('query-block', async (job: any) => {
+      await QueryBlock(job.data);
+    });
     this.queueWorker.process('save-block', async (job: any) => {
       await setBlock(job.data);
     });
@@ -25,7 +28,12 @@ class QueueWorker {
       await CalculateValidatorPerformance(job.data);
     });
   }
-  addBlockToQueue = async (block: any) => {
+
+  addBlockToQueryQueue = async (blockHeight: number) => {
+    await this.queueWorker.add('query-block', blockHeight);
+  };
+
+  addBlockToSaveQueue = async (block: any) => {
     await this.queueWorker.add('save-block', block);
   };
 

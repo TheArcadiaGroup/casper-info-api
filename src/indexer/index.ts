@@ -16,21 +16,7 @@ export class BlockIndexer {
     const startBlock = Number(process.env.START_BLOCK);
     const endBlock = Number(process.env.END_BLOCK);
     for (let i = startBlock; i >= endBlock; i--) {
-      await this.casperService
-        .getBlockInfoByHeight(i)
-        .then(async (blockInfoResult: GetBlockResult) => {
-          // Type JsonBlock missing body.
-          const block: any = blockInfoResult.block;
-          queueWorker.addBlockToQueue(block);
-          queueWorker.addDeployHashes(block?.body?.deploy_hashes, 'deploy');
-          queueWorker.addDeployHashes(block?.body?.transfer_hashes, 'transfer');
-          if (block.header.era_end) {
-            queueWorker.addEraSwitchBlockHeight(block.hash);
-          }
-        })
-        .catch((err) => {
-          logger.error({ blockRPC: { blockHeight: i, errMessage: `${err}` } });
-        });
+      queueWorker.addBlockToQueryQueue(i);
     }
   }
 }
