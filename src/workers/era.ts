@@ -13,8 +13,9 @@ export const QueryEraSummary = async (switchBlockHash: string) => {
       seigniorageAllocations?.forEach(async (reward) => {
         await setReward(reward, eraSummary.eraId);
       });
-      // TODO move the performance calculator to the event stream
-      queueWorker.addValidatorPerformanceCalculation(eraSummary.eraId);
+      if (process.env.INDEXER !== 'true') {
+        queueWorker.addValidatorPerformanceCalculation(eraSummary.eraId);
+      }
     })
     .catch((err) => {
       logger.error({ eraSummaryRPC: { switchBlockHash, errMessage: `${err}` } });

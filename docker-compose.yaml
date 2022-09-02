@@ -15,11 +15,11 @@ services:
     container_name: main-server
     build: .
     ports:
-      - 6000:6000
+      - 5001:5001
     env_file:
       - ./.env
     environment:
-      - PORT=6000
+      - PORT=5001
       - INDEXER=false
     restart: always
     depends_on:
@@ -36,7 +36,7 @@ services:
     environment:
       - PORT=6001
       - INDEXER=true
-      - START_BLOCK=1057952
+      - START_BLOCK=1058128
       - END_BLOCK=1000000
     restart: always
     depends_on:
