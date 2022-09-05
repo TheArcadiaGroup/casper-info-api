@@ -21,6 +21,7 @@ services:
     environment:
       - PORT=5001
       - INDEXER=false
+      - NODE_ENV=prod
     restart: always
     depends_on:
       - redis
@@ -36,7 +37,8 @@ services:
     environment:
       - PORT=6001
       - INDEXER=true
-      - START_BLOCK=1058128
+      - NODE_ENV=prod
+      - START_BLOCK=1075824
       - END_BLOCK=1000000
     restart: always
     depends_on:
@@ -53,6 +55,7 @@ services:
     environment:
       - PORT=6002
       - INDEXER=true
+      - NODE_ENV=prod
       - START_BLOCK=999999
       - END_BLOCK=950000
     restart: always
@@ -70,6 +73,7 @@ services:
     environment:
       - PORT=6003
       - INDEXER=true
+      - NODE_ENV=prod
       - START_BLOCK=949999
       - END_BLOCK=900000
     restart: always
@@ -87,6 +91,7 @@ services:
     environment:
       - PORT=6004
       - INDEXER=true
+      - NODE_ENV=prod
       - START_BLOCK=899999
       - END_BLOCK=850000
     restart: always
@@ -104,6 +109,7 @@ services:
     environment:
       - PORT=6005
       - INDEXER=true
+      - NODE_ENV=prod
       - START_BLOCK=849999
       - END_BLOCK=800000
     restart: always
@@ -121,6 +127,7 @@ services:
     environment:
       - PORT=6006
       - INDEXER=true
+      - NODE_ENV=prod
       - START_BLOCK=799999
       - END_BLOCK=750000
     restart: always
@@ -138,6 +145,7 @@ services:
     environment:
       - PORT=6007
       - INDEXER=true
+      - NODE_ENV=prod
       - START_BLOCK=749999
       - END_BLOCK=700000
     restart: always

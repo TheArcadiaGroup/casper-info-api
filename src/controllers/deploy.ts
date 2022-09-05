@@ -32,6 +32,11 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
           9
         )
       ),
+      validator: deployResult.result.deploy.session.StoredContractByHash
+        ? deployResult.result.deploy.session.StoredContractByHash?.args?.find((value) => {
+            return value[0] == 'validator';
+          })[1].parsed
+        : '',
       fromAccountHash:
         hashType === 'transfer'
           ? CLPublicKey.fromHex(deployResult.deploy?.header?.account).toAccountHashStr()
@@ -105,9 +110,25 @@ export const getAmount = (session): number => {
   return amount ?? 0;
 };
 
-export const getDeploysByTypeAndPublicKey = async (publicKey: string, type: string) => {
-  return await Deploy.find({ $and: [{ publicKey }, { entryPoint: type }] }).catch((err) => {
-    // TODO handle error
-    throw new Error(err);
-  });
+export const getDeploysByTypeAndPublicKey = async (
+  publicKey: string,
+  type: string,
+  startIndex?: number,
+  count?: number
+) => {
+  if (count > 0) {
+    return await Deploy.find({ $and: [{ publicKey }, { entryPoint: type }] })
+      .sort({ timestamp: 'desc' })
+      .skip(startIndex - 1)
+      .limit(count)
+      .catch((err) => {
+        // TODO handle error
+        throw new Error(err);
+      });
+  } else {
+    return await Deploy.find({ $and: [{ publicKey }, { entryPoint: type }] }).catch((err) => {
+      // TODO handle error
+      throw new Error(err);
+    });
+  }
 };

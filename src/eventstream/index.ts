@@ -14,6 +14,7 @@ class EventStreamHandler {
     eventStream.subscribe(EventName.BlockAdded, async (result) => {
       const block = result.body.BlockAdded.block;
       if (currentHeight > 0 && block.header.height >= currentHeight) {
+        console.log(block.header.height);
         queueWorker.addBlockToSaveQueue(block);
         queueWorker.addDeployHashes(block?.body?.deploy_hashes, 'deploy');
         queueWorker.addDeployHashes(block?.body?.transfer_hashes, 'transfer');

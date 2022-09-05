@@ -13,6 +13,10 @@ const deploySchema = new mongoose.Schema(
     entryPoint: String,
     amount: Number,
     cost: Number,
+    validator: {
+      type: String,
+      required: false
+    },
     status: String,
     fromAccountHash: {
       type: String,

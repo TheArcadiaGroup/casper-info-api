@@ -1,9 +1,8 @@
-import { CasperServiceByJsonRPC, CLPublicKey, GetStatusResult } from 'casper-js-sdk';
+import { CasperServiceByJsonRPC, CLPublicKey } from 'casper-js-sdk';
 import { ethers } from 'ethers';
-import { getBlockEra, getLatestState } from 'utils';
-import { getAccountBalanceByPublicKey } from 'utils/accounts';
-import { getDeploysByTypeAndPublicKey } from '@controllers/deploy';
+import { getAccountBalanceByPublicKey, getUnstakingAmount } from 'utils/accounts';
 import { getTotalRewardsByPublicKey } from '@controllers/reward';
+import { getDeploysByTypeAndPublicKey } from './deploy';
 type Account = {
   publicKey?: string;
   accountHash?: string;
@@ -56,16 +55,42 @@ export const getAccountDetails = async (req, res) => {
   res.status(200).json(account);
 };
 
-const getUnstakingAmount = async (publicKey): Promise<number> => {
-  const accountDeploys = await getDeploysByTypeAndPublicKey(publicKey, 'undelegate');
-  let unstaking = 0;
-  for (let i = 0; i < accountDeploys.length; i++) {
-    if (accountDeploys[i].status !== 'success') return;
-    const deployEra = await getBlockEra(accountDeploys[i].blockHash);
-    const latestState = <GetStatusResult>await getLatestState();
-    const currentEra = latestState.last_added_block_info.era_id;
-    if (<number>deployEra + 8 <= <number>currentEra) return;
-    unstaking += accountDeploys[i].amount;
+export const getAccountDelegations = async (req, res) => {
+  try {
+    const { address } = req.params;
+    const startIndex: number = req.query.startIndex;
+    const count: number = req.query.count;
+    let publicKey: string;
+    let accountHash: string;
+    if (CLPublicKey.fromHex(address)) {
+      publicKey = address;
+      accountHash = CLPublicKey.fromHex(address).toAccountHashStr().replace('account-hash-', '');
+    } else {
+      accountHash = address;
+    }
+    const delegations = await getDeploysByTypeAndPublicKey(publicKey, 'delegate', 1, 10);
+    res.status(200).json(delegations);
+  } catch (err) {
+    res.status(500).send(`Could not fetch delegation history: ${err}`);
   }
-  return unstaking;
+};
+
+export const getAccountUndelegations = async (req, res) => {
+  try {
+    const { address } = req.params;
+    const startIndex: number = req.query.startIndex;
+    const count: number = req.query.count;
+    let publicKey: string;
+    let accountHash: string;
+    if (CLPublicKey.fromHex(address)) {
+      publicKey = address;
+      accountHash = CLPublicKey.fromHex(address).toAccountHashStr().replace('account-hash-', '');
+    } else {
+      accountHash = address;
+    }
+    const undelegations = await getDeploysByTypeAndPublicKey(publicKey, 'undelegate', 1, 10);
+    res.status(200).json(undelegations);
+  } catch (err) {
+    res.status(500).send(`Could not fetch delegation history: ${err}`);
+  }
 };
