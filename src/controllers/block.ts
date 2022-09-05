@@ -1,4 +1,4 @@
-import { Block, RawBlock } from '@models/blocks';
+import { Block } from '@models/blocks';
 import { logger } from 'logger';
 export const getBlocks = async (req: any, res: any) => {
   const startIndex: number = req.query.startIndex;
@@ -29,9 +29,9 @@ export const setBlock = async (block: any) => {
     },
     { new: true, upsert: true }
   )
-    // .then((block) =>
-    //   console.log(`New block: ${Date.now()} --> ${block.blockHeight}: ${block.deploys}`)
-    // )
+    .then((block) =>
+      console.log(`New block: ${Date.now()} --> ${block.blockHeight}: ${block.deploys}`)
+    )
     .catch((err) => {
       logger.error({
         blockDB: {

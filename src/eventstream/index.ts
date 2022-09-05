@@ -15,10 +15,12 @@ class EventStreamHandler {
       const block = result.body.BlockAdded.block;
       if (currentHeight > 0 && block.header.height >= currentHeight) {
         queueWorker.addBlockToSaveQueue(block);
-        queueWorker.addDeployHashes(block?.body?.deploy_hashes, 'deploy');
-        queueWorker.addDeployHashes(block?.body?.transfer_hashes, 'transfer');
+        block?.body?.deploy_hashes?.length > 0 &&
+          queueWorker.addDeployHashes(block?.body?.deploy_hashes, 'deploy');
+        block?.body?.transfer_hashes?.length > 0 &&
+          queueWorker.addDeployHashes(block?.body?.transfer_hashes, 'transfer');
         if (block.header.era_end) {
-          queueWorker.addEraSwitchBlockHeight(block.hash);
+          queueWorker.addEraSwitchBlockHeight(block.hash, block.header.timestamp);
         }
       }
     });

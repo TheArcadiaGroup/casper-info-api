@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/app.js",
-    "dev": "nodemon src/app.ts",
+    "dev": "nodemon --ignore 'logs/*' src/app.ts",
     "build": "tsc -p .",
     "format": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "prepare": "husky install",

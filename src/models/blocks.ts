@@ -24,4 +24,4 @@ const rawBlockSchema = new mongoose.Schema(
   { versionKey: false, _id: false }
 );
 export const Block = mongoose.model('Block', blockSchema);
-export const RawBlock = mongoose.model('RawBlock', rawBlockSchema);
+// export const RawBlock = mongoose.model('RawBlock', rawBlockSchema);

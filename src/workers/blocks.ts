@@ -13,7 +13,7 @@ export const QueryBlock = async (blockHeight: number) => {
       queueWorker.addDeployHashes(block?.body?.deploy_hashes, 'deploy');
       queueWorker.addDeployHashes(block?.body?.transfer_hashes, 'transfer');
       if (block.header.era_end) {
-        queueWorker.addEraSwitchBlockHeight(block.hash);
+        queueWorker.addEraSwitchBlockHeight(block.hash, block.header.timestamp);
       }
     })
     .catch((err) => {
