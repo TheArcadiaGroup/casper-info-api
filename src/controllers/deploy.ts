@@ -5,7 +5,6 @@ import { CLPublicKey } from 'casper-js-sdk';
 let amountInNextParsed = false;
 let amount: number;
 export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') => {
-  console.log('Saving: ', deployResult.deploy?.hash);
   let entryPoint: string =
     deployResult?.deploy?.session?.StoredContractByHash ||
     deployResult?.deploy?.session?.StoredContractByName

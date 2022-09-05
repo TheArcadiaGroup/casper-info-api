@@ -40,7 +40,6 @@ class QueueWorker {
 
   addBlockToSaveQueue = async (block: any) => {
     await this.queueWorker.add('save-block', block);
-    console.log('Block added', block.header.height);
   };
 
   addDeployHashes = async (hashes: string[], hashType: 'deploy' | 'transfer') => {

@@ -15,9 +15,9 @@ class EventStreamHandler {
       const block = result.body.BlockAdded.block;
       if (currentHeight > 0 && block.header.height >= currentHeight) {
         queueWorker.addBlockToSaveQueue(block);
-        block?.body?.deploy_hashes &&
+        block?.body?.deploy_hashes?.length > 0 &&
           queueWorker.addDeployHashes(block?.body?.deploy_hashes, 'deploy');
-        block?.body?.transfer_hashes &&
+        block?.body?.transfer_hashes?.length > 0 &&
           queueWorker.addDeployHashes(block?.body?.transfer_hashes, 'transfer');
         if (block.header.era_end) {
           queueWorker.addEraSwitchBlockHeight(block.hash);
