@@ -107,6 +107,27 @@ export const getRewardsByPublicKey = async (
     // TODO handle error
     throw new Error(err);
   });
+};
 
-  // return await Reward.find({ delegatorPublicKey: publicKey });
+export const getEraRewardsByPublicKey = async (publicKey: string, limitEra: number) => {
+  return await Reward.aggregate([
+    {
+      $match: {
+        $and: [
+          { $or: [{ validatorPublicKey: publicKey }, { delegatorPublicKey: publicKey }] },
+          { eraId: { $gte: limitEra } }
+        ]
+      }
+    },
+    { $sort: { eraTimestamp: -1 } },
+    {
+      $group: {
+        _id: { $dateToString: { format: '%m/%d/%Y', date: '$eraTimestamp' } },
+        totalReward: { $sum: '$amount' }
+      }
+    }
+  ]).catch((err) => {
+    // TODO handle error
+    throw new Error(err);
+  });
 };

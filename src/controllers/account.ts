@@ -1,15 +1,14 @@
-import { CasperServiceByJsonRPC, CLPublicKey, decodeBase16 } from 'casper-js-sdk';
+import { CasperServiceByJsonRPC, CLPublicKey } from 'casper-js-sdk';
 import { ethers } from 'ethers';
+import { getCurrentEra } from 'utils';
 import { getAccountBalanceByPublicKey, getUnstakingAmount } from 'utils/accounts';
 import {
+  getEraRewardsByPublicKey,
   getRewardsByPublicKey,
-  getStartingDate,
   getTotalRewardsByPublicKey
 } from '@controllers/reward';
 import { getDeploysByEntryPointAndPublicKey, getDeploysByTypeAndPublicKey } from './deploy';
 import { Account } from '@models/accounts';
-import { timeStamp } from 'console';
-import { Reward } from '@models/rewards';
 type AccountDetails = {
   publicKey?: string;
   accountHash?: string;
@@ -91,6 +90,18 @@ export const getAccountRewards = async (req, res) => {
     const count: number = Number(req.query.count);
     const { publicKey } = await processPublicKeyANdAccountHash(address);
     const rewards = await getRewardsByPublicKey(publicKey, startIndex, count);
+    res.status(200).json(rewards);
+  } catch (error) {
+    res.status(500).send(`Could not fetch account rewards: ${error}`);
+  }
+};
+
+export const getAccountEraRewards = async (req, res) => {
+  try {
+    const { address } = req.params;
+    const { publicKey } = await processPublicKeyANdAccountHash(address);
+    const currentEra: number = <number>await getCurrentEra();
+    const rewards = await getEraRewardsByPublicKey(publicKey, currentEra - 1000);
     res.status(200).json(rewards);
   } catch (error) {
     res.status(500).send(`Could not fetch account rewards: ${error}`);
