@@ -39,4 +39,4 @@ const rawDeploySchema = new mongoose.Schema(
 );
 
 export const Deploy = mongoose.model('Deploy', deploySchema);
-export const RawDeploy = mongoose.model('RawDeploy', rawDeploySchema);
+// export const RawDeploy = mongoose.model('RawDeploy', rawDeploySchema);

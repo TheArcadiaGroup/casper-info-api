@@ -1,10 +1,11 @@
-import { Deploy, RawDeploy } from '@models/deploys';
+import { Deploy } from '@models/deploys';
 import { logger } from 'logger';
 import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
 let amountInNextParsed = false;
 let amount: number;
 export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') => {
+  console.log('Saving: ', deployResult.deploy?.hash);
   let entryPoint: string =
     deployResult?.deploy?.session?.StoredContractByHash ||
     deployResult?.deploy?.session?.StoredContractByName
@@ -32,8 +33,8 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
           9
         )
       ),
-      validator: deployResult.result.deploy.session.StoredContractByHash
-        ? deployResult.result.deploy.session.StoredContractByHash?.args?.find((value) => {
+      validator: deployResult.deploy.session.StoredContractByHash
+        ? deployResult.deploy.session.StoredContractByHash?.args?.find((value) => {
             return value[0] == 'validator';
           })[1].parsed
         : '',
@@ -48,11 +49,9 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
     },
     { new: true, upsert: true }
   )
-    // .then((deploy) => {
-    //   if (hashType == 'transfer') {
-    //     console.log(deploy.deployHash);
-    //   }
-    // })
+    .then((deploy) => {
+      console.log(deploy.deployHash);
+    })
     .catch((err) => {
       logger.error({
         deployDB: {
@@ -92,7 +91,7 @@ export const getDeploys = async (req: any, res: any) => {
     });
 };
 
-export const getAmount = (session): number => {
+const getAmount = (session): number => {
   for (let k in session) {
     if (session[k] instanceof Object) {
       getAmount(session[k]);
@@ -110,14 +109,14 @@ export const getAmount = (session): number => {
   return amount ?? 0;
 };
 
-export const getDeploysByTypeAndPublicKey = async (
+export const getDeploysByEntryPointAndPublicKey = async (
   publicKey: string,
-  type: string,
+  entryPoint: string,
   startIndex?: number,
   count?: number
 ) => {
   if (count > 0) {
-    return await Deploy.find({ $and: [{ publicKey }, { entryPoint: type }] })
+    return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] })
       .sort({ timestamp: 'desc' })
       .skip(startIndex - 1)
       .limit(count)
@@ -126,7 +125,29 @@ export const getDeploysByTypeAndPublicKey = async (
         throw new Error(err);
       });
   } else {
-    return await Deploy.find({ $and: [{ publicKey }, { entryPoint: type }] }).catch((err) => {
+    return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] }).catch((err) => {
+      // TODO handle error
+      throw new Error(err);
+    });
+  }
+};
+export const getDeploysByTypeAndPublicKey = async (
+  publicKey: string,
+  deployType: string,
+  startIndex?: number,
+  count?: number
+) => {
+  if (count > 0) {
+    return await Deploy.find({ $and: [{ publicKey }, { deployType }] })
+      .sort({ timestamp: 'desc' })
+      .skip(startIndex - 1)
+      .limit(count)
+      .catch((err) => {
+        // TODO handle error
+        throw new Error(err);
+      });
+  } else {
+    return await Deploy.find({ $and: [{ publicKey }, { deployType }] }).catch((err) => {
       // TODO handle error
       throw new Error(err);
     });

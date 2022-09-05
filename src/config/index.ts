@@ -9,10 +9,8 @@ export const Init = async () => {
     .connect(process.env.MONGO_URI as string)
     .then(async () => {
       if (process.env.INDEXER == 'true') {
-        console.log('Indexing');
         indexer.start();
       } else {
-        console.log('Events');
         eventStream.connect();
       }
       const app: Application = express();

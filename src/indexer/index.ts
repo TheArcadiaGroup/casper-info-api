@@ -15,7 +15,9 @@ export class BlockIndexer {
   async start() {
     const startBlock = Number(process.env.START_BLOCK);
     const endBlock = Number(process.env.END_BLOCK);
+    console.log(`Indexing started: ${startBlock} >>> ${endBlock}`);
     for (let i = startBlock; i >= endBlock; i--) {
+      // console.log(i);
       queueWorker.addBlockToQueryQueue(i);
     }
   }

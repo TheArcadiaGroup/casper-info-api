@@ -1,4 +1,4 @@
-import { getDeploysByTypeAndPublicKey } from '@controllers/deploy';
+import { getDeploysByEntryPointAndPublicKey } from '@controllers/deploy';
 import { CLPublicKey, GetStatusResult } from 'casper-js-sdk';
 import { ethers } from 'ethers';
 import { casperClient, getBlockEra, getLatestState } from 'utils';
@@ -10,7 +10,7 @@ export const getAccountBalanceByPublicKey = async (publicKey: string): Promise<n
 };
 
 export const getUnstakingAmount = async (publicKey): Promise<number> => {
-  const accountDeploys = await getDeploysByTypeAndPublicKey(publicKey, 'undelegate');
+  const accountDeploys = await getDeploysByEntryPointAndPublicKey(publicKey, 'undelegate');
   let unstaking = 0;
   for (let i = 0; i < accountDeploys.length; i++) {
     if (accountDeploys[i].status !== 'success') return;
