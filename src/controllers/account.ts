@@ -36,7 +36,7 @@ export const getTopAccounts = async (req, res) => {
 export const getAccountDetails = async (req, res) => {
   try {
     const { address } = req.params;
-    const { publicKey, accountHash } = await processPublicKeyANdAccountHash(address);
+    const { publicKey, accountHash } = await processPublicKeyAndAccountHash(address);
 
     // TODO determine address type
     const account = await accountDetailCalculation(publicKey);
@@ -46,13 +46,37 @@ export const getAccountDetails = async (req, res) => {
     res.status(500).send(`Could not fetch account details: ${error}`);
   }
 };
+export const getAccountTransfers = async (req, res) => {
+  try {
+    const { address } = req.params;
+    const startIndex: number = req.query.startIndex;
+    const count: number = req.query.count;
+    const { publicKey } = await processPublicKeyAndAccountHash(address);
+    const transfers = await getDeploysByTypeAndPublicKey(publicKey, 'transfer', startIndex, count);
+    res.status(200).json(transfers);
+  } catch (err) {
+    res.status(500).send(`Could not fetch transfer history: ${err}`);
+  }
+};
 
+export const getAccountDeploys = async (req, res) => {
+  try {
+    const { address } = req.params;
+    const startIndex: number = req.query.startIndex;
+    const count: number = req.query.count;
+    const { publicKey } = await processPublicKeyAndAccountHash(address);
+    const deploys = await getDeploysByTypeAndPublicKey(publicKey, 'deploy', startIndex, count);
+    res.status(200).json(deploys);
+  } catch (err) {
+    res.status(500).send(`Could not fetch delegation history: ${err}`);
+  }
+};
 export const getAccountDelegations = async (req, res) => {
   try {
     const { address } = req.params;
     const startIndex: number = req.query.startIndex;
     const count: number = req.query.count;
-    const { publicKey } = await processPublicKeyANdAccountHash(address);
+    const { publicKey } = await processPublicKeyAndAccountHash(address);
     const delegations = await getDeploysByEntryPointAndPublicKey(
       publicKey,
       'delegate',
@@ -70,7 +94,7 @@ export const getAccountUndelegations = async (req, res) => {
     const { address } = req.params;
     const startIndex: number = Number(req.query.startIndex);
     const count: number = Number(req.query.count);
-    const { publicKey } = await processPublicKeyANdAccountHash(address);
+    const { publicKey } = await processPublicKeyAndAccountHash(address);
     const undelegations = await getDeploysByEntryPointAndPublicKey(
       publicKey,
       'undelegate',
@@ -88,7 +112,7 @@ export const getAccountRewards = async (req, res) => {
     const { address } = req.params;
     const startIndex: number = Number(req.query.startIndex);
     const count: number = Number(req.query.count);
-    const { publicKey } = await processPublicKeyANdAccountHash(address);
+    const { publicKey } = await processPublicKeyAndAccountHash(address);
     const rewards = await getRewardsByPublicKey(publicKey, startIndex, count);
     res.status(200).json(rewards);
   } catch (error) {
@@ -99,7 +123,7 @@ export const getAccountRewards = async (req, res) => {
 export const getAccountEraRewards = async (req, res) => {
   try {
     const { address } = req.params;
-    const { publicKey } = await processPublicKeyANdAccountHash(address);
+    const { publicKey } = await processPublicKeyAndAccountHash(address);
     const currentEra: number = <number>await getCurrentEra();
     const rewards = await getEraRewardsByPublicKey(publicKey, currentEra - 1000);
     res.status(200).json(rewards);
@@ -183,7 +207,7 @@ export const getAccountPublicKeyFromAccountHash = async (accountHash: string) =>
   }
 };
 
-export const processPublicKeyANdAccountHash = async (
+export const processPublicKeyAndAccountHash = async (
   address: string
 ): Promise<{ publicKey: string; accountHash: string }> => {
   try {
