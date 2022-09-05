@@ -1,4 +1,4 @@
-import { CasperServiceByJsonRPC, CLPublicKey } from 'casper-js-sdk';
+import { CasperServiceByJsonRPC, CLPublicKey, decodeBase16 } from 'casper-js-sdk';
 import { ethers } from 'ethers';
 import { getAccountBalanceByPublicKey, getUnstakingAmount } from 'utils/accounts';
 import { getTotalRewardsByPublicKey } from '@controllers/reward';
@@ -86,21 +86,35 @@ export const getAccountUndelegations = async (req, res) => {
   }
 };
 
-export const updateAccount = async (publicKey: string, activeDate: Date) => {
+export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
   const accountDetails = await accountDetailCalculation(publicKey);
   const deploys = await getDeploysByTypeAndPublicKey(publicKey, 'deploy');
   await Account.findOneAndUpdate(
     { publicKey },
-    {
-      publicKey,
-      accountHash: CLPublicKey.fromHex(publicKey).toAccountHashStr().replace('account-hash-', ''),
-      activeDate,
-      transferrable: accountDetails.availableBalance,
-      stakedAmount: accountDetails.totalStaked,
-      balance: accountDetails.totalBalance,
-      transactionCount: deploys.length
-    },
+    [
+      {
+        $set: {
+          publicKey,
+          accountHash: CLPublicKey.fromHex(publicKey)
+            .toAccountHashStr()
+            .replace('account-hash-', ''),
+          transferrable: accountDetails.availableBalance,
+          stakedAmount: accountDetails.totalStaked,
+          balance: accountDetails.totalBalance,
+          transactionCount: deploys.length,
+          activeDate: {
+            // $cond: {{ $lte: ['$activeDate', newActiveDate] }, newActiveDate, '$activeDate'}
+            $cond: {
+              if: { $lte: [Date.parse('$activeDate'), Date.parse(newActiveDate.toLocaleString())] },
+              then: newActiveDate,
+              else: '$activeDate'
+            }
+          }
+        }
+      }
+    ],
     { new: true, upsert: true }
+    // db.accounts.findOneAndUpdate({ publicKey: '020387ee64318499cf5e116df526265d6059a23c4b86363932290bb853ad947f7534' },[{transactionCount: 1},{$set: {'$activeDate': {$cond: [{ $lte: ['$activeDate', ISODate('2022-09-04T12:31:21.589+00:00')] }, '2022-09-04T12:31:21.589+00:00', '$activeDate']}}}],{ new: true, upsert: true })
   ).catch((err) => {
     // TODO handle error
     throw new Error(err);
