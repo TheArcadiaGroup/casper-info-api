@@ -20,7 +20,7 @@ class EventStreamHandler {
         block?.body?.transfer_hashes?.length > 0 &&
           queueWorker.addDeployHashes(block?.body?.transfer_hashes, 'transfer');
         if (block.header.era_end) {
-          queueWorker.addEraSwitchBlockHeight(block.hash);
+          queueWorker.addEraSwitchBlockHeight(block.hash, block.header.timestamp);
         }
       }
     });

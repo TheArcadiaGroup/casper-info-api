@@ -3,11 +3,13 @@ import { indexer } from 'indexer';
 import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
+import { queueWorker } from 'workers';
 
 export const Init = async () => {
   await mongoose
     .connect(process.env.MONGO_URI as string)
     .then(async () => {
+      //   queueWorker.addBlockToQueryQueue(1078632);
       if (process.env.INDEXER == 'true') {
         indexer.start();
       } else {

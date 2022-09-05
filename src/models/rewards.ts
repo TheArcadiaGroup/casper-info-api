@@ -6,7 +6,8 @@ const rewardSchema = new mongoose.Schema(
     delegatorPublicKey: String,
     delegatorValidatorPublicKey: String,
     amount: Number,
-    eraId: Number
+    eraId: Number,
+    eraTimestamp: Date
   },
   { versionKey: false }
 );

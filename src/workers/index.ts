@@ -23,7 +23,7 @@ class QueueWorker {
       await QueryAndSaveDeploys(job.data);
     });
     this.queueWorker.process('era-summary', async (job: any) => {
-      await QueryEraSummary(job.data);
+      await QueryEraSummary(job.data.switchBlockHash, job.data.timestamp);
     });
     this.queueWorker.process('validator-performance-calculation', async (job: any) => {
       await CalculateValidatorPerformance(job.data);
@@ -46,8 +46,8 @@ class QueueWorker {
     await this.queueWorker.add('query-and-save-deploys', { hashes, hashType });
   };
 
-  addEraSwitchBlockHeight = async (switchBlockHash: string) => {
-    await this.queueWorker.add('era-summary', switchBlockHash);
+  addEraSwitchBlockHeight = async (switchBlockHash: string, timestamp: Date) => {
+    await this.queueWorker.add('era-summary', { switchBlockHash, timestamp });
   };
   addValidatorPerformanceCalculation = async (eraId: number) => {
     await this.queueWorker.add('validator-performance-calculation', eraId);
