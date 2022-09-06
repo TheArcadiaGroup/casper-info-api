@@ -1,5 +1,6 @@
 import { Block } from '@models/blocks';
 import { logger } from 'logger';
+import { getTransferByBlockHash } from './deploy';
 export const getBlocks = async (req: any, res: any) => {
   const startIndex: number = req.query.startIndex;
   const count: number = req.query.count;
@@ -14,6 +15,15 @@ export const getBlocks = async (req: any, res: any) => {
     .catch((err) => {
       res.status(500);
     });
+};
+export const getBlockTransfers = async (req, res) => {
+  const { blockHash } = req.params;
+  try {
+    const transfers = await getTransferByBlockHash(blockHash);
+    res.status(200).json(transfers);
+  } catch (error) {
+    res.status(500).send(`Could not fetch block transfers ${error}`);
+  }
 };
 export const setBlock = async (block: any) => {
   await Block.findOneAndUpdate(

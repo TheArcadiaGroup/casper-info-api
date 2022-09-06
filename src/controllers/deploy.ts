@@ -2,6 +2,7 @@ import { Deploy } from '@models/deploys';
 import { logger } from 'logger';
 import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
+import { group } from 'console';
 let amountInNextParsed = false;
 let amount: number;
 export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') => {
@@ -39,7 +40,9 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
         : '',
       fromAccountHash:
         hashType === 'transfer'
-          ? CLPublicKey.fromHex(deployResult.deploy?.header?.account).toAccountHashStr()
+          ? CLPublicKey.fromHex(deployResult.deploy?.header?.account)
+              .toAccountHashStr()
+              .replace('account-hash-', '')
           : '',
       toAccountHash:
         hashType === 'transfer' ? deployResult.deploy.session?.Transfer?.args[1][1]?.parsed : '',
@@ -151,4 +154,21 @@ export const getDeploysByTypeAndPublicKey = async (
       throw new Error(err);
     });
   }
+};
+
+export const getTransferByBlockHash = async (blockHash: string) => {
+  return await Deploy.find({ blockHash }).catch((err) => {
+    // TODO handle error
+    throw new Error(err);
+  });
+};
+
+export const getTransfersCount = async (): Promise<{ _id: string; count: number }[]> => {
+  return await Deploy.aggregate([
+    { $match: { entryPoint: 'transfer' } },
+    { $group: { _id: '$entryPoint', count: { $sum: 1 } } }
+  ]).catch((err) => {
+    // TODO handle error
+    throw new Error(err);
+  });
 };

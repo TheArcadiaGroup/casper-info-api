@@ -131,3 +131,12 @@ export const getEraRewardsByPublicKey = async (publicKey: string, limitEra: numb
     throw new Error(err);
   });
 };
+
+export const getTotalEraRewardsByEraId = async (
+  eraId: number
+): Promise<{ _id: number; totalReward }[]> => {
+  return await Reward.aggregate([
+    { $match: { eraId } },
+    { $group: { _id: '$eraId', totalReward: { $sum: '$amount' } } }
+  ]);
+};
