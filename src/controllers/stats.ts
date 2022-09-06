@@ -4,12 +4,6 @@ import { casperService, coinGeckoClient, getLatestState } from 'utils';
 import { getTransfersCount } from './deploy';
 import { getTotalEraRewardsByEraId } from './reward';
 
-/*
-APY
-Total Transfer (count)
-Transaction history in the last 14 days (chart)
-*/
-
 export const getStats = async (req, res) => {
   try {
     let stats = {
