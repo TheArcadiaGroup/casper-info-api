@@ -8,6 +8,7 @@
     "dev": "nodemon --ignore 'logs/*' src/app.ts",
     "build": "tsc -p .",
     "format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "prepare": "husky install",
     "test": ""
   },
   "keywords": [],
