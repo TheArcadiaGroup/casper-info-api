@@ -64,18 +64,6 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
       });
     });
   amount = 0;
-  // TODO consider saving raw deploy data
-  // await RawDeploy.create({
-  //   deploy: deployResult
-  // }).catch((err) => {
-  //   logger.error({
-  //     rawDeployDB: {
-  //       deployHash: deployResult.deploy.hash,
-  //       errMessage: `${err}`,
-  //       rawData: deployResult
-  //     }
-  //   });
-  // });
 };
 
 export const getDeploys = async (req: any, res: any) => {
@@ -162,7 +150,24 @@ export const getTransferByBlockHash = async (blockHash: string) => {
     throw new Error(err);
   });
 };
-
+export const getDeployVolumes = async (req, res) => {
+  await Deploy.aggregate([
+    { $sort: { timestamp: -1 } },
+    {
+      $group: {
+        _id: { $dateToString: { format: '%m/%d/%Y', date: '$timestamp' } },
+        volume: { $sum: 1 }
+      }
+    },
+    { $limit: 14 }
+  ])
+    .then((volumes) => {
+      res.status(200).json(volumes);
+    })
+    .catch((err) => {
+      res.status(500).send(`Could not fetch deploy volumes: ${err}`);
+    });
+};
 export const getTransfersCount = async (): Promise<{ _id: string; count: number }[]> => {
   return await Deploy.aggregate([
     { $match: { entryPoint: 'transfer' } },
