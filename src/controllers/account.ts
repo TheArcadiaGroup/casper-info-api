@@ -149,7 +149,6 @@ export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
           balance: accountDetails.totalBalance,
           transactionCount: deploys.length,
           activeDate: {
-            // $cond: {{ $lte: ['$activeDate', newActiveDate] }, newActiveDate, '$activeDate'}
             $cond: {
               if: { $lte: [Date.parse('$activeDate'), Date.parse(newActiveDate.toLocaleString())] },
               then: newActiveDate,

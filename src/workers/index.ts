@@ -11,26 +11,61 @@ class QueueWorker {
       redis: {
         host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
         port: Number(process.env.REDIS_PORT)
+      },
+      defaultJobOptions: {
+        attempts: 5,
+        removeOnComplete: true,
+        removeOnFail: 1000
       }
     });
-    this.queueWorker.process('query-block', async (job: any) => {
-      await QueryBlock(job.data);
+    this.queueWorker.process('query-block', async (job) => {
+      try {
+        await QueryBlock(job.data);
+        job.moveToCompleted();
+      } catch (error) {
+        job.moveToCompleted();
+      }
     });
-    this.queueWorker.process('save-block', async (job: any) => {
-      await setBlock(job.data);
+    this.queueWorker.process('save-block', async (job) => {
+      try {
+        await setBlock(job.data);
+        job.moveToCompleted();
+      } catch (error) {
+        job.moveToCompleted();
+      }
     });
-    this.queueWorker.process('query-and-save-deploys', async (job: any) => {
-      await QueryAndSaveDeploys(job.data);
+    this.queueWorker.process('query-and-save-deploys', async (job) => {
+      try {
+        await QueryAndSaveDeploys(job.data);
+        job.moveToCompleted();
+      } catch (error) {
+        job.moveToCompleted();
+      }
     });
-    this.queueWorker.process('era-summary', async (job: any) => {
-      await QueryEraSummary(job.data.switchBlockHash, job.data.timestamp);
+    this.queueWorker.process('era-summary', async (job) => {
+      try {
+        await QueryEraSummary(job.data.switchBlockHash, job.data.timestamp);
+        job.moveToCompleted();
+      } catch (error) {
+        job.moveToCompleted();
+      }
     });
-    this.queueWorker.process('validator-performance-calculation', async (job: any) => {
-      await CalculateValidatorPerformance(job.data);
+    this.queueWorker.process('validator-performance-calculation', async (job) => {
+      try {
+        await CalculateValidatorPerformance(job.data);
+        job.moveToCompleted();
+      } catch (error) {
+        job.moveToCompleted();
+      }
     });
 
-    this.queueWorker.process('account-update', async (job: any) => {
-      await updateAccount(job.data.publicKey, job.data.activeDate);
+    this.queueWorker.process('account-update', async (job) => {
+      try {
+        await updateAccount(job.data.publicKey, job.data.activeDate);
+        job.moveToCompleted();
+      } catch (error) {
+        job.moveToCompleted();
+      }
     });
   }
 

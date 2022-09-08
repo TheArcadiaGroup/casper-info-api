@@ -6,10 +6,22 @@ services:
     image: redis
     ports:
       - 6379:6379
-    restart: always
+    restart: unless-stopped
     networks:
       - casper-info
-    
+  # MONGODB
+  mongodb:
+    image: mongo:6.0.1
+    container_name: mongodb
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    env_file:
+      - ./.env
+    volumes:
+      - mongodbdata:/data/db
+    networks:
+      - casper-info
   # Main Server
   main-server:
     container_name: main-server
@@ -22,9 +34,10 @@ services:
       - PORT=5001
       - INDEXER=false
       - NODE_ENV=prod
-    restart: always
+    restart: unless-stopped
     depends_on:
       - redis
+      - mongodb
     networks:
       - casper-info
   indexer-1:
@@ -38,11 +51,12 @@ services:
       - PORT=6001
       - INDEXER=true
       - NODE_ENV=prod
-      - START_BLOCK=1075824
+      - START_BLOCK=1081534 
       - END_BLOCK=1000000
-    restart: always
+    restart: unless-stopped
     depends_on:
       - redis
+      - mongodb
     networks:
       - casper-info
   indexer-2:
@@ -58,9 +72,10 @@ services:
       - NODE_ENV=prod
       - START_BLOCK=999999
       - END_BLOCK=950000
-    restart: always
+    restart: unless-stopped
     depends_on:
       - redis
+      - mongodb
     networks:
       - casper-info
   indexer-3:
@@ -76,9 +91,10 @@ services:
       - NODE_ENV=prod
       - START_BLOCK=949999
       - END_BLOCK=900000
-    restart: always
+    restart: unless-stopped
     depends_on:
       - redis
+      - mongodb
     networks:
       - casper-info
   indexer-4:
@@ -94,9 +110,10 @@ services:
       - NODE_ENV=prod
       - START_BLOCK=899999
       - END_BLOCK=850000
-    restart: always
+    restart: unless-stopped
     depends_on:
       - redis
+      - mongodb
     networks:
       - casper-info
   indexer-5:
@@ -112,9 +129,10 @@ services:
       - NODE_ENV=prod
       - START_BLOCK=849999
       - END_BLOCK=800000
-    restart: always
+    restart: unless-stopped
     depends_on:
       - redis
+      - mongodb
     networks:
       - casper-info
   indexer-6:
@@ -130,9 +148,10 @@ services:
       - NODE_ENV=prod
       - START_BLOCK=799999
       - END_BLOCK=750000
-    restart: always
+    restart: unless-stopped
     depends_on:
       - redis
+      - mongodb
     networks:
       - casper-info
   indexer-7:
@@ -148,12 +167,15 @@ services:
       - NODE_ENV=prod
       - START_BLOCK=749999
       - END_BLOCK=700000
-    restart: always
+    restart: unless-stopped
     depends_on:
       - redis
+      - mongodb
     networks:
       - casper-info
 networks:
   casper-info:
+volumes:
+  mongodbdata:
     
   

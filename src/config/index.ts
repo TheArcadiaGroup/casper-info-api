@@ -7,14 +7,14 @@ import { queueWorker } from 'workers';
 
 export const Init = async () => {
   await mongoose
-    .connect(process.env.MONGO_URI as string)
+    .connect('mongodb://casper-trench:casper-trench@localhost:27017')
     .then(async () => {
-      // queueWorker.addBlockToQueryQueue(1081149);
-      if (process.env.INDEXER == 'true') {
-        indexer.start();
-      } else {
-        eventStream.connect();
-      }
+      // queueWorker.addBlockToQueryQueue(1081025);
+      // if (process.env.INDEXER == 'true') {
+      indexer.start();
+      // } else {
+      //   eventStream.connect();
+      // }
       const app: Application = express();
       app.use(express.json());
       app.use(express.urlencoded({ extended: true }));
