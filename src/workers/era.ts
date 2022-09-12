@@ -14,9 +14,10 @@ export const QueryEraSummary = async (switchBlockHash: string, eraTimestamp) => 
       seigniorageAllocations?.forEach(async (reward) => {
         await setReward(reward, eraSummary.eraId, eraTimestamp);
       });
-      if (process.env.INDEXER !== 'true') {
-        queueWorker.addValidatorPerformanceCalculation(eraSummary.eraId);
-      }
+      // TODO uncomment condition
+      // if (process.env.INDEXER !== 'true') {
+      queueWorker.addValidatorPerformanceCalculation(eraSummary.eraId);
+      // }
     })
     .catch((err) => {
       logger.error({ eraSummaryRPC: { switchBlockHash, errMessage: `${err}` } });

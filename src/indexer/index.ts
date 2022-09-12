@@ -6,16 +6,11 @@ export class BlockIndexer {
   constructor() {
     this.casperService = new CasperServiceByJsonRPC(process.env.RPC_URL as string);
   }
-  /*
-  Add blocks to DB
-  Add block deploys and transfers to the DB
-  Add block to DB
-  Update rewards after each switch block
-  */
+
   async start() {
     const startBlock = Number(process.env.START_BLOCK);
     const endBlock = Number(process.env.END_BLOCK);
-    for (let i = 150000; i >= 100000; i--) {
+    for (let i = 100000; i <= 200000; i++) {
       queueWorker.addBlockToQueryQueue(i);
     }
     //  for (let i = startBlock; i >= endBlock; i--) {
