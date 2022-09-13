@@ -40,8 +40,8 @@ services:
       - mongodb
     networks:
       - casper-info
-  indexer-1:
-    container_name: indexer-1
+  block-queuer:
+    container_name: block-queuer
     build: .
     ports:
       - 6001:6001
@@ -50,17 +50,15 @@ services:
     environment:
       - PORT=6001
       - INDEXER=true
-      - NODE_ENV=prod      
-      # - START_BLOCK=1081534 
-      # - END_BLOCK=1000000
+      - NODE_ENV=prod
     restart: unless-stopped
     depends_on:
       - redis
       - mongodb
     networks:
       - casper-info
-  indexer-2:
-    container_name: indexer-2
+  block-query:
+    container_name: block-query
     build: .
     ports:
       - 6002:6002
@@ -79,8 +77,8 @@ services:
       - mongodb
     networks:
       - casper-info
-  indexer-3:
-    container_name: indexer-3
+  block-save:
+    container_name: block-save
     build: .
     ports:
       - 6003:6003
@@ -90,8 +88,6 @@ services:
       - PORT=6003
       - INDEXER=true
       - NODE_ENV=prod
-      # - START_BLOCK=949999
-      # - END_BLOCK=900000
       - WORKER_TYPE=BLOCK_SAVE
     restart: unless-stopped
     depends_on:
@@ -99,8 +95,8 @@ services:
       - mongodb
     networks:
       - casper-info
-  indexer-4:
-    container_name: indexer-4
+  deploy-query:
+    container_name: deploy-query
     build: .
     ports:
       - 6004:6004
@@ -110,8 +106,6 @@ services:
       - PORT=6004
       - INDEXER=true
       - NODE_ENV=prod
-      # - START_BLOCK=899999
-      # - END_BLOCK=850000
       - WORKER_TYPE=DEPLOY_QUERY
     restart: unless-stopped
     depends_on:
@@ -119,8 +113,8 @@ services:
       - mongodb
     networks:
       - casper-info
-  indexer-5:
-    container_name: indexer-5
+  era-summary-query:
+    container_name: era-summary-query
     build: .
     ports:
       - 6005:6005
@@ -130,8 +124,6 @@ services:
       - PORT=6005
       - INDEXER=true
       - NODE_ENV=prod
-      # - START_BLOCK=849999
-      # - END_BLOCK=800000
       - WORKER_TYPE=ERA_SUMMARY_AND_PERFORMANCE_CALCULATION
     restart: unless-stopped
     depends_on:
@@ -139,8 +131,8 @@ services:
       - mongodb
     networks:
       - casper-info
-  indexer-6:
-    container_name: indexer-6
+  account-update:
+    container_name: account-update
     build: .
     ports:
       - 6006:6006
@@ -150,8 +142,6 @@ services:
       - PORT=6006
       - INDEXER=true
       - NODE_ENV=prod
-      # - START_BLOCK=799999
-      # - END_BLOCK=750000
       - WORKER_TYPE=ACCOUNT_UPDATE
     restart: unless-stopped
     depends_on:
@@ -159,25 +149,6 @@ services:
       - mongodb
     networks:
       - casper-info
-  # indexer-7:
-  #   container_name: indexer-7
-  #   build: .
-  #   ports:
-  #     - 6007:6007
-  #   env_file:
-  #     - ./.env
-  #   environment:
-  #     - PORT=6007
-  #     - INDEXER=true
-  #     - NODE_ENV=prod
-  #     - START_BLOCK=749999
-  #     - END_BLOCK=700000
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - redis
-  #     - mongodb
-  #   networks:
-  #     - casper-info
 networks:
   casper-info:
 volumes:
