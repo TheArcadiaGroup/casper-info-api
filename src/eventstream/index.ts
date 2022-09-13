@@ -1,7 +1,7 @@
 import { EventName, EventStream, GetBlockResult, GetDeployResult } from 'casper-js-sdk';
 import { setBlock } from '@controllers/block';
-import { queueWorker } from 'workers';
-import { casperService } from 'utils';
+import { queueWorker } from '@workers';
+import { casperService } from '@utils';
 
 class EventStreamHandler {
   constructor() {}

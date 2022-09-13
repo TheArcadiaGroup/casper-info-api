@@ -17,11 +17,11 @@
     "@config": "dist/config",
     "@controllers": "dist/controllers",
     "@eventstream": "dist/eventstream",
-    "indexer": "dist/indexer",
-    "logger": "dist/logger",
+    "@indexer": "dist/indexer",
+    "@logger": "dist/logger",
     "@models": "dist/models",
-    "workers": "dist/workers",
-    "utils": "dist/utils",
+    "@workers": "dist/workers",
+    "@utils": "dist/utils",
     "@v1-routes": "dist/api/v1/routes"
   },
   "dependencies": {

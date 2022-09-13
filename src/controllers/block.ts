@@ -1,5 +1,5 @@
 import { Block } from '@models/blocks';
-import { logger } from 'logger';
+import { logger } from '@logger';
 import { getTransferByBlockHash } from './deploy';
 export const getBlocks = async (req: any, res: any) => {
   const startIndex: number = req.query.startIndex;

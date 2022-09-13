@@ -1,7 +1,7 @@
 import { Reward } from '@models/rewards';
 import { SeigniorageAllocation } from 'casper-js-sdk/dist/lib/StoredValue';
 import { ethers } from 'ethers';
-import { logger } from 'logger';
+import { logger } from '@logger';
 
 export const setReward = async (
   seigniorageAllocation: SeigniorageAllocation,

@@ -1,8 +1,8 @@
 import { setBlock } from '@controllers/block';
 import Bull from 'bull';
-import { QueryAndSaveDeploys } from 'workers/deploys';
-import { QueryBlock } from 'workers/blocks';
-import { CalculateValidatorPerformance, QueryEraSummary } from 'workers/era';
+import { QueryAndSaveDeploys } from '@workers/deploys';
+import { QueryBlock } from '@workers/blocks';
+import { CalculateValidatorPerformance, QueryEraSummary } from '@workers/era';
 import { updateAccount } from '@controllers/account';
 export class QueueWorker {
   queueWorker: Bull.Queue;
@@ -19,13 +19,16 @@ export class QueueWorker {
       // }
     });
   }
-
   addBlockToQueryQueue = async (blockHeight: number) => {
-    await this.queueWorker.add('query-block', blockHeight, {
-      attempts: 10,
-      removeOnComplete: true,
-      removeOnFail: 1000
-    });
+    await this.queueWorker
+      .add('query-block', blockHeight, {
+        attempts: 10,
+        removeOnComplete: true,
+        removeOnFail: 1000
+      })
+      .then((job) => {
+        console.log(job.data);
+      });
   };
   processBlockQuery = async () => {
     this.queueWorker.process('query-block', 20, async (job, done) => {
@@ -131,5 +134,4 @@ export class QueueWorker {
     });
   };
 }
-
 export const queueWorker = new QueueWorker();

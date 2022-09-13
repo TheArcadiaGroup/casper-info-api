@@ -1,5 +1,5 @@
 import { Deploy } from '@models/deploys';
-import { logger } from 'logger';
+import { logger } from '@logger';
 import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
 import { group } from 'console';

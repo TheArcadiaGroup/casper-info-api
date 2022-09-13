@@ -1,9 +1,9 @@
 import express, { Application } from 'express';
-import { indexer } from 'indexer';
+import { indexer } from '@indexer';
 import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
-import { queueWorker } from 'workers';
+import { queueWorker } from '@workers';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
   blockSave = 'BLOCK_SAVE',
@@ -16,6 +16,7 @@ export const Init = async () => {
     .connect(process.env.MONGO_URI as string)
     .then(async () => {
       if (process.env.INDEXER == 'true') {
+        console.log(`Worker type: ${process.env.WORKER_TYPE as string}`);
         switch (process.env.WORKER_TYPE as string) {
           case workerType.blockQuery:
             queueWorker.processBlockQuery();

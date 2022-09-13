@@ -1,7 +1,7 @@
 import { CasperServiceByJsonRPC, CLPublicKey } from 'casper-js-sdk';
 import { ethers } from 'ethers';
-import { getCurrentEra } from 'utils';
-import { getAccountBalanceByPublicKey, getUnstakingAmount } from 'utils/accounts';
+import { getCurrentEra } from '@utils';
+import { getAccountBalanceByPublicKey, getUnstakingAmount } from '@utils/accounts';
 import {
   getEraRewardsByPublicKey,
   getRewardsByPublicKey,

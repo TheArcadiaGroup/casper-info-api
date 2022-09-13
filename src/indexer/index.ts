@@ -1,6 +1,6 @@
 import { CasperServiceByJsonRPC, GetBlockResult } from 'casper-js-sdk';
-import { logger } from 'logger';
-import { queueWorker } from 'workers';
+import { logger } from '@logger';
+import { queueWorker } from '@workers';
 export class BlockIndexer {
   casperService: CasperServiceByJsonRPC;
   constructor() {

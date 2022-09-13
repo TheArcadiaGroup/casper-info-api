@@ -1,8 +1,8 @@
 import { getValidatorPerformanceAggregation, setReward } from '@controllers/reward';
 import { updateValidatorPerformance } from '@controllers/validator';
 import { CasperServiceByJsonRPC, EraSummary } from 'casper-js-sdk';
-import { logger } from 'logger';
-import { queueWorker } from 'workers';
+import { logger } from '@logger';
+import { queueWorker } from '@workers';
 
 const casperService = new CasperServiceByJsonRPC(process.env.RPC_URL as string);
 export const QueryEraSummary = async (switchBlockHash: string, eraTimestamp) => {

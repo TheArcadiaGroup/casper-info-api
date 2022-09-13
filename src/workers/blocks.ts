@@ -1,7 +1,7 @@
 import { GetBlockResult } from 'casper-js-sdk';
-import { logger } from 'logger';
-import { casperService } from 'utils';
-import { queueWorker } from 'workers';
+import { logger } from '@logger';
+import { casperService } from '@utils';
+import { queueWorker } from '@workers';
 
 export const QueryBlock = async (blockHeight: number) => {
   await casperService
