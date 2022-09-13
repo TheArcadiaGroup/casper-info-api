@@ -10,12 +10,9 @@ export class BlockIndexer {
   async start() {
     const startBlock = Number(process.env.START_BLOCK);
     const endBlock = Number(process.env.END_BLOCK);
-    for (let i = 100000; i <= 200000; i++) {
+    for (let i = startBlock; i <= endBlock; i++) {
       queueWorker.addBlockToQueryQueue(i);
     }
-    //  for (let i = startBlock; i >= endBlock; i--) {
-    //    queueWorker.addBlockToQueryQueue(i);
-    //  }
   }
 }
 export const indexer = new BlockIndexer();

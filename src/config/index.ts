@@ -15,9 +15,7 @@ export const Init = async () => {
   await mongoose
     .connect(process.env.MONGO_URI as string)
     .then(async () => {
-      // queueWorker.addBlockToQueryQueue(1081025);
       if (process.env.INDEXER == 'true') {
-        console.log(`Worker type: ${process.env.WORKER_TYPE as string}`);
         switch (process.env.WORKER_TYPE as string) {
           case workerType.blockQuery:
             queueWorker.processBlockQuery();
@@ -40,8 +38,12 @@ export const Init = async () => {
             break;
         }
       } else {
-        console.log('Event stream');
         eventStream.connect();
+        queueWorker.processSaveBlock();
+        queueWorker.processDeployQuery();
+        queueWorker.processEraSummaryQuery();
+        queueWorker.processValidatorPerformanceCalculation();
+        queueWorker.processAccountUpdate();
       }
       const app: Application = express();
       app.use(express.json());
