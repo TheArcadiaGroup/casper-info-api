@@ -9,7 +9,7 @@ export const QueryEraSummary = async (switchBlockHash: string, eraTimestamp) => 
   await casperService
     .getEraInfoBySwitchBlock(switchBlockHash)
     .then(async (eraSummary: EraSummary) => {
-      logger.info(eraSummary);
+      // logger.info(eraSummary);
       const { seigniorageAllocations } = eraSummary.StoredValue.EraInfo;
       seigniorageAllocations?.forEach(async (reward) => {
         await setReward(reward, eraSummary.eraId, eraTimestamp);

@@ -12,11 +12,6 @@ export class QueueWorker {
         host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
         port: Number(process.env.REDIS_PORT)
       }
-      // defaultJobOptions: {
-      //   attempts: 10,
-      //   removeOnComplete: true,
-      //   removeOnFail: 1000
-      // }
     });
   }
   addBlockToQueryQueue = async (blockHeight: number) => {
@@ -30,9 +25,8 @@ export class QueueWorker {
         console.log(job.data);
       });
   };
-  processBlockQuery = async () => {
-    this.queueWorker.process('query-block', 20, async (job, done) => {
-      // console.log(`Block to Query: ${job.data} >> ${job.id}`);
+  processBlockQuery = () => {
+    this.queueWorker.process('query-block', 20, (job, done) => {
       QueryBlock(job.data)
         .then(() => {
           done();
@@ -49,7 +43,6 @@ export class QueueWorker {
   };
   processSaveBlock = async () => {
     this.queueWorker.process('save-block', 20, async (job, done) => {
-      console.log(`Block to save: ${job.data.header.height}`);
       setBlock(job.data)
         .then(() => {
           done();

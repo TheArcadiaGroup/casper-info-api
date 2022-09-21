@@ -26,7 +26,6 @@ export const getBlockTransfers = async (req, res) => {
   }
 };
 export const setBlock = async (block: any) => {
-  console.log(`Block to save: ${block.header.height}`);
   await Block.findOneAndUpdate(
     { blockHeight: block.header.height },
     {

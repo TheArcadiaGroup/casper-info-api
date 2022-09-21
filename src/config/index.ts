@@ -11,41 +11,26 @@ enum workerType {
   eraSummaryandPerfomanceCalculation = 'ERA_SUMMARY_AND_PERFORMANCE_CALCULATION',
   accountUpdate = 'ACCOUNT_UPDATE'
 }
-export const Init = async () => {
-  await mongoose
-    .connect(process.env.MONGO_URI as string)
-    .then(async () => {
+export const Init = () => {
+  const mongoURI: string =
+    process.env.NODE_ENV == 'dev'
+      ? 'mongodb://casper-trench:casper-trench@localhost:27017'
+      : (process.env.MONGO_URI as string);
+  console.log(mongoURI);
+  mongoose
+    .connect(mongoURI)
+    .then(() => {
       if (process.env.INDEXER == 'true') {
-        console.log(`Worker type: ${process.env.WORKER_TYPE as string}`);
-        switch (process.env.WORKER_TYPE as string) {
-          case workerType.blockQuery:
-            queueWorker.processBlockQuery();
-            break;
-          case workerType.blockSave:
-            queueWorker.processSaveBlock();
-            break;
-          case workerType.deployQuery:
-            queueWorker.processDeployQuery();
-            break;
-          case workerType.eraSummaryandPerfomanceCalculation:
-            queueWorker.processEraSummaryQuery();
-            queueWorker.processValidatorPerformanceCalculation();
-            break;
-          case workerType.accountUpdate:
-            queueWorker.processAccountUpdate();
-            break;
-          default:
-            indexer.start();
-            break;
-        }
+        indexer.start();
       } else {
         eventStream.connect();
-        queueWorker.processSaveBlock();
-        queueWorker.processDeployQuery();
-        queueWorker.processEraSummaryQuery();
-        queueWorker.processValidatorPerformanceCalculation();
-        queueWorker.processAccountUpdate();
       }
+      queueWorker.processBlockQuery();
+      queueWorker.processSaveBlock();
+      queueWorker.processDeployQuery();
+      queueWorker.processEraSummaryQuery();
+      queueWorker.processValidatorPerformanceCalculation();
+      queueWorker.processAccountUpdate();
       const app: Application = express();
       app.use(express.json());
       app.use(express.urlencoded({ extended: true }));
