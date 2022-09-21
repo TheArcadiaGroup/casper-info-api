@@ -16,6 +16,13 @@ export const getBlocks = async (req: any, res: any) => {
       res.status(500);
     });
 };
+export const getBlockByHeight = async (blockHeight: number) => {
+  try {
+    return await Block.findOne({ blockHeight });
+  } catch (error) {
+    console.log(error);
+  }
+};
 export const getBlockTransfers = async (req, res) => {
   const { blockHash } = req.params;
   try {
