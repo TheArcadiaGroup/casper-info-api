@@ -1,6 +1,6 @@
 import { GetStatusResult } from 'casper-js-sdk';
 import { ethers } from 'ethers';
-import { casperService, coinGeckoClient, getLatestState } from 'utils';
+import { casperService, coinGeckoClient, getLatestState } from '@utils';
 import { getTransfersCount } from './deploy';
 import { getTotalEraRewardsByEraId } from './reward';
 

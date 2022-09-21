@@ -1,12 +1,17 @@
 import { GetBlockResult } from 'casper-js-sdk';
-import { logger } from 'logger';
-import { casperService } from 'utils';
-import { queueWorker } from 'workers';
+import { logger } from '@logger';
+import { casperService } from '@utils';
+import { queueWorker } from '@workers';
 
+let queriedBlockCounter = 0;
 export const QueryBlock = async (blockHeight: number) => {
   await casperService
     .getBlockInfoByHeight(blockHeight)
     .then(async (blockInfoResult: GetBlockResult) => {
+      queriedBlockCounter++;
+      console.log(
+        `Queried block: ${queriedBlockCounter} >> ${blockInfoResult.block.header.height}`
+      );
       // Type JsonBlock missing body.
       const block: any = blockInfoResult.block;
       queueWorker.addBlockToSaveQueue(block);

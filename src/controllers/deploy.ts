@@ -1,5 +1,5 @@
 import { Deploy } from '@models/deploys';
-import { logger } from 'logger';
+import { logger } from '@logger';
 import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
 import { group } from 'console';
@@ -33,11 +33,13 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
           9
         )
       ),
-      validator: deployResult.deploy.session.StoredContractByHash
-        ? deployResult.deploy.session.StoredContractByHash?.args?.find((value) => {
-            return value[0] == 'validator';
-          })[1].parsed
-        : '',
+      validator:
+        deployResult.deploy.session.StoredContractByHash?.entry_point == 'delegate' ||
+        deployResult.deploy.session.StoredContractByHash?.entry_point == 'undelegate'
+          ? deployResult.deploy.session.StoredContractByHash?.args?.find((value) => {
+              return value[0] == 'validator';
+            })[1]?.parsed
+          : '',
       fromAccountHash:
         hashType === 'transfer'
           ? CLPublicKey.fromHex(deployResult.deploy?.header?.account)

@@ -1,7 +1,7 @@
 import { CasperServiceByJsonRPC, CLPublicKey } from 'casper-js-sdk';
 import { ethers } from 'ethers';
-import { getCurrentEra } from 'utils';
-import { getAccountBalanceByPublicKey, getUnstakingAmount } from 'utils/accounts';
+import { getCurrentEra } from '@utils';
+import { getAccountBalanceByPublicKey, getUnstakingAmount } from '@utils/accounts';
 import {
   getEraRewardsByPublicKey,
   getRewardsByPublicKey,
@@ -149,7 +149,6 @@ export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
           balance: accountDetails.totalBalance,
           transactionCount: deploys.length,
           activeDate: {
-            // $cond: {{ $lte: ['$activeDate', newActiveDate] }, newActiveDate, '$activeDate'}
             $cond: {
               if: { $lte: [Date.parse('$activeDate'), Date.parse(newActiveDate.toLocaleString())] },
               then: newActiveDate,

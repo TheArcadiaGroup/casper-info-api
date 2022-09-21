@@ -1,60 +1,130 @@
 import { setBlock } from '@controllers/block';
 import Bull from 'bull';
-import { QueryAndSaveDeploys } from 'workers/deploys';
-import { QueryBlock } from 'workers/blocks';
-import { CalculateValidatorPerformance, QueryEraSummary } from 'workers/era';
+import { QueryAndSaveDeploys } from '@workers/deploys';
+import { QueryBlock } from '@workers/blocks';
+import { CalculateValidatorPerformance, QueryEraSummary } from '@workers/era';
 import { updateAccount } from '@controllers/account';
-class QueueWorker {
+export class QueueWorker {
   queueWorker: Bull.Queue;
   constructor() {
-    this.queueWorker = new Bull('queue-manager', {
+    this.queueWorker = new Bull('queue-worker', {
       redis: {
         host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
         port: Number(process.env.REDIS_PORT)
       }
     });
-    this.queueWorker.process('query-block', async (job: any) => {
-      await QueryBlock(job.data);
-    });
-    this.queueWorker.process('save-block', async (job: any) => {
-      await setBlock(job.data);
-    });
-    this.queueWorker.process('query-and-save-deploys', async (job: any) => {
-      await QueryAndSaveDeploys(job.data);
-    });
-    this.queueWorker.process('era-summary', async (job: any) => {
-      await QueryEraSummary(job.data.switchBlockHash, job.data.timestamp);
-    });
-    this.queueWorker.process('validator-performance-calculation', async (job: any) => {
-      await CalculateValidatorPerformance(job.data);
-    });
-
-    this.queueWorker.process('account-update', async (job: any) => {
-      await updateAccount(job.data.publicKey, job.data.activeDate);
-    });
   }
-
   addBlockToQueryQueue = async (blockHeight: number) => {
-    await this.queueWorker.add('query-block', blockHeight);
+    await this.queueWorker
+      .add('query-block', blockHeight, {
+        attempts: 10,
+        removeOnComplete: true,
+        removeOnFail: 1000
+      })
+      .then((job) => {
+        console.log(job.data);
+      });
   };
-
+  processBlockQuery = () => {
+    this.queueWorker.process('query-block', 20, (job, done) => {
+      QueryBlock(job.data)
+        .then(() => {
+          done();
+        })
+        .catch((err) => done(new Error(err)));
+    });
+  };
   addBlockToSaveQueue = async (block: any) => {
-    await this.queueWorker.add('save-block', block);
+    await this.queueWorker.add('save-block', block, {
+      attempts: 10,
+      removeOnComplete: true,
+      removeOnFail: 1000
+    });
   };
-
+  processSaveBlock = async () => {
+    this.queueWorker.process('save-block', 20, async (job, done) => {
+      setBlock(job.data)
+        .then(() => {
+          done();
+        })
+        .catch((err) => done(new Error(err)));
+    });
+  };
   addDeployHashes = async (hashes: string[], hashType: 'deploy' | 'transfer') => {
-    await this.queueWorker.add('query-and-save-deploys', { hashes, hashType });
+    await this.queueWorker.add(
+      'query-and-save-deploys',
+      { hashes, hashType },
+      {
+        attempts: 10,
+        removeOnComplete: true,
+        removeOnFail: 1000
+      }
+    );
   };
-
+  processDeployQuery = async () => {
+    this.queueWorker.process('query-and-save-deploys', 20, async (job, done) => {
+      QueryAndSaveDeploys(job.data)
+        .then(() => {
+          done();
+        })
+        .catch((err) => done(new Error(err)));
+    });
+  };
   addEraSwitchBlockHeight = async (switchBlockHash: string, timestamp: Date) => {
-    await this.queueWorker.add('era-summary', { switchBlockHash, timestamp });
+    await this.queueWorker.add(
+      'era-summary',
+      { switchBlockHash, timestamp },
+      {
+        attempts: 10,
+        removeOnComplete: true,
+        removeOnFail: 1000
+      }
+    );
+  };
+  processEraSummaryQuery = () => {
+    this.queueWorker.process('era-summary', 20, async (job, done) => {
+      QueryEraSummary(job.data.switchBlockHash, job.data.timestamp)
+        .then(() => {
+          done();
+        })
+        .catch((err) => done(new Error(err)));
+    });
   };
   addValidatorPerformanceCalculation = async (eraId: number) => {
-    await this.queueWorker.add('validator-performance-calculation', eraId);
+    await this.queueWorker.add('validator-performance-calculation', eraId, {
+      attempts: 10,
+      removeOnComplete: true,
+      removeOnFail: 1000
+    });
+  };
+  processValidatorPerformanceCalculation = async () => {
+    this.queueWorker.process('validator-performance-calculation', 20, async (job, done) => {
+      CalculateValidatorPerformance(job.data)
+        .then(() => {
+          done();
+        })
+        .catch((err) => done(new Error(err)));
+    });
   };
   addAccountUpdate = async (publicKey: string, activeDate: Date) => {
-    await this.queueWorker.add('account-update', { publicKey, activeDate });
+    await this.queueWorker.add(
+      'account-update',
+      { publicKey, activeDate },
+      {
+        attempts: 10,
+        removeOnComplete: true,
+        removeOnFail: 1000
+      }
+    );
+  };
+  processAccountUpdate = () => {
+    this.queueWorker.process('account-update', 20, async (job, done) => {
+      updateAccount(job.data.publicKey, job.data.activeDate)
+        .then(() => {
+          done();
+        })
+        .catch((err) => done(new Error(err)));
+    });
   };
 }
-
 export const queueWorker = new QueueWorker();

@@ -1,7 +1,7 @@
 import { getDeploysByEntryPointAndPublicKey } from '@controllers/deploy';
 import { CLPublicKey, GetStatusResult } from 'casper-js-sdk';
 import { ethers } from 'ethers';
-import { casperClient, getBlockEra, getLatestState } from 'utils';
+import { casperClient, getBlockEra, getLatestState } from '@utils';
 
 export const getAccountBalanceByPublicKey = async (publicKey: string): Promise<number> => {
   return await casperClient.balanceOfByPublicKey(CLPublicKey.fromHex(publicKey)).then((balance) => {

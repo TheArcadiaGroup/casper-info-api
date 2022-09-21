@@ -1,7 +1,7 @@
 import { setDeploy } from '@controllers/deploy';
 import { CasperServiceByJsonRPC } from 'casper-js-sdk';
-import { logger } from 'logger';
-import { queueWorker } from 'workers';
+import { logger } from '@logger';
+import { queueWorker } from '@workers';
 
 const casperService = new CasperServiceByJsonRPC(process.env.RPC_URL as string);
 export const QueryAndSaveDeploys = async (data) => {
