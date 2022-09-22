@@ -1,7 +1,8 @@
-import { EventName, EventStream, GetBlockResult, GetDeployResult } from 'casper-js-sdk';
-import { setBlock } from '@controllers/block';
-import { queueWorker } from '@workers';
+import { EventName, EventStream, GetBlockResult } from 'casper-js-sdk';
 import { casperService } from '@utils';
+import { addBlockToSaveQueue } from '@workers/blocks';
+import { addDeployHashes } from '@workers/deploys';
+import { addEraSwitchBlockHeight } from '@workers/era';
 
 class EventStreamHandler {
   constructor() {}
@@ -14,13 +15,13 @@ class EventStreamHandler {
     eventStream.subscribe(EventName.BlockAdded, async (result) => {
       const block = result.body.BlockAdded.block;
       if (currentHeight > 0 && block.header.height >= currentHeight) {
-        queueWorker.addBlockToSaveQueue(block);
+        addBlockToSaveQueue(block);
         block?.body?.deploy_hashes?.length > 0 &&
-          queueWorker.addDeployHashes(block?.body?.deploy_hashes, 'deploy');
+          addDeployHashes(block?.body?.deploy_hashes, 'deploy');
         block?.body?.transfer_hashes?.length > 0 &&
-          queueWorker.addDeployHashes(block?.body?.transfer_hashes, 'transfer');
+          addDeployHashes(block?.body?.transfer_hashes, 'transfer');
         if (block.header.era_end) {
-          queueWorker.addEraSwitchBlockHeight(block.hash, block.header.timestamp);
+          addEraSwitchBlockHeight(block.hash, block.header.timestamp);
         }
       }
     });
