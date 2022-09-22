@@ -57,7 +57,6 @@ services:
     depends_on:
       - redis
       - mongodb
-      - block-query
     networks:
       - casper-info
   block-query:
@@ -78,7 +77,6 @@ services:
     depends_on:
       - redis
       - mongodb
-      - block-save
     networks:
       - casper-info
   block-save:

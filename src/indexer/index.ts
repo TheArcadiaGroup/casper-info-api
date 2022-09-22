@@ -1,7 +1,6 @@
-import { CasperServiceByJsonRPC, GetBlockResult } from 'casper-js-sdk';
-import { logger } from '@logger';
-import { queueWorker } from '@workers';
+import { CasperServiceByJsonRPC } from 'casper-js-sdk';
 import { getBlockByHeight } from '@controllers/block';
+import { addBlockToQueryQueue } from '@workers/blocks';
 export class BlockIndexer {
   casperService: CasperServiceByJsonRPC;
   constructor() {
@@ -14,7 +13,7 @@ export class BlockIndexer {
     for (let i = startBlock; i <= endBlock; i++) {
       const block = await getBlockByHeight(i);
       // console.log(block.blockHeight);
-      if (!block) queueWorker.addBlockToQueryQueue(i);
+      if (!block) addBlockToQueryQueue(i);
     }
   }
 }

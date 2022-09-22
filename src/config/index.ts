@@ -3,7 +3,11 @@ import { indexer } from '@indexer';
 import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
-import { queueWorker } from '@workers';
+import { processBlockQuery, processSaveBlock } from '@workers/blocks';
+import { processDeployQuery } from '@workers/deploys';
+import { processEraSummaryQuery } from '@workers/era';
+import { processValidatorPerformanceCalculation } from '@workers/validators';
+import { processAccountUpdate } from '@workers/accounts';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
   blockSave = 'BLOCK_SAVE',
@@ -19,20 +23,20 @@ export const Init = async () => {
         console.log(`Worker type: ${process.env.WORKER_TYPE as string}`);
         switch (process.env.WORKER_TYPE as string) {
           case workerType.blockQuery:
-            queueWorker.processBlockQuery();
+            processBlockQuery();
             break;
           case workerType.blockSave:
-            queueWorker.processSaveBlock();
+            processSaveBlock();
             break;
           case workerType.deployQuery:
-            queueWorker.processDeployQuery();
+            processDeployQuery();
             break;
           case workerType.eraSummaryandPerfomanceCalculation:
-            queueWorker.processEraSummaryQuery();
-            queueWorker.processValidatorPerformanceCalculation();
+            processEraSummaryQuery();
+            processValidatorPerformanceCalculation();
             break;
           case workerType.accountUpdate:
-            queueWorker.processAccountUpdate();
+            processAccountUpdate();
             break;
           default:
             indexer.start();
@@ -40,11 +44,11 @@ export const Init = async () => {
         }
       } else {
         eventStream.connect();
-        queueWorker.processSaveBlock();
-        queueWorker.processDeployQuery();
-        queueWorker.processEraSummaryQuery();
-        queueWorker.processValidatorPerformanceCalculation();
-        queueWorker.processAccountUpdate();
+        processSaveBlock();
+        processDeployQuery();
+        processEraSummaryQuery();
+        processValidatorPerformanceCalculation();
+        processAccountUpdate();
       }
       const app: Application = express();
       app.use(express.json());

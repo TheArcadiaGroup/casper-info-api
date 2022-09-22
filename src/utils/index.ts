@@ -34,3 +34,17 @@ export const getLatestState = async (): Promise<GetStatusResult | void> => {
     throw new Error(err);
   });
 };
+
+export const getRedisConnectionDetails = () => {
+  let redis: {
+    host: string;
+    port: number;
+  };
+  if (process.env.INDEXER == 'true') {
+    redis.host;
+  }
+  return redis;
+};
+
+//  host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
+//     port: Number(process.env.REDIS_PORT)
