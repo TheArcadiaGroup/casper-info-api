@@ -40,8 +40,8 @@ services:
       - mongodb
     networks:
       - casper-info
-  indexer-1:
-    container_name: indexer-1
+  block-queuer:
+    container_name: block-queuer
     build: .
     ports:
       - 6001:6001
@@ -50,13 +50,14 @@ services:
     environment:
       - PORT=6001
       - INDEXER=true
-      - START_BLOCK=1070000
-      - END_BLOCK=1100000
+      # - START_BLOCK=1070000
+      # - END_BLOCK=1100000
       - NODE_ENV=prod
     restart: unless-stopped
     depends_on:
       - redis
       - mongodb
+      - block-query
     networks:
       - casper-info
   block-query:
@@ -77,6 +78,7 @@ services:
     depends_on:
       - redis
       - mongodb
+      - block-save
     networks:
       - casper-info
   block-save:
