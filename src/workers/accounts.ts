@@ -1,7 +1,7 @@
 import { updateAccount } from '@controllers/account';
 import Bull from 'bull';
 
-const accountUpdate = new Bull('account-update', {
+export const accountUpdate = new Bull('account-update', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT)

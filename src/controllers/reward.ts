@@ -77,16 +77,6 @@ export const getTotalRewardsByPublicKey = async (
   });
 };
 
-export const getStartingDate = async (publicKey: string) => {
-  return await Reward.find({ publicKey })
-    .sort({ eraTimeStamp: 'desc' })
-    .limit(1)
-    .catch((err) => {
-      // TODO handle error
-      throw new Error(err);
-    });
-};
-
 export const getRewardsByPublicKey = async (
   publicKey: string,
   startIndex: number,
@@ -138,5 +128,24 @@ export const getTotalEraRewardsByEraId = async (
   return await Reward.aggregate([
     { $match: { eraId } },
     { $group: { _id: '$eraId', totalReward: { $sum: '$amount' } } }
+  ]);
+};
+
+export const getValidatorRewardsByEraId = async (
+  validatorPublicKey: string,
+  eraId
+): Promise<{ _id: null; totalRewards: number }[]> => {
+  return await Reward.aggregate([
+    { $match: { validatorPublicKey, eraId } },
+    { $group: { _id: null, totalRewards: { $sum: '$amount' } } }
+  ]);
+};
+export const getValidatorDelegatorRewardsByEraId = async (
+  validatorPublicKey: string,
+  eraId
+): Promise<{ _id: null; totalDelegatorRewards: number }[]> => {
+  return await Reward.aggregate([
+    { $match: { delegatorValidatorPublicKey: validatorPublicKey, eraId } },
+    { $group: { _id: null, totalDelegatorRewards: { $sum: '$amount' } } }
   ]);
 };

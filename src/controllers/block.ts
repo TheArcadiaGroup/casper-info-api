@@ -1,10 +1,10 @@
 import { Block } from '@models/blocks';
 import { logger } from '@logger';
 import { getTransferByBlockHash } from './deploy';
-export const getBlocks = async (req: any, res: any) => {
+export const getBlocks = (req: any, res: any) => {
   const startIndex: number = req.query.startIndex;
   const count: number = req.query.count;
-  await Block.find()
+  Block.find()
     .sort({ blockHeight: 'desc' })
     .where('blockHeight')
     .gt(startIndex - count)
@@ -42,6 +42,7 @@ export const setBlock = async (block: any) => {
       transfers: block.body?.transfer_hashes?.length || 0,
       deploys: block.body?.deploy_hashes?.length || 0,
       timestamp: block.header.timestamp,
+      isSwitchBlock: block.header.era_end ? true : false,
       validatorPublicKey: block.body.proposer
     },
     { new: true, upsert: true }

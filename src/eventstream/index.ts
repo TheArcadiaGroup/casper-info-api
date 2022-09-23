@@ -2,7 +2,7 @@ import { EventName, EventStream, GetBlockResult } from 'casper-js-sdk';
 import { casperService } from '@utils';
 import { addBlockToSaveQueue } from '@workers/blocks';
 import { addDeployHashes } from '@workers/deploys';
-import { addEraSwitchBlockHeight } from '@workers/era';
+import { addEraSwitchBlockHash } from '@workers/era';
 
 class EventStreamHandler {
   constructor() {}
@@ -21,7 +21,7 @@ class EventStreamHandler {
         block?.body?.transfer_hashes?.length > 0 &&
           addDeployHashes(block?.body?.transfer_hashes, 'transfer');
         if (block.header.era_end) {
-          addEraSwitchBlockHeight(block.hash, block.header.timestamp);
+          addEraSwitchBlockHash(block.hash, block.header.timestamp);
         }
       }
     });

@@ -4,15 +4,15 @@ import { casperService } from '@utils';
 import Bull from 'bull';
 import { setBlock } from '@controllers/block';
 import { addDeployHashes } from './deploys';
-import { addEraSwitchBlockHeight } from './era';
+import { addEraSwitchBlockHash } from './era';
 
-const blockQuery = new Bull('block-query', {
+export const blockQuery = new Bull('block-query', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT)
   }
 });
-const blockSave = new Bull('block-save', {
+export const blockSave = new Bull('block-save', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT)
@@ -30,7 +30,7 @@ export const addBlockToQueryQueue = async (blockHeight: number) => {
     });
 };
 export const processBlockQuery = () => {
-  blockQuery.process(20, (job, done) => {
+  blockQuery.process(40, (job, done) => {
     QueryBlock(job.data)
       .then(() => {
         done();
@@ -47,7 +47,7 @@ export const addBlockToSaveQueue = async (block: any) => {
   });
 };
 export const processSaveBlock = async () => {
-  blockSave.process(20, async (job, done) => {
+  blockSave.process(40, async (job, done) => {
     setBlock(job.data)
       .then(() => {
         done();
@@ -73,7 +73,7 @@ export const QueryBlock = async (blockHeight: number) => {
 
       addDeployHashes(block?.body?.transfer_hashes, 'transfer');
       if (block.header.era_end) {
-        addEraSwitchBlockHeight(block.hash, block.header.timestamp);
+        addEraSwitchBlockHash(block.hash, block.header.timestamp);
       }
     })
     .catch((err) => {
