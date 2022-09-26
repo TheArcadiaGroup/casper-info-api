@@ -12,6 +12,7 @@ const blockSchema = new mongoose.Schema(
     transfers: Number,
     deploys: Number,
     timestamp: Date,
+    isSwitchBlock: Boolean,
     validatorPublicKey: String
   },
   { versionKey: false, _id: false }

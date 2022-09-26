@@ -9,7 +9,20 @@ const validatorSchema = new mongoose.Schema(
     },
     performance: Number,
     totalValidatorRewards: Number,
-    totalDelegatorRewards: Number
+    totalDelegatorRewards: Number,
+    information: {
+      name: String,
+      email: String,
+      icon: String,
+      website: String,
+      links: [
+        {
+          tag: String,
+          link: String
+        }
+      ],
+      description: String
+    }
   },
   { versionKey: false }
 );

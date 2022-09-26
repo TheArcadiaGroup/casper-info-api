@@ -1,6 +1,6 @@
 import { CasperServiceByJsonRPC, CLPublicKey } from 'casper-js-sdk';
 import { ethers } from 'ethers';
-import { getCurrentEra } from '@utils';
+import { casperService, getCurrentEra } from '@utils';
 import { getAccountBalanceByPublicKey, getUnstakingAmount } from '@utils/accounts';
 import {
   getEraRewardsByPublicKey,
@@ -9,6 +9,7 @@ import {
 } from '@controllers/reward';
 import { getDeploysByEntryPointAndPublicKey, getDeploysByTypeAndPublicKey } from './deploy';
 import { Account } from '@models/accounts';
+import { logger } from '@logger';
 type AccountDetails = {
   publicKey?: string;
   accountHash?: string;
@@ -19,7 +20,6 @@ type AccountDetails = {
   unstaking?: number;
   totalReward?: number;
 };
-const casperService = new CasperServiceByJsonRPC(process.env.RPC_URL as string);
 export const getTopAccounts = async (req, res) => {
   try {
     const startIndex: number = req.query.startIndex;
@@ -159,9 +159,7 @@ export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
       }
     ],
     { new: true, upsert: true }
-    // db.accounts.findOneAndUpdate({ publicKey: '020387ee64318499cf5e116df526265d6059a23c4b86363932290bb853ad947f7534' },[{transactionCount: 1},{$set: {'$activeDate': {$cond: [{ $lte: ['$activeDate', ISODate('2022-09-04T12:31:21.589+00:00')] }, '2022-09-04T12:31:21.589+00:00', '$activeDate']}}}],{ new: true, upsert: true })
   ).catch((err) => {
-    // TODO handle error
     throw new Error(err);
   });
 };
@@ -187,6 +185,12 @@ export const accountDetailCalculation = async (publicKey: string): Promise<Accou
     })
     .catch((err) => {
       //   TODO handle err
+      logger.error({
+        accountRPC: {
+          publicKey,
+          errMessage: `${err}`
+        }
+      });
       console.log(err);
     });
   const reward = await getTotalRewardsByPublicKey(account.publicKey);

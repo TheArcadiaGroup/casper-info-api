@@ -1,9 +1,9 @@
 import { setDeploy } from '@controllers/deploy';
-import { CasperServiceByJsonRPC } from 'casper-js-sdk';
 import { logger } from '@logger';
 import Bull from 'bull';
 import { addAccountUpdate } from './accounts';
-const queryAndSaveDeploy = new Bull('deploy-query-save', {
+import { casperService } from '@utils';
+export const queryAndSaveDeploy = new Bull('deploy-query-save', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT)
@@ -21,7 +21,7 @@ export const addDeployHashes = async (hashes: string[], hashType: 'deploy' | 'tr
 };
 
 export const processDeployQuery = async () => {
-  queryAndSaveDeploy.process(20, async (job, done) => {
+  queryAndSaveDeploy.process(40, async (job, done) => {
     QueryAndSaveDeploys(job.data)
       .then(() => {
         done();
@@ -29,7 +29,7 @@ export const processDeployQuery = async () => {
       .catch((err) => done(new Error(err)));
   });
 };
-const casperService = new CasperServiceByJsonRPC(process.env.RPC_URL as string);
+
 export const QueryAndSaveDeploys = async (data) => {
   const { hashes, hashType } = data;
   hashes?.forEach(async (hash) => {
