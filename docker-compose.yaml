@@ -1,5 +1,42 @@
 version: '3.3'
 services:
+  traefik:
+    image: traefik:v2.3
+    container_name: traefik
+    restart: unless-stopped
+    networks: 
+      - casper-info
+    command:
+    - "--api=true"
+    - "--log.level=DEBUG"
+    - "--api.insecure=true"
+    - "--providers.docker=true"
+    - "--providers.docker.exposedbydefault=false"
+    - "--entrypoints.web.address=:80"
+    - "--entrypoints.websecure.address=:443"
+    - "--entrypoints.redis.address=:6379"
+    - "--entrypoints.mongodb.address=:27017"
+    - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+    - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+    - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+    - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+    # - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+    - "--certificatesresolvers.myresolver.acme.email=cleophasbarwareng@ids.company"
+    - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+    - "80:80"
+    - "443:443"
+    - "8080:8080"
+    volumes:
+    - "./letsencrypt:/letsencrypt"
+    - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+    - "traefik.http.routers.traefik.rule=Host(`traefik.cspr.fyi`)"
+    - "traefik.http.routers.traefik.entrypoints=websecure"
+    - "traefik.http.routers.traefik.tls=true"
+    - "traefik.http.routers.traefik.tls.certresolver=myresolver"
   #REDIS 
   redis:
     container_name: redis
@@ -9,6 +46,12 @@ services:
     restart: unless-stopped
     networks:
       - casper-info
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.services.redis.loadbalancer.server.port=6379"
+      - "traefik.tcp.routers.redis.entrypoints=redis"
+      - "traefik.tcp.routers.redis.rule=HostSNI(`redis.cspr.fyi`)"
+      - "traefik.tcp.routers.redis.service=redis"
   # MONGODB
   mongodb:
     image: mongo:6.0.1
@@ -22,6 +65,12 @@ services:
       - mongodbdata:/data/db
     networks:
       - casper-info
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.services.mongodb.loadbalancer.server.port=27017"
+      - "traefik.tcp.router.mongodb.entrypoints=mongodb"
+      - "traefik.tcp.router.mongodb.rule=HostSNI(`mongo.cspr.fyi`)"
+      - "traefik.tcp.router.mongodb.service=mongodb"
   # Main Server
   main-server:
     container_name: main-server
@@ -40,6 +89,13 @@ services:
       - mongodb
     networks:
       - casper-info
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.main-server.rule=Host(`api.cspr.fyi`)"
+      - "traefik.http.services.main-server.loadbalancer.server.port=5001"
+      - "traefik.http.routers.main-server.entrypoints=websecure"
+      - "traefik.http.routers.main-server.tls=true"
+      - "traefik.http.routers.main-server.tls.certresolver=myresolver"
   block-queuer:
     container_name: block-queuer
     build: .
