@@ -3,17 +3,19 @@ import { indexer } from '@indexer';
 import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
+import { addBlockToQueryQueue, processBlockQuery, processSaveBlock } from '@workers/blocks';
+import { processDeployQuery } from '@workers/deploys';
+import { addEraSwitchBlockHash, processEraSummaryQuery } from '@workers/era';
+import { processValidatorUpdate } from '@workers/validators';
+import { processAccountUpdate } from '@workers/accounts';
 import {
-  addBlockToQueryQueue,
-  blockQuery,
-  blockSave,
-  processBlockQuery,
-  processSaveBlock
-} from '@workers/blocks';
-import { processDeployQuery, queryAndSaveDeploy } from '@workers/deploys';
-import { addEraSwitchBlockHash, processEraSummaryQuery, queryEraSummary } from '@workers/era';
-import { processValidatorUpdate, validatorUpdate } from '@workers/validators';
-import { accountUpdate, processAccountUpdate } from '@workers/accounts';
+  failedBlockQueriesHandler,
+  failedBlockSavesHandler,
+  failedDeployQueriesHandler,
+  failedEraSummaryQueriesHandler,
+  failedValidatorUpdatesHandler,
+  failedAccountUpdatesHandler
+} from '@workers/queFailureHandler';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
   blockSave = 'BLOCK_SAVE',
@@ -36,52 +38,44 @@ export const Init = async () => {
         switch (process.env.WORKER_TYPE as string) {
           case workerType.blockQuery:
             processBlockQuery();
+            failedBlockQueriesHandler();
             break;
           case workerType.blockSave:
             processSaveBlock();
+            failedBlockSavesHandler();
             break;
           case workerType.deployQuery:
             processDeployQuery();
+            failedDeployQueriesHandler();
             break;
           case workerType.eraSummaryandPerfomanceCalculation:
             processEraSummaryQuery();
             processValidatorUpdate();
+            failedEraSummaryQueriesHandler();
+            failedValidatorUpdatesHandler();
             break;
           case workerType.accountUpdate:
             processAccountUpdate();
+            failedAccountUpdatesHandler();
             break;
           default:
             indexer.start();
             break;
         }
       } else {
-        console.log(
-          `Block Query: ${await blockQuery.getActiveCount()} Active ${await blockQuery.getCompletedCount()} Complete ${await blockQuery.getFailedCount()} Failed`
-        );
-
-        console.log(
-          `Block Save: ${await blockSave.getActiveCount()} Active ${await blockSave.getCompletedCount()} Complete ${await blockQuery.getFailedCount()} Failed`
-        );
-        console.log(
-          `Deploy Query and save: ${await queryAndSaveDeploy.getActiveCount()} Active ${await queryAndSaveDeploy.getCompletedCount()} Complete ${await queryAndSaveDeploy.getFailedCount()} Failed`
-        );
-        console.log(
-          `Era Summary: ${await queryEraSummary.getActiveCount()} Active ${await queryEraSummary.getCompletedCount()} Complete ${await queryEraSummary.getFailedCount()} Failed`
-        );
-        console.log(
-          `Validator update: ${await validatorUpdate.getActiveCount()} Active ${await validatorUpdate.getCompletedCount()} Complete ${await validatorUpdate.getFailedCount()} Failed`
-        );
-        console.log(
-          `Account update: ${await accountUpdate.getActiveCount()} Active ${await accountUpdate.getCompletedCount()} Complete ${await accountUpdate.getFailedCount()} Failed`
-        );
-
-        // eventStream.connect();
-        // processBlockQuery();
-        // processSaveBlock();
-        // processDeployQuery();
-        // processEraSummaryQuery();
-        // processValidatorUpdate();
-        // processAccountUpdate();
+        eventStream.connect();
+        processBlockQuery();
+        processSaveBlock();
+        processDeployQuery();
+        processEraSummaryQuery();
+        processValidatorUpdate();
+        processAccountUpdate();
+        failedBlockQueriesHandler();
+        failedBlockSavesHandler();
+        failedDeployQueriesHandler();
+        failedEraSummaryQueriesHandler();
+        failedValidatorUpdatesHandler();
+        failedAccountUpdatesHandler();
       }
       const app: Application = express();
       app.use(express.json());

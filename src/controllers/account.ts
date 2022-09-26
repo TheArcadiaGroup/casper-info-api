@@ -9,6 +9,7 @@ import {
 } from '@controllers/reward';
 import { getDeploysByEntryPointAndPublicKey, getDeploysByTypeAndPublicKey } from './deploy';
 import { Account } from '@models/accounts';
+import { logger } from '@logger';
 type AccountDetails = {
   publicKey?: string;
   accountHash?: string;
@@ -184,6 +185,12 @@ export const accountDetailCalculation = async (publicKey: string): Promise<Accou
     })
     .catch((err) => {
       //   TODO handle err
+      logger.error({
+        accountRPC: {
+          publicKey,
+          errMessage: `${err}`
+        }
+      });
       console.log(err);
     });
   const reward = await getTotalRewardsByPublicKey(account.publicKey);

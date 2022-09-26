@@ -21,7 +21,7 @@ export const addDeployHashes = async (hashes: string[], hashType: 'deploy' | 'tr
 };
 
 export const processDeployQuery = async () => {
-  queryAndSaveDeploy.process(20, async (job, done) => {
+  queryAndSaveDeploy.process(40, async (job, done) => {
     QueryAndSaveDeploys(job.data)
       .then(() => {
         done();

@@ -19,7 +19,7 @@ export const addAccountUpdate = async (publicKey: string, activeDate: Date) => {
   );
 };
 export const processAccountUpdate = () => {
-  accountUpdate.process(20, async (job, done) => {
+  accountUpdate.process(100, async (job, done) => {
     updateAccount(job.data.publicKey, job.data.activeDate)
       .then(() => {
         done();

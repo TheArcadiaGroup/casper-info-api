@@ -5,8 +5,7 @@ import {
 } from '@controllers/reward';
 import { updateValidatorPerformance } from '@controllers/validator';
 import Bull from 'bull';
-// TODO update queue name
-export const validatorUpdate = new Bull('validator-performance', {
+export const validatorUpdate = new Bull('validator-update', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT)
@@ -20,7 +19,7 @@ export const addValidatorUpdate = async (eraId: number) => {
   });
 };
 export const processValidatorUpdate = async () => {
-  validatorUpdate.process(20, async (job, done) => {
+  validatorUpdate.process(50, async (job, done) => {
     updateValidator(job.data)
       .then(() => {
         done();

@@ -21,7 +21,7 @@ export const addEraSwitchBlockHash = async (switchBlockHash: string, timestamp: 
   );
 };
 export const processEraSummaryQuery = () => {
-  queryEraSummary.process(20, async (job, done) => {
+  queryEraSummary.process(100, async (job, done) => {
     QueryEraSummary(job.data.switchBlockHash, job.data.timestamp)
       .then(() => {
         done();
