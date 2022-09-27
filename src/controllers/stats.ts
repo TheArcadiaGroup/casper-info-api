@@ -22,7 +22,7 @@ export const getStats = async (req, res) => {
     const latestState = <GetStatusResult>await getLatestState();
     stats.currentBlockHeight = latestState.last_added_block_info.height;
     stats.currentBlockTime = latestState.last_added_block_info.timestamp;
-
+    console.log(`${stats.currentBlockHeight} ${stats.currentBlockTime}`);
     const marketData = (
       await coinGeckoClient.coins.fetch('casper-network', {
         tickers: false,
@@ -31,6 +31,7 @@ export const getStats = async (req, res) => {
         localization: false
       })
     ).data.market_data;
+    console.log(marketData);
     stats.currentPrice = marketData.current_price.usd;
     stats.marketCap = marketData.market_cap.usd;
     stats.circulatingSupply = marketData.circulating_supply;
@@ -43,9 +44,11 @@ export const getStats = async (req, res) => {
     auction_state.era_validators[1].validator_weights.forEach((validatorWeight) => {
       stats.totalStakeBonded += Number(ethers.utils.formatUnits(validatorWeight.weight, 9));
     });
-    const latestEraReward = (
-      await getTotalEraRewardsByEraId(latestState.last_added_block_info.era_id - 1)
-    )[0].totalReward;
+    console.log(stats.activeBids);
+    const latestEraReward =
+      (await getTotalEraRewardsByEraId(latestState.last_added_block_info.era_id - 1))[0]
+        ?.totalReward || 0;
+    console.log(latestEraReward);
     // TODO review APY calculations
     stats.apy =
       100 *

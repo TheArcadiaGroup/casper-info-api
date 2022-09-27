@@ -1,4 +1,5 @@
 import express, { Application } from 'express';
+import cors from 'cors';
 import { indexer } from '@indexer';
 import mongoose from 'mongoose';
 import { router } from '@v1-routes';
@@ -24,14 +25,14 @@ enum workerType {
   accountUpdate = 'ACCOUNT_UPDATE'
 }
 export const Init = async () => {
-  await mongoose;
   const mongoURI: string =
-    process.env.NODE_ENV == 'dev'
-      ? 'mongodb://casper-trench:casper-trench@localhost:27017'
-      : process.env.MONGO_URI;
-  console.log(mongoURI);
+    process.env.NODE_ENV == 'dev' ? 'mongodb://localhost:27017' : process.env.MONGO_URI;
   mongoose
-    .connect(mongoURI)
+    .connect(mongoURI, {
+      user: process.env.MONGO_INITDB_ROOT_USERNAME,
+      pass: process.env.MONGO_INITDB_ROOT_PASSWORD,
+      dbName: process.env.MONGO_INITDB_DATABASE
+    })
     .then(async () => {
       if (process.env.INDEXER == 'true') {
         console.log(`Worker type: ${process.env.WORKER_TYPE as string}`);
@@ -78,9 +79,7 @@ export const Init = async () => {
         failedAccountUpdatesHandler();
       }
       const app: Application = express();
-      app.use(express.json());
-      app.use(express.urlencoded({ extended: true }));
-      app.use(router);
+      app.use(cors(), express.json(), express.urlencoded({ extended: true }), router);
       app.listen(process.env.PORT, () => console.log(`Server running at ${process.env.PORT}`));
     })
     .catch((err) => {
@@ -88,3 +87,5 @@ export const Init = async () => {
       process.exit(1);
     });
 };
+
+// mongodb+srv://casper-trench:casper-trench@localhost:27017/casper-info?retryWrites=true&w=majority
