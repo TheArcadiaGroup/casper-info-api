@@ -44,9 +44,10 @@ services:
     ports:
       - 6379:6379
     restart: unless-stopped
+    depends_on:
+       - traefik
     networks:
       - casper-info
-      - traefik
     labels:
       - "traefik.enable=true"
       - "traefik.tcp.services.redis.loadbalancer.server.port=6379"
@@ -64,9 +65,10 @@ services:
       - ./.env
     volumes:
       - mongodbdata:/data/db
+    depends_on:
+      - traefik
     networks:
       - casper-info
-      - traefik
     labels:
       - "traefik.enable=true"
       - "traefik.tcp.services.mongodb.loadbalancer.server.port=27017"
