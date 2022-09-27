@@ -4,3 +4,4 @@
 thunder-file_048b9bde.json
 /logs
 *.sh
+/letsencrypt
