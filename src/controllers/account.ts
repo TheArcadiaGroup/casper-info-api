@@ -227,7 +227,7 @@ export const processPublicKeyAndAccountHash = async (
   }
 };
 
-export const getAccountAddressype = async (req, res) => {
+export const getAccountAddressType = async (req, res) => {
   try {
     const { address } = req.params;
     const { isPublicKey } = await processPublicKeyAndAccountHash(address);
