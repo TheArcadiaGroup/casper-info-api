@@ -3,6 +3,7 @@ import {
   getAccountDeploys,
   getAccountDetails,
   getAccountEraRewards,
+  getAccountHashAndType,
   getAccountRewards,
   getAccountTransfers,
   getAccountUndelegations,
@@ -19,3 +20,4 @@ accountRouter.route('/:address/delegations').get(getAccountDelegations);
 accountRouter.route('/:address/undelegations').get(getAccountUndelegations);
 accountRouter.route('/:address/rewards').get(getAccountRewards);
 accountRouter.route('/:address/era-rewards').get(getAccountEraRewards);
+accountRouter.route('/:address/hash-type').get(getAccountHashAndType);

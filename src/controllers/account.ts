@@ -224,3 +224,32 @@ export const processPublicKeyAndAccountHash = async (
     return { publicKey: publicKeyFromDB[0].publicKey, accountHash };
   }
 };
+
+export const getAccountHashAndType = async (req, res) => {
+  try{
+    const { address } = req.params;
+    const { publicKey, accountHash } = await processPublicKeyAndAccountHash(address);
+    const publicKeyFromDB = await getAccountPublicKeyFromAccountHash(address);
+
+    if (publicKey === publicKeyFromDB[0].publicKey) {
+      res.status(200).json({
+        type: 'Public Key',
+        value: publicKeyFromDB[0].publicKey
+      });
+    } else {
+      if (accountHash === publicKeyFromDB[0].accountHash) {
+        res.status(200).json({
+          type: 'Hash Key',
+          value: publicKeyFromDB[0].accountHash
+        });
+      } else {
+        res.status(200).json({
+          type: 'Address',
+          value: address
+        });
+      }
+    }
+  } catch (error) {
+    res.status(500).send(`Couldn't fetch account hash info: ${error}`);
+  }
+};
