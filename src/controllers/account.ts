@@ -7,6 +7,7 @@ import {
   getRewardsByPublicKey,
   getTotalRewardsByPublicKey
 } from '@controllers/reward';
+import { getValidatorByPublicKeyFromDB } from '@controllers/validator';
 import { getDeploysByEntryPointAndPublicKey, getDeploysByTypeAndPublicKey } from './deploy';
 import { Account } from '@models/accounts';
 import { logger } from '@logger';
@@ -203,7 +204,7 @@ export const accountDetailCalculation = async (publicKey: string): Promise<Accou
 
 export const getAccountPublicKeyFromAccountHash = async (accountHash: string) => {
   try {
-    const publicKey = await Account.find({ accountHash }).select('publicKey -_id');
+    const publicKey = await Account.findOne({ accountHash }).select('publicKey -_id');
     return publicKey;
   } catch (error) {
     throw new Error(error);
@@ -212,42 +213,40 @@ export const getAccountPublicKeyFromAccountHash = async (accountHash: string) =>
 
 export const processPublicKeyAndAccountHash = async (
   address: string
-): Promise<{ publicKey: string; accountHash: string }> => {
+): Promise<{ publicKey: string; accountHash: string; isPublicKey: boolean }> => {
   try {
     return {
       publicKey: address,
-      accountHash: CLPublicKey.fromHex(address).toAccountHashStr().replace('account-hash-', '')
+      accountHash: CLPublicKey.fromHex(address).toAccountHashStr().replace('account-hash-', ''),
+      isPublicKey: false
     };
   } catch {
     const accountHash = address;
     const publicKeyFromDB = await getAccountPublicKeyFromAccountHash(accountHash);
-    return { publicKey: publicKeyFromDB[0].publicKey, accountHash };
+    return { publicKey: publicKeyFromDB.publicKey, accountHash, isPublicKey: true };
   }
 };
 
 export const getAccountHashAndType = async (req, res) => {
-  try{
+  try {
     const { address } = req.params;
-    const { publicKey, accountHash } = await processPublicKeyAndAccountHash(address);
-    const publicKeyFromDB = await getAccountPublicKeyFromAccountHash(address);
-
-    if (publicKey === publicKeyFromDB[0].publicKey) {
-      res.status(200).json({
-        type: 'Public Key',
-        value: publicKeyFromDB[0].publicKey
-      });
-    } else {
-      if (accountHash === publicKeyFromDB[0].accountHash) {
+    const { isPublicKey } = await processPublicKeyAndAccountHash(address);
+    if (isPublicKey) {
+      // Find if it is on the validators collection
+      const isValidator = await getValidatorByPublicKeyFromDB(address);
+      if (isValidator !== null) {
         res.status(200).json({
-          type: 'Hash Key',
-          value: publicKeyFromDB[0].accountHash
+          type: 'Validator Public Key'
         });
       } else {
         res.status(200).json({
-          type: 'Address',
-          value: address
+          type: 'Delegator Public Key'
         });
       }
+    } else {
+      res.status(200).json({
+        type: 'Account Hash'
+      });
     }
   } catch (error) {
     res.status(500).send(`Couldn't fetch account hash info: ${error}`);

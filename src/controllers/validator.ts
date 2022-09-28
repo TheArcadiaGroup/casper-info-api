@@ -34,13 +34,22 @@ export const getAllValidators = (req: Request, res: Response) => {
     });
 };
 
-export const getValidatorByPublicKey = (req: Request, res: Response) => {
-  const { validatorPublicKey } = req.params;
+export const getValidatorByPublicKeyFromDB = async (validatorPublicKey: string) => {
   Validator.findOne({ validatorPublicKey })
     .then((validator) => {
-      res.status(200).json(validator);
+      return validator;
     })
     .catch((error) => {
-      res.status(500).send(`Could not get validator: ${error}`);
+      throw new Error(error);
     });
+};
+
+export const getValidatorByPublicKey = async (req: Request, res: Response) => {
+  const { validatorPublicKey } = req.params;
+  try {
+    const validator = await getValidatorByPublicKeyFromDB(validatorPublicKey);
+    res.status(200).json(validator);
+  } catch (error) {
+    res.status(500).send(`Could not get validator: ${error}`);
+  }
 };
