@@ -1,14 +1,26 @@
+import { Request, Response } from 'express';
 import { Block } from '@models/blocks';
 import { logger } from '@logger';
 import { getTransferByBlockHash } from './deploy';
-export const getBlocks = (req: any, res: any) => {
-  const startIndex: number = req.query.startIndex;
-  const count: number = req.query.count;
+export const getBlocks = (req: Request, res: Response) => {
+  const { startIndex, count } = req.query;
   Block.find()
     .sort({ blockHeight: 'desc' })
     .where('blockHeight')
-    .gt(startIndex - count)
-    .lte(startIndex)
+    .gt(Number(startIndex) - Number(count))
+    .lte(Number(startIndex))
+    .then((blocks) => {
+      res.status(200).json(blocks);
+    })
+    .catch((err) => {
+      res.status(500);
+    });
+};
+export const getLatestBlocks = (req: Request, res: Response) => {
+  const { count } = req.params;
+  Block.find()
+    .sort({ blockHeight: 'desc' })
+    .limit(Number(count))
     .then((blocks) => {
       res.status(200).json(blocks);
     })
@@ -23,7 +35,7 @@ export const getBlockByHeight = async (blockHeight: number) => {
     console.log(error);
   }
 };
-export const getBlockTransfers = async (req, res) => {
+export const getBlockTransfers = async (req: Request, res: Response) => {
   const { blockHash } = req.params;
   try {
     const transfers = await getTransferByBlockHash(blockHash);
