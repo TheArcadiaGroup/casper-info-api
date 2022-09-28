@@ -218,19 +218,20 @@ export const processPublicKeyAndAccountHash = async (
     return {
       publicKey: address,
       accountHash: CLPublicKey.fromHex(address).toAccountHashStr().replace('account-hash-', ''),
-      isPublicKey: false
+      isPublicKey: true
     };
   } catch {
     const accountHash = address;
     const publicKeyFromDB = await getAccountPublicKeyFromAccountHash(accountHash);
-    return { publicKey: publicKeyFromDB.publicKey, accountHash, isPublicKey: true };
+    return { publicKey: publicKeyFromDB?.publicKey ?? null, accountHash, isPublicKey: false };
   }
 };
 
 export const getAccountAddressType = async (req, res) => {
   try {
     const { address } = req.params;
-    const { isPublicKey } = await processPublicKeyAndAccountHash(address);
+    const { isPublicKey, publicKey } = await processPublicKeyAndAccountHash(address);
+
     if (isPublicKey) {
       // Find if it is on the validators collection
       const isValidator = await getValidatorByPublicKeyFromDB(address);
@@ -244,11 +245,16 @@ export const getAccountAddressType = async (req, res) => {
         });
       }
     } else {
+      if(isPublicKey === false && publicKey === null){
+        res.status(200).json({
+          type: 'Unknown'
+        });
+      }
       res.status(200).json({
         type: 'Account Hash'
       });
     }
   } catch (error) {
-    res.status(500).send(`Couldn't fetch account hash info: ${error}`);
+    res.status(500).send(`Couldn't fetch account address info: ${error}`);
   }
 };
