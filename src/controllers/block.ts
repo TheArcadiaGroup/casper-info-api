@@ -1,6 +1,7 @@
 import { Block } from '@models/blocks';
 import { logger } from '@logger';
 import { getTransferByBlockHash } from './deploy';
+
 export const getBlocks = (req: any, res: any) => {
   const startIndex: number = req.query.startIndex;
   const count: number = req.query.count;
@@ -16,6 +17,7 @@ export const getBlocks = (req: any, res: any) => {
       res.status(500);
     });
 };
+
 export const getBlockByHeight = async (blockHeight: number) => {
   try {
     return await Block.findOne({ blockHeight });
@@ -23,6 +25,7 @@ export const getBlockByHeight = async (blockHeight: number) => {
     console.log(error);
   }
 };
+
 export const getBlockTransfers = async (req, res) => {
   const { blockHash } = req.params;
   try {
@@ -32,6 +35,7 @@ export const getBlockTransfers = async (req, res) => {
     res.status(500).send(`Could not fetch block transfers ${error}`);
   }
 };
+
 export const setBlock = async (block: any) => {
   await Block.findOneAndUpdate(
     { blockHeight: block.header.height },
@@ -71,4 +75,12 @@ export const setBlock = async (block: any) => {
   //     }
   //   });
   // });
+};
+
+export const getBlockByPublicKeyFromDB = async (blockHash: string) => {
+  try {
+    return await Block.findOne({ blockHash });
+  } catch (error) {
+    throw new Error(error);
+  }
 };

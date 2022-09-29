@@ -1,5 +1,6 @@
-import { CasperServiceByJsonRPC, CLPublicKey } from 'casper-js-sdk';
+import { CLPublicKey } from 'casper-js-sdk';
 import { ethers } from 'ethers';
+import { Request, Response } from 'express';
 import { casperService, getCurrentEra } from '@utils';
 import { getAccountBalanceByPublicKey, getUnstakingAmount } from '@utils/accounts';
 import {
@@ -8,9 +9,11 @@ import {
   getTotalRewardsByPublicKey
 } from '@controllers/reward';
 import { getValidatorByPublicKeyFromDB } from '@controllers/validator';
-import { getDeploysByEntryPointAndPublicKey, getDeploysByTypeAndPublicKey } from './deploy';
+import { getBlockByPublicKeyFromDB } from '@controllers/block';
+import { getDeploysByEntryPointAndPublicKey, getDeploysByTypeAndPublicKey } from '@controllers/deploy';
 import { Account } from '@models/accounts';
 import { logger } from '@logger';
+
 type AccountDetails = {
   publicKey?: string;
   accountHash?: string;
@@ -21,6 +24,7 @@ type AccountDetails = {
   unstaking?: number;
   totalReward?: number;
 };
+
 export const getTopAccounts = async (req, res) => {
   try {
     const startIndex: number = req.query.startIndex;
@@ -34,6 +38,7 @@ export const getTopAccounts = async (req, res) => {
     res.status(500).send(`Could not fetch top accounts: ${error}`);
   }
 };
+
 export const getAccountDetails = async (req, res) => {
   try {
     const { address } = req.params;
@@ -47,6 +52,7 @@ export const getAccountDetails = async (req, res) => {
     res.status(500).send(`Could not fetch account details: ${error}`);
   }
 };
+
 export const getAccountTransfers = async (req, res) => {
   try {
     const { address } = req.params;
@@ -72,6 +78,7 @@ export const getAccountDeploys = async (req, res) => {
     res.status(500).send(`Could not fetch delegation history: ${err}`);
   }
 };
+
 export const getAccountDelegations = async (req, res) => {
   try {
     const { address } = req.params;
@@ -245,7 +252,7 @@ export const getAccountAddressType = async (req, res) => {
         });
       }
     } else {
-      if(isPublicKey === false && publicKey === null){
+      if (isPublicKey === false && publicKey === null) {
         res.status(200).json({
           type: 'Unknown'
         });
@@ -258,3 +265,35 @@ export const getAccountAddressType = async (req, res) => {
     res.status(500).send(`Couldn't fetch account address info: ${error}`);
   }
 };
+
+export const getAccountAddressSearch = async (req: Request, res: Response ) => {
+  const { address } = req.params
+  const { publicKey, accountHash, isPublicKey } = await processPublicKeyAndAccountHash(address);
+
+  /**
+  * If address is account public key or hash
+  */
+  if (isPublicKey) {
+    res.redirect(`/v1/accounts/${address}`);
+  } else {
+    if (address === accountHash) {
+      res.redirect(`/v1/accounts/${publicKey}`);
+    }
+  }
+
+  /**
+  * If address is validator public key
+  */
+  const isValidator = await getValidatorByPublicKeyFromDB(address)
+  if (isValidator !== null) {
+    res.redirect(`/v1/validators/${address}`);
+  }
+
+  /**
+  * If address is block hash
+  */
+  const isBlock = await getBlockByPublicKeyFromDB(address);
+  if (isBlock !== null) {
+    res.redirect(`/v1/blocks/${address}/transfers`);
+  }
+}
