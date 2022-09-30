@@ -274,7 +274,7 @@ export const getAccountAddressSearch = async (req: Request, res: Response ) => {
   if (isPublicKey) {
     res.redirect(`/v1/accounts/${address}`);
   } else {
-    if (address === accountHash) {
+    if (address === accountHash && publicKey !== null) {
       res.redirect(`/v1/accounts/${publicKey}`);
     }
   }
