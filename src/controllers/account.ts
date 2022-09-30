@@ -265,35 +265,3 @@ export const getAccountAddressType = async (req, res) => {
     res.status(500).send(`Couldn't fetch account address info: ${error}`);
   }
 };
-
-export const getAccountAddressSearch = async (req: Request, res: Response ) => {
-  const { address } = req.params
-  const { publicKey, accountHash, isPublicKey } = await processPublicKeyAndAccountHash(address);
-
-  /**
-  * If address is account public key or hash
-  */
-  if (isPublicKey) {
-    res.redirect(`/v1/accounts/${address}`);
-  } else {
-    if (address === accountHash && publicKey !== null) {
-      res.redirect(`/v1/accounts/${publicKey}`);
-    }
-  }
-
-  /**
-  * If address is validator public key
-  */
-  const isValidator = await getValidatorByPublicKeyFromDB(address)
-  if (isValidator !== null && isValidator !== undefined) {
-    res.redirect(`/v1/validators/${address}`);
-  }
-
-  /**
-  * If address is block hash
-  */
-  const isBlock = await getBlockByPublicKeyFromDB(address);
-  if (isBlock !== null) {
-    res.redirect(`/v1/blocks/${address}/transfers`);
-  }
-}

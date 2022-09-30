@@ -35,13 +35,11 @@ export const getAllValidators = (req: Request, res: Response) => {
 };
 
 export const getValidatorByPublicKeyFromDB = async (validatorPublicKey: string) => {
-  Validator.findOne({ validatorPublicKey })
-    .then((validator) => {
-      return validator;
-    })
-    .catch((error) => {
-      throw new Error(error);
-    });
+  try {
+    return await Validator.findOne({ validatorPublicKey });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const getValidatorByPublicKey = async (req: Request, res: Response) => {
