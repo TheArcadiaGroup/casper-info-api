@@ -7,8 +7,7 @@ import {
   getAccountRewards,
   getAccountTransfers,
   getAccountUndelegations,
-  getTopAccounts,
-  getAccountAddressSearch
+  getTopAccounts
 } from '@controllers/account';
 import { Router } from 'express';
 
@@ -22,4 +21,3 @@ accountRouter.route('/:address/undelegations').get(getAccountUndelegations);
 accountRouter.route('/:address/rewards').get(getAccountRewards);
 accountRouter.route('/:address/era-rewards').get(getAccountEraRewards);
 accountRouter.route('/:address/type').get(getAccountAddressType);
-accountRouter.route('/:address/search').get(getAccountAddressSearch);
