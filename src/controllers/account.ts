@@ -276,7 +276,7 @@ export const getAccountAddressSearch = async (req: Request, res: Response ) => {
   if (isPublicKey) {
     res.redirect(`/v1/accounts/${address}`);
   } else {
-    if (address === accountHash) {
+    if (address === accountHash && publicKey !== null) {
       res.redirect(`/v1/accounts/${publicKey}`);
     }
   }
@@ -285,7 +285,7 @@ export const getAccountAddressSearch = async (req: Request, res: Response ) => {
   * If address is validator public key
   */
   const isValidator = await getValidatorByPublicKeyFromDB(address)
-  if (isValidator !== null) {
+  if (isValidator !== null && isValidator !== undefined) {
     res.redirect(`/v1/validators/${address}`);
   }
 
