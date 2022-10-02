@@ -4,9 +4,9 @@ import { indexer } from '@indexer';
 import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
-import { addBlockToQueryQueue, processBlockQuery, processSaveBlock } from '@workers/blocks';
+import { processBlockQuery, processSaveBlock } from '@workers/blocks';
 import { processDeployQuery } from '@workers/deploys';
-import { addEraSwitchBlockHash, processEraSummaryQuery } from '@workers/era';
+import { processEraSummaryQuery } from '@workers/era';
 import { processValidatorUpdate } from '@workers/validators';
 import { processAccountUpdate } from '@workers/accounts';
 import {
