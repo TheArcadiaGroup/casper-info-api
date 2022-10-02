@@ -2,7 +2,7 @@ import { setReward } from '@controllers/reward';
 import { EraSummary } from 'casper-js-sdk';
 import { logger } from '@logger';
 import Bull from 'bull';
-import { addValidatorUpdate } from './validators';
+import { addValidatorUpdate } from '@workers/validators';
 import { casperService } from '@utils';
 export const queryEraSummary = new Bull('era-summary-query', {
   redis: {
