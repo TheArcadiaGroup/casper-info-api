@@ -38,20 +38,16 @@ export const setReward = async (
       eraTimestamp
     },
     { new: true, upsert: true }
-  )
-    // .then((reward) => {
-    //   logger.info(reward);
-    // })
-    .catch((err) => {
-      logger.error({
-        rewardDB: {
-          hash: seigniorageAllocation.Delegator
-            ? `Delegator ${seigniorageAllocation.Delegator.delegatorPublicKey}`
-            : `Validator ${seigniorageAllocation.Validator.validatorPublicKey}`,
-          errMessage: `${err}`
-        }
-      });
+  ).catch((err) => {
+    logger.error({
+      rewardDB: {
+        hash: seigniorageAllocation.Delegator
+          ? `Delegator ${seigniorageAllocation.Delegator.delegatorPublicKey}`
+          : `Validator ${seigniorageAllocation.Validator.validatorPublicKey}`,
+        errMessage: `${err}`
+      }
     });
+  });
 };
 //  Promise<{ _id: string; count: number }[]>;
 export const getValidatorPerformanceAggregation = async (eraId: number) => {
