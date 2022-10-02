@@ -1,14 +1,14 @@
-import { Validator } from '@models/validators';
+import { Bid } from '@models/validators';
 import { addValidatorUpdate } from '@workers/validators';
 import { Request, Response } from 'express';
-export const updateValidatorPerformance = async (
+export const updateBidPerformance = async (
   publicKey: string,
   performance: number,
   totalValidatorRewards: number,
   totalDelegatorRewards: number
 ) => {
-  await Validator.findOneAndUpdate(
-    { validatorPublicKey: publicKey },
+  await Bid.findOneAndUpdate(
+    { publicKey },
     { performance, $inc: { totalValidatorRewards, totalDelegatorRewards } },
     { new: true, upsert: true }
   ).catch((err) => {
@@ -16,7 +16,7 @@ export const updateValidatorPerformance = async (
   });
 };
 
-export const seedValidators = async (req: Request, res: Response) => {
+export const seedBidRewards = async (req: Request, res: Response) => {
   const { currentEraId } = req.params;
   for (let i = 0; i <= Number(currentEraId); i++) {
     addValidatorUpdate(i);
@@ -24,8 +24,8 @@ export const seedValidators = async (req: Request, res: Response) => {
   res.status(200).send('Seeding queued');
 };
 
-export const getAllValidators = (req: Request, res: Response) => {
-  Validator.find()
+export const getAllBids = (req: Request, res: Response) => {
+  Bid.find()
     .then((validators) => {
       res.status(200).json(validators);
     })
@@ -34,8 +34,8 @@ export const getAllValidators = (req: Request, res: Response) => {
     });
 };
 
-export const getValidatorByPublicKeyFromDB = async (validatorPublicKey: string) => {
-  Validator.findOne({ validatorPublicKey })
+export const getBidByPublicKeyFromDB = async (publicKey: string) => {
+  Bid.findOne({ publicKey })
     .then((validator) => {
       return validator;
     })
@@ -44,10 +44,10 @@ export const getValidatorByPublicKeyFromDB = async (validatorPublicKey: string) 
     });
 };
 
-export const getValidatorByPublicKey = async (req: Request, res: Response) => {
-  const { validatorPublicKey } = req.params;
+export const getBidByPublicKey = async (req: Request, res: Response) => {
+  const { publicKey } = req.params;
   try {
-    const validator = await getValidatorByPublicKeyFromDB(validatorPublicKey);
+    const validator = await getBidByPublicKeyFromDB(publicKey);
     res.status(200).json(validator);
   } catch (error) {
     res.status(500).send(`Could not get validator: ${error}`);
