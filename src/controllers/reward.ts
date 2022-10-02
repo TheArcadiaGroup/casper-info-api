@@ -50,7 +50,7 @@ export const setReward = async (
   });
 };
 //  Promise<{ _id: string; count: number }[]>;
-export const getValidatorPerformanceAggregation = async (eraId: number) => {
+export const getBidPerformanceAggregation = async (eraId: number) => {
   return await Reward.aggregate([
     { $match: { eraId: { $gte: eraId - 360 } } },
     { $group: { _id: '$validatorPublicKey', count: { $sum: 1 } } }
@@ -127,7 +127,7 @@ export const getTotalEraRewardsByEraId = async (
   ]);
 };
 
-export const getValidatorRewardsByEraId = async (
+export const getBidRewardsByEraId = async (
   validatorPublicKey: string,
   eraId
 ): Promise<{ _id: null; totalRewards: number }[]> => {
@@ -136,7 +136,7 @@ export const getValidatorRewardsByEraId = async (
     { $group: { _id: null, totalRewards: { $sum: '$amount' } } }
   ]);
 };
-export const getValidatorDelegatorRewardsByEraId = async (
+export const getBidDelegatorRewardsByEraId = async (
   validatorPublicKey: string,
   eraId
 ): Promise<{ _id: null; totalDelegatorRewards: number }[]> => {

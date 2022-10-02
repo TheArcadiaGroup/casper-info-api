@@ -1,7 +1,7 @@
 import { Bid } from '@models/validators';
 import { addValidatorUpdate } from '@workers/validators';
 import { Request, Response } from 'express';
-export const updateBidPerformance = async (
+export const updateBidPerformanceAndRewards = async (
   publicKey: string,
   performance: number,
   totalValidatorRewards: number,
