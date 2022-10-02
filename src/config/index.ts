@@ -7,7 +7,12 @@ import { eventStream } from '@eventstream';
 import { processBlockQuery, processSaveBlock } from '@workers/blocks';
 import { processDeployQuery } from '@workers/deploys';
 import { processEraSummaryQuery } from '@workers/era';
-import { processValidatorUpdate } from '@workers/validators';
+import {
+  addValidatorsInfoFetch,
+  processBidOrValidatorSave,
+  processValidatorsInfoFetch,
+  processValidatorUpdate
+} from '@workers/validators';
 import { processAccountUpdate } from '@workers/accounts';
 import {
   failedBlockQueriesHandler,
@@ -65,6 +70,7 @@ export const Init = async () => {
         }
       } else {
         eventStream.connect();
+        addValidatorsInfoFetch();
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();
@@ -77,6 +83,8 @@ export const Init = async () => {
         failedEraSummaryQueriesHandler();
         failedValidatorUpdatesHandler();
         failedAccountUpdatesHandler();
+        processValidatorsInfoFetch();
+        processBidOrValidatorSave();
       }
       const app: Application = express();
       app.use(cors(), express.json(), express.urlencoded({ extended: true }), router);
