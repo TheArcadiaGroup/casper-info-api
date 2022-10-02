@@ -7,10 +7,10 @@ const deploySchema = new mongoose.Schema(
       required: true,
       unique: true
     },
-    publicKey: String,
-    blockHash: String,
-    timestamp: Date,
-    entryPoint: String,
+    publicKey: { type: String, index: true },
+    blockHash: { type: String, index: true },
+    timestamp: { type: Date, index: true },
+    entryPoint: { type: String, index: true },
     amount: Number,
     cost: Number,
     validator: {
@@ -26,7 +26,7 @@ const deploySchema = new mongoose.Schema(
       type: String,
       required: false
     },
-    deployType: String
+    deployType: { type: String, index: true }
   },
   { versionKey: false, _id: false }
 );
