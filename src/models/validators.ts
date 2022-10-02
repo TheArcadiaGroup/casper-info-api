@@ -43,13 +43,15 @@ const eraValidatorSchema = new mongoose.Schema(
       required: true,
       unique: true
     },
+    eraId: Number,
     numOfDelegators: Number,
     delegationRate: Number,
     totalBid: Number,
     totalDelegated: Number,
     selfStake: Number,
     selfStakePercentage: Number,
-    networkPercentage: Number
+    networkPercentage: Number,
+    rank: Number
   },
   { versionKey: false }
 );
