@@ -7,7 +7,11 @@ const blockSchema = new mongoose.Schema(
       required: true,
       unique: true
     },
-    blockHash: String,
+    blockHash: {
+      type: String,
+      required: true,
+      unique: true
+    },
     eraID: Number,
     transfers: Number,
     deploys: Number,
