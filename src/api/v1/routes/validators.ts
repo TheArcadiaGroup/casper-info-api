@@ -1,7 +1,7 @@
-import { getAllValidators, getValidatorByPublicKey, seedValidators } from '@controllers/validator';
+import { getAllBids, getBidByPublicKey, seedBidRewards } from '@controllers/validator';
 import { Router } from 'express';
 
 export const validatorsRouter: Router = Router();
-validatorsRouter.route('/:currentEraId').post(seedValidators);
-validatorsRouter.route('/').get(getAllValidators);
-validatorsRouter.route('/:validatorPublicKey').get(getValidatorByPublicKey);
+validatorsRouter.route('/seed/:currentEraId').post(seedBidRewards);
+validatorsRouter.route('/').get(getAllBids);
+validatorsRouter.route('/:publicKey').get(getBidByPublicKey);

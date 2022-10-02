@@ -3,7 +3,7 @@ import {
   getValidatorPerformanceAggregation,
   getValidatorRewardsByEraId
 } from '@controllers/reward';
-import { updateValidatorPerformance } from '@controllers/validator';
+import { updateBidPerformance } from '@controllers/validator';
 import Bull from 'bull';
 export const validatorUpdate = new Bull('validator-update', {
   redis: {
@@ -40,7 +40,7 @@ export const updateValidator = async (eraId: number) => {
       // `Total Seed: ${validator._id} >> ${totalValidatorRewards} >> ${totalDelegatorRewards}`
       ();
     validator._id &&
-      (await updateValidatorPerformance(
+      (await updateBidPerformance(
         validator._id,
         validator.count / 360,
         totalValidatorRewards,

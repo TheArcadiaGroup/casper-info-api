@@ -8,9 +8,8 @@ import {
   getRewardsByPublicKey,
   getTotalRewardsByPublicKey
 } from '@controllers/reward';
-import { getValidatorByPublicKeyFromDB } from '@controllers/validator';
-import { getBlockByPublicKeyFromDB } from '@controllers/block';
-import { getDeploysByEntryPointAndPublicKey, getDeploysByTypeAndPublicKey } from '@controllers/deploy';
+import { getBidByPublicKeyFromDB } from '@controllers/validator';
+import { getDeploysByEntryPointAndPublicKey, getDeploysByTypeAndPublicKey } from './deploy';
 import { Account } from '@models/accounts';
 import { logger } from '@logger';
 
@@ -237,12 +236,11 @@ export const processPublicKeyAndAccountHash = async (
 export const getAccountAddressType = async (req, res) => {
   try {
     const { address } = req.params;
-    const { isPublicKey, publicKey } = await processPublicKeyAndAccountHash(address);
+    const { isPublicKey, accountHash } = await processPublicKeyAndAccountHash(address);
 
     if (isPublicKey) {
-      // Find if it is on the validators collection
-      const isValidator = await getValidatorByPublicKeyFromDB(address);
-      if (isValidator !== null) {
+      const bid = await getBidByPublicKeyFromDB(address);
+      if (bid !== null) {
         res.status(200).json({
           type: 'Validator Public Key'
         });
@@ -251,12 +249,11 @@ export const getAccountAddressType = async (req, res) => {
           type: 'Delegator Public Key'
         });
       }
+    } else if (accountHash) {
+      res.status(200).json({
+        type: 'Unknown'
+      });
     } else {
-      if (isPublicKey === false && publicKey === null) {
-        res.status(200).json({
-          type: 'Unknown'
-        });
-      }
       res.status(200).json({
         type: 'Account Hash'
       });
