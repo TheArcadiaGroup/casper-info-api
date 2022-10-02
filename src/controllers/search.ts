@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { processPublicKeyAndAccountHash } from "./account";
-import { getBlockByPublicKeyFromDB } from "./block";
-import { getDeployByPublicKey } from "./deploy";
-import { getValidatorByPublicKeyFromDB } from "./validator";
+import { processPublicKeyAndAccountHash } from "@controllers/account";
+import { getBlockByPublicKeyFromDB } from "@controllers/block";
+import { getDeployByPublicKey } from "@controllers/deploy";
+import { getBidByPublicKeyFromDB } from "@controllers/validator";
 
 
 export const searchAddress = async ( req: Request, res: Response) => {
@@ -11,7 +11,7 @@ export const searchAddress = async ( req: Request, res: Response) => {
   /**
   * If address is validator public key
   */
-   const validator = await getValidatorByPublicKeyFromDB(address)
+   const validator = await getBidByPublicKeyFromDB(address)
    if (validator) {
      res.redirect(`/validators/${address}`);
    }

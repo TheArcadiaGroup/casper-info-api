@@ -133,13 +133,11 @@ export const getAllNextEraValidators = async (req: Request, res: Response) => {
 };
 
 export const getBidByPublicKeyFromDB = async (publicKey: string) => {
-  Bid.findOne({ publicKey })
-    .then((validator) => {
-      return validator;
-    })
-    .catch((error) => {
-      throw new Error(error);
-    });
+  try {
+    return await Bid.findOne({ publicKey });
+  } catch (error) {
+    throw new Error(error);
+  }
 };
 
 export const getBidByPublicKey = async (req: Request, res: Response) => {
