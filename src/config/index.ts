@@ -16,7 +16,7 @@ import {
   failedEraSummaryQueriesHandler,
   failedValidatorUpdatesHandler,
   failedAccountUpdatesHandler
-} from '@workers/queFailureHandler';
+} from '@workers/queueFailureHandler';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
   blockSave = 'BLOCK_SAVE',

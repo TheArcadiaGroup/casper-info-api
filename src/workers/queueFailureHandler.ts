@@ -1,7 +1,7 @@
-import { accountUpdate } from './accounts';
-import { blockQuery, blockSave } from './blocks';
-import { queryEraSummary } from './era';
-import { validatorUpdate } from './validators';
+import { accountUpdate } from '@workers/accounts';
+import { blockQuery, blockSave } from '@workers/blocks';
+import { queryEraSummary } from '@workers/era';
+import { bidPerformanceAndRewardsUpdate } from '@workers/validators';
 import { queryAndSaveDeploy } from '@workers/deploys';
 
 export const failedBlockQueriesHandler = () => {
@@ -57,10 +57,10 @@ export const failedEraSummaryQueriesHandler = () => {
 
 export const failedValidatorUpdatesHandler = () => {
   setInterval(async () => {
-    const failedValidatorUpdates = await validatorUpdate.getFailed();
+    const failedValidatorUpdates = await bidPerformanceAndRewardsUpdate.getFailed();
     failedValidatorUpdates &&
       failedValidatorUpdates.forEach(async (job) => {
-        await validatorUpdate.add(job.data, job.opts);
+        await bidPerformanceAndRewardsUpdate.add(job.data, job.opts);
         job.remove();
       });
   }, 500);
