@@ -26,6 +26,7 @@ export const addBlockToQueryQueue = async (blockHeight: number) => {
       removeOnFail: 1000
     })
     .then((job) => {
+      console.log('yesh working')
       console.log(job.data);
     });
 };

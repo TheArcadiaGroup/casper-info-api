@@ -22,6 +22,7 @@ import {
   failedValidatorUpdatesHandler,
   failedAccountUpdatesHandler
 } from '@workers/queueFailureHandler';
+import { processMissedBlocks } from '@workers/matcher';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
   blockSave = 'BLOCK_SAVE',
@@ -77,6 +78,7 @@ export const Init = async () => {
         processEraSummaryQuery();
         processValidatorUpdate();
         processAccountUpdate();
+        processMissedBlocks();
         failedBlockQueriesHandler();
         failedBlockSavesHandler();
         failedDeployQueriesHandler();

@@ -72,3 +72,11 @@ export const setBlock = async (block: any) => {
   //   });
   // });
 };
+
+export const getLastAddedBlock = async () => {
+  try {
+    return await Block.findOne().sort('-_id');
+  } catch (error) {
+    throw new Error(error);
+  }
+}
