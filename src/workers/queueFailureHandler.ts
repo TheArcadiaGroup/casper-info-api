@@ -1,7 +1,12 @@
 import { accountUpdate } from '@workers/accounts';
 import { blockQuery, blockSave } from '@workers/blocks';
 import { queryEraSummary } from '@workers/era';
-import { bidPerformanceAndRewardsUpdate } from '@workers/validators';
+import {
+  bidDelegatorSave,
+  bidOrValidatorSave,
+  bidPerformanceAndRewardsUpdate,
+  validatorsInfoFetch
+} from '@workers/validators';
 import { queryAndSaveDeploy } from '@workers/deploys';
 
 export const failedBlockQueriesHandler = () => {
@@ -72,6 +77,37 @@ export const failedAccountUpdatesHandler = () => {
     failedAccountUpdates &&
       failedAccountUpdates.forEach(async (job) => {
         await accountUpdate.add(job.data, job.opts);
+        job.remove();
+      });
+  }, 500);
+};
+
+export const failedValidatorInforFetchHandler = () => {
+  setInterval(async () => {
+    const failedValidatorInfo = await validatorsInfoFetch.getFailed();
+    failedValidatorInfo &&
+      failedValidatorInfo.forEach(async (job) => {
+        await validatorsInfoFetch.add(job.data, job.opts);
+        job.remove();
+      });
+  }, 500);
+};
+export const failedBidOrValidatorSaveHandler = () => {
+  setInterval(async () => {
+    const failedbidOrValidatorSave = await bidOrValidatorSave.getFailed();
+    failedbidOrValidatorSave &&
+      failedbidOrValidatorSave.forEach(async (job) => {
+        await bidOrValidatorSave.add(job.data, job.opts);
+        job.remove();
+      });
+  }, 500);
+};
+export const failedBidDelegatorSaveHandler = () => {
+  setInterval(async () => {
+    const failedBidValidatorSave = await bidDelegatorSave.getFailed();
+    failedBidValidatorSave &&
+      failedBidValidatorSave.forEach(async (job) => {
+        await bidDelegatorSave.add(job.data, job.opts);
         job.remove();
       });
   }, 500);

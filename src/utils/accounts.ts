@@ -22,3 +22,5 @@ export const getUnstakingAmount = async (publicKey): Promise<number> => {
   }
   return unstaking;
 };
+
+// TODO determine address type (Validator Public Key || Account Public Key || Account Hash)

@@ -90,7 +90,6 @@ export const getRewardsByPublicKey = async (
     { $skip: startIndex - 1 },
     { $limit: count }
   ]).catch((err) => {
-    // TODO handle error
     throw new Error(err);
   });
 };

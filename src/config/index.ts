@@ -9,6 +9,7 @@ import { processDeployQuery } from '@workers/deploys';
 import { processEraSummaryQuery } from '@workers/era';
 import {
   addValidatorsInfoFetch,
+  processBidDelegatorSave,
   processBidOrValidatorSave,
   processValidatorsInfoFetch,
   processValidatorUpdate
@@ -20,7 +21,10 @@ import {
   failedDeployQueriesHandler,
   failedEraSummaryQueriesHandler,
   failedValidatorUpdatesHandler,
-  failedAccountUpdatesHandler
+  failedAccountUpdatesHandler,
+  failedValidatorInforFetchHandler,
+  failedBidOrValidatorSaveHandler,
+  failedBidDelegatorSaveHandler
 } from '@workers/queueFailureHandler';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
@@ -83,8 +87,12 @@ export const Init = async () => {
         failedEraSummaryQueriesHandler();
         failedValidatorUpdatesHandler();
         failedAccountUpdatesHandler();
+        failedValidatorInforFetchHandler();
+        failedBidOrValidatorSaveHandler();
+        failedBidDelegatorSaveHandler();
         processValidatorsInfoFetch();
         processBidOrValidatorSave();
+        processBidDelegatorSave();
       }
       const app: Application = express();
       app.use(cors(), express.json(), express.urlencoded({ extended: true }), router);
