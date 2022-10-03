@@ -3,6 +3,11 @@ import { ethers } from 'ethers';
 import { casperService, coinGeckoClient, getLatestState } from '@utils';
 import { getTransfersCount } from './deploy';
 import { getTotalEraRewardsByEraId } from './reward';
+import {
+  getAllBidsFromDB,
+  getAllCurrentEraValidators,
+  getAllCurrentEraValidatorsFromDB
+} from './validator';
 
 export const getStats = async (req, res) => {
   try {
@@ -22,7 +27,6 @@ export const getStats = async (req, res) => {
     const latestState = <GetStatusResult>await getLatestState();
     stats.currentBlockHeight = latestState.last_added_block_info.height;
     stats.currentBlockTime = latestState.last_added_block_info.timestamp;
-    console.log(`${stats.currentBlockHeight} ${stats.currentBlockTime}`);
     const marketData = (
       await coinGeckoClient.coins.fetch('casper-network', {
         tickers: false,
@@ -31,17 +35,22 @@ export const getStats = async (req, res) => {
         localization: false
       })
     ).data.market_data;
-    stats.currentPrice = marketData.current_price.usd;
-    stats.marketCap = marketData.market_cap.usd;
-    stats.circulatingSupply = marketData.circulating_supply;
-    stats.totalSupply = marketData.total_supply;
-    const { auction_state } = await casperService.getValidatorsInfo();
-    const bids = auction_state.bids;
-    const activeBids = bids?.filter((bid: any) => bid.bid?.inactive == false);
-    stats.activeValidators = auction_state.era_validators[1].validator_weights.length;
+    stats.currentPrice = marketData?.current_price?.usd;
+    stats.marketCap = marketData?.market_cap?.usd;
+    stats.circulatingSupply = marketData?.circulating_supply;
+    stats.totalSupply = marketData?.total_supply;
+    // const { auction_state } = await casperService.getValidatorsInfo();
+    const bids = await getAllBidsFromDB();
+    const activeBids = bids?.filter((bid: any) => bid?.inactive == false);
+    const currentEraValidators = await getAllCurrentEraValidatorsFromDB();
+    // stats.activeValidators = auction_state.era_validators[1].validator_weights.length;
+    stats.activeValidators = currentEraValidators.length;
     stats.activeBids = activeBids?.length;
-    auction_state.era_validators[1].validator_weights.forEach((validatorWeight) => {
-      stats.totalStakeBonded += Number(ethers.utils.formatUnits(validatorWeight.weight, 9));
+    // auction_state.era_validators[1].validator_weights.forEach((validatorWeight) => {
+    //   stats.totalStakeBonded += Number(ethers.utils.formatUnits(validatorWeight.weight, 9));
+    // });
+    currentEraValidators?.forEach((validator) => {
+      stats.totalStakeBonded += validator.totalBid;
     });
     const latestEraReward =
       (await getTotalEraRewardsByEraId(latestState.last_added_block_info.era_id - 1))[0]

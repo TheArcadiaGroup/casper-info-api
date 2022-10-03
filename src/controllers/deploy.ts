@@ -101,36 +101,19 @@ const getAmount = (session): number => {
   return amount ?? 0;
 };
 
-export const getDeploysByEntryPointAndPublicKey = async (
-  publicKey: string,
-  entryPoint: string,
-  startIndex?: number,
-  count?: number
-) => {
-  if (count > 0) {
-    return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] })
-      .sort({ timestamp: 'desc' })
-      .skip(startIndex - 1)
-      .limit(count)
-      .catch((err) => {
-        // TODO handle error
-        throw new Error(err);
-      });
-  } else {
-    return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] }).catch((err) => {
-      // TODO handle error
-      throw new Error(err);
-    });
-  }
+export const getDeploysByEntryPointAndPublicKey = async (publicKey: string, entryPoint: string) => {
+  return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] }).catch((err) => {
+    // TODO handle error
+    throw new Error(err);
+  });
 };
 export const getDeploysByTypeAndPublicKey = async (
   publicKey: string,
-  deployType: string,
   startIndex?: number,
   count?: number
 ) => {
   if (count > 0) {
-    return await Deploy.find({ $and: [{ publicKey }, { deployType }] })
+    return await Deploy.find({ $and: [{ publicKey }] })
       .sort({ timestamp: 'desc' })
       .skip(startIndex - 1)
       .limit(count)
@@ -139,7 +122,7 @@ export const getDeploysByTypeAndPublicKey = async (
         throw new Error(err);
       });
   } else {
-    return await Deploy.find({ $and: [{ publicKey }, { deployType }] }).catch((err) => {
+    return await Deploy.find({ $and: [{ publicKey }] }).catch((err) => {
       // TODO handle error
       throw new Error(err);
     });

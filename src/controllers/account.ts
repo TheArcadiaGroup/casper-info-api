@@ -7,7 +7,12 @@ import {
   getRewardsByPublicKey,
   getTotalRewardsByPublicKey
 } from '@controllers/reward';
-import { getBidByPublicKeyFromDB } from '@controllers/validator';
+import {
+  getAllBidsFromDB,
+  getBidByPublicKeyFromDB,
+  getValidatorDelegators,
+  getValidatorDelegatorsFromDB
+} from '@controllers/validator';
 import { getDeploysByEntryPointAndPublicKey, getDeploysByTypeAndPublicKey } from './deploy';
 import { Account } from '@models/accounts';
 import { logger } from '@logger';
@@ -53,7 +58,8 @@ export const getAccountTransfers = async (req, res) => {
     const startIndex: number = req.query.startIndex;
     const count: number = req.query.count;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    const transfers = await getDeploysByTypeAndPublicKey(publicKey, 'transfer', startIndex, count);
+    let transfers = await getDeploysByTypeAndPublicKey(publicKey, startIndex, count);
+    transfers = transfers.filter((transfer) => transfer.deployType == 'transfer');
     res.status(200).json(transfers);
   } catch (err) {
     res.status(500).send(`Could not fetch transfer history: ${err}`);
@@ -66,7 +72,7 @@ export const getAccountDeploys = async (req, res) => {
     const startIndex: number = req.query.startIndex;
     const count: number = req.query.count;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    const deploys = await getDeploysByTypeAndPublicKey(publicKey, 'deploy', startIndex, count);
+    const deploys = await getDeploysByTypeAndPublicKey(publicKey, startIndex, count);
     res.status(200).json(deploys);
   } catch (err) {
     res.status(500).send(`Could not fetch delegation history: ${err}`);
@@ -75,15 +81,8 @@ export const getAccountDeploys = async (req, res) => {
 export const getAccountDelegations = async (req, res) => {
   try {
     const { address } = req.params;
-    const startIndex: number = req.query.startIndex;
-    const count: number = req.query.count;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    const delegations = await getDeploysByEntryPointAndPublicKey(
-      publicKey,
-      'delegate',
-      startIndex,
-      count
-    );
+    const delegations = await getDeploysByEntryPointAndPublicKey(publicKey, 'delegate');
     res.status(200).json(delegations);
   } catch (err) {
     res.status(500).send(`Could not fetch delegation history: ${err}`);
@@ -93,15 +92,8 @@ export const getAccountDelegations = async (req, res) => {
 export const getAccountUndelegations = async (req, res) => {
   try {
     const { address } = req.params;
-    const startIndex: number = Number(req.query.startIndex);
-    const count: number = Number(req.query.count);
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    const undelegations = await getDeploysByEntryPointAndPublicKey(
-      publicKey,
-      'undelegate',
-      startIndex,
-      count
-    );
+    const undelegations = await getDeploysByEntryPointAndPublicKey(publicKey, 'undelegate');
     res.status(200).json(undelegations);
   } catch (err) {
     res.status(500).send(`Could not fetch delegation history: ${err}`);
@@ -135,7 +127,8 @@ export const getAccountEraRewards = async (req, res) => {
 
 export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
   const accountDetails = await accountDetailCalculation(publicKey);
-  const deploys = await getDeploysByTypeAndPublicKey(publicKey, 'deploy');
+  let deploys = await getDeploysByTypeAndPublicKey(publicKey);
+  deploys = deploys.filter((deploy) => deploy.deployType === 'deploy');
   await Account.findOneAndUpdate(
     { publicKey },
     [
@@ -166,40 +159,30 @@ export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
 };
 
 export const accountDetailCalculation = async (publicKey: string): Promise<AccountDetails> => {
-  let account: AccountDetails = { totalStaked: 0 };
-  account.publicKey = publicKey;
-  await casperService
-    .getValidatorsInfo()
-    .then((validatorInfoResult) => {
-      const { bids } = validatorInfoResult.auction_state;
-      bids?.forEach((bid) => {
-        if (account.publicKey === bid.public_key) {
-          account.totalStaked += Number(ethers.utils.formatUnits(bid.bid.staked_amount, 9));
-        }
-
-        bid?.bid?.delegators?.forEach((delegator) => {
-          if (account.publicKey === delegator.public_key) {
-            account.totalStaked += Number(ethers.utils.formatUnits(delegator.staked_amount, 9));
-          }
-        });
-      });
-    })
-    .catch((err) => {
-      //   TODO handle err
-      logger.error({
-        accountRPC: {
-          publicKey,
-          errMessage: `${err}`
+  try {
+    let account: AccountDetails = { totalStaked: 0 };
+    account.publicKey = publicKey;
+    const bids = await getAllBidsFromDB();
+    bids?.forEach(async (bid) => {
+      if (account.publicKey === bid.publicKey) {
+        account.totalStaked += bid.selfStake;
+      }
+      const delegators = await getValidatorDelegatorsFromDB(bid.publicKey);
+      delegators?.forEach((delegator) => {
+        if (account.publicKey === delegator.publicKey) {
+          account.totalStaked += delegator.stakedAmount;
         }
       });
-      console.log(err);
     });
-  const reward = await getTotalRewardsByPublicKey(account.publicKey);
-  account.totalReward = reward[0]?.totalReward;
-  account.unstaking = await getUnstakingAmount(account.publicKey);
-  account.availableBalance = await getAccountBalanceByPublicKey(account.publicKey);
-  account.totalBalance = account.availableBalance + account.totalStaked + account.unstaking;
-  return account;
+    const reward = await getTotalRewardsByPublicKey(account.publicKey);
+    account.totalReward = reward[0]?.totalReward;
+    account.unstaking = await getUnstakingAmount(account.publicKey);
+    account.availableBalance = await getAccountBalanceByPublicKey(account.publicKey);
+    account.totalBalance = account.availableBalance + account.totalStaked + account.unstaking;
+    return account;
+  } catch (error) {
+    throw new Error(`Could calculate account details ${error}`);
+  }
 };
 
 export const getAccountPublicKeyFromAccountHash = async (accountHash: string) => {

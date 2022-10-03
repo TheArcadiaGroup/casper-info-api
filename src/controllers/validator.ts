@@ -1,4 +1,4 @@
-import { Bid, CurrentEraValidator, NextEraValidator } from '@models/validators';
+import { Bid, CurrentEraValidator, Delegators, NextEraValidator } from '@models/validators';
 import { addValidatorUpdate } from '@workers/validators';
 import { Request, Response } from 'express';
 export const setBid = async (bid: any) => {
@@ -63,6 +63,24 @@ export const setNextEraValidator = async (nextEraValidator: any) => {
     throw new Error(`Could not save current era validator: ${error}`);
   }
 };
+export const setDelegator = async (delegator: any) => {
+  try {
+    // console.log('Delegator to save', delegator);
+    await Delegators.findOneAndUpdate(
+      { publicKey: delegator.publicKey, validatorPublicKey: delegator.validatorPublicKey },
+      {
+        publicKey: delegator.publicKey,
+        validatorPublicKey: delegator.validatorPublicKey,
+        stakedAmount: delegator.stakedAmount,
+        bondingPurse: delegator.bondingPurse,
+        delegatee: delegator.delegatee
+      },
+      { new: true, upsert: true }
+    );
+  } catch (error) {
+    throw new Error(`Could not save current era validator: ${error}`);
+  }
+};
 export const updateBidPerformanceAndRewards = async (
   publicKey: string,
   performance: number,
@@ -77,7 +95,6 @@ export const updateBidPerformanceAndRewards = async (
     throw new Error(err);
   });
 };
-
 export const seedBidRewards = async (req: Request, res: Response) => {
   const { currentEraId } = req.params;
   for (let i = 0; i <= Number(currentEraId); i++) {
@@ -115,7 +132,6 @@ export const getAllCurrentEraValidators = async (req: Request, res: Response) =>
     res.status(500).send(`Could not fetch bids: ${error}`);
   }
 };
-
 export const getAllNextEraValidatorsFromDB = async () => {
   try {
     return await NextEraValidator.find().sort({ totalBid: `desc` });
@@ -131,17 +147,29 @@ export const getAllNextEraValidators = async (req: Request, res: Response) => {
     res.status(500).send(`Could not fetch bids: ${error}`);
   }
 };
-
-export const getBidByPublicKeyFromDB = async (publicKey: string) => {
-  Bid.findOne({ publicKey })
-    .then((validator) => {
-      return validator;
-    })
-    .catch((error) => {
-      throw new Error(error);
-    });
+export const getValidatorDelegatorsFromDB = async (validatorPublicKey: string) => {
+  try {
+    return await Delegators.find({ validatorPublicKey }).sort({ stakedAmount: 'desc' });
+  } catch (error) {
+    throw new Error(`Could not fetch all bids`);
+  }
 };
-
+export const getValidatorDelegators = async (req: Request, res: Response) => {
+  try {
+    const { publicKey } = req.params;
+    const delegators = await getValidatorDelegatorsFromDB(publicKey);
+    res.status(200).json(delegators);
+  } catch (error) {
+    res.status(500).send(`Could not fetch bids: ${error}`);
+  }
+};
+export const getBidByPublicKeyFromDB = async (publicKey: string) => {
+  try {
+    return await Bid.findOne({ publicKey });
+  } catch (error) {
+    throw new Error(`Could not fetch bid from DB: ${error}`);
+  }
+};
 export const getBidByPublicKey = async (req: Request, res: Response) => {
   const { publicKey } = req.params;
   try {

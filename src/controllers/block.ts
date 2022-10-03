@@ -28,11 +28,55 @@ export const getLatestBlocks = (req: Request, res: Response) => {
       res.status(500);
     });
 };
-export const getBlockByHeight = async (blockHeight: number) => {
+export const getBlockByHeightFromDB = async (blockHeight: number) => {
   try {
     return await Block.findOne({ blockHeight });
   } catch (error) {
     console.log(error);
+  }
+};
+export const getBlockByHashFromDB = async (blockHash: string) => {
+  try {
+    return await Block.findOne({ blockHash });
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const getBlockByHash = async (req: Request, res: Response) => {
+  try {
+    const { blockHash } = req.params;
+    const block = await getBlockByHashFromDB(blockHash);
+    res.status(200).json(block);
+  } catch (error) {
+    res.status(500).send(`Could not fetch block transfers ${error}`);
+  }
+};
+export const getBlocksByValidatorPublicKeyFromDB = async (
+  validatorPublicKey: string,
+  startIndex: number,
+  count: number
+) => {
+  try {
+    return await Block.find({ validatorPublicKey })
+      .sort({ blockHeight: 'desc' })
+      .skip(startIndex - 1)
+      .limit(count);
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const getBlockByValidatorPublicKey = async (req: Request, res: Response) => {
+  try {
+    const { publicKey } = req.params;
+    const { startIndex, count } = req.query;
+    const blocks = await getBlocksByValidatorPublicKeyFromDB(
+      publicKey,
+      Number(startIndex),
+      Number(count)
+    );
+    res.status(200).json(blocks);
+  } catch (error) {
+    res.status(500).send(`Could not fetch block transfers ${error}`);
   }
 };
 export const getBlockTransfers = async (req: Request, res: Response) => {
