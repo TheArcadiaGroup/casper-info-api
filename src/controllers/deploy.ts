@@ -1,8 +1,10 @@
+import { Request, Response } from 'express';
 import { Deploy } from '@models/deploys';
 import { logger } from '@logger';
 import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
 import { group } from 'console';
+import { casperService } from '@utils';
 let amountInNextParsed = false;
 let amount: number;
 export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') => {
@@ -68,19 +70,28 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
   amount = 0;
 };
 
-export const getDeploys = async (req: any, res: any) => {
-  const startIndex: number = req.query.startIndex;
-  const count: number = req.query.count;
+export const getDeploys = async (req: Request, res: Response) => {
+  const { startIndex, count } = req.query;
   await Deploy.find()
     .sort({ timestamp: 'desc' })
-    .skip(startIndex - 1)
-    .limit(count)
+    .skip(Number(startIndex) - 1)
+    .limit(Number(count))
     .then((deploys) => {
       res.status(200).json(deploys);
     })
     .catch((err) => {
       res.status(500);
     });
+};
+
+export const getDeployByHash = async (req: Request, res: Response) => {
+  try {
+    const { hash } = req.params;
+    const deploy = await casperService.getDeployInfo(hash);
+    res.status(200).json(deploy);
+  } catch (error) {
+    res.status(500).send(`Could not fetch deploy details: ${error}`);
+  }
 };
 
 const getAmount = (session): number => {
@@ -135,7 +146,7 @@ export const getTransferByBlockHash = async (blockHash: string) => {
     throw new Error(err);
   });
 };
-export const getDeployVolumes = async (req, res) => {
+export const getDeployVolumes = async (req: Request, res: Response) => {
   await Deploy.aggregate([
     { $sort: { timestamp: -1 } },
     {

@@ -55,7 +55,6 @@ export const getStats = async (req, res) => {
     const latestEraReward =
       (await getTotalEraRewardsByEraId(latestState.last_added_block_info.era_id - 1))[0]
         ?.totalReward || 0;
-    console.log(latestEraReward);
     // TODO review APY calculations
     stats.apy =
       100 *
