@@ -13,7 +13,7 @@ export const searchAddress = async ( req: Request, res: Response) => {
   */
    const validator = await getBidByPublicKeyFromDB(address)
    if (validator) {
-     res.redirect(`/validators/${address}`);
+     return res.redirect(`${process.env.CLIENT_URL}/validators/${address}`);
    }
 
   /**
@@ -21,7 +21,7 @@ export const searchAddress = async ( req: Request, res: Response) => {
   */
   const { publicKey } = await processPublicKeyAndAccountHash(address);
   if (publicKey) {
-    res.redirect(`/accounts/${address}`);
+    return res.redirect(`${process.env.CLIENT_URL}/accounts/${address}`);
   }
 
   /**
@@ -29,7 +29,7 @@ export const searchAddress = async ( req: Request, res: Response) => {
   */
   const block = await getBlockByPublicKeyFromDB(address);
   if (block) {
-    res.redirect(`/blocks/${address}`);
+    return res.redirect(`${process.env.CLIENT_URL}/blocks/${address}`);
   }
 
   /**
@@ -37,7 +37,7 @@ export const searchAddress = async ( req: Request, res: Response) => {
   */
   const deploy = await getDeployByPublicKey(address);
   if (deploy) {
-    res.redirect(`/deploys/${address}`);
+    return res.redirect(`${process.env.CLIENT_URL}/deploys/${address}`);
   } else {
     res.status(404).json({ 
       title: `Nothing was found...`,
