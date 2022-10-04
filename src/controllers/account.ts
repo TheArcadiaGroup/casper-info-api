@@ -1,7 +1,8 @@
+import { Request, Response } from 'express';
 import { CasperServiceByJsonRPC, CLPublicKey } from 'casper-js-sdk';
 import { ethers } from 'ethers';
 import { casperService, getCurrentEra } from '@utils';
-import { getAccountBalanceByPublicKey, getUnstakingAmount } from '@utils/accounts';
+import { getAccountBalanceByAddress, getUnstakingAmount } from '@utils/accounts';
 import {
   getEraRewardsByPublicKey,
   getRewardsByPublicKey,
@@ -26,25 +27,22 @@ type AccountDetails = {
   unstaking?: number;
   totalReward?: number;
 };
-export const getTopAccounts = async (req, res) => {
+export const getTopAccounts = async (req: Request, res: Response) => {
   try {
-    const startIndex: number = req.query.startIndex;
-    const count: number = req.query.count;
+    const { startIndex, count } = req.query;
     const topAccounts = await Account.find()
       .sort({ balance: 'desc' })
-      .skip(startIndex - 1)
-      .limit(count);
+      .skip(Number(startIndex) - 1)
+      .limit(Number(count));
     res.status(200).json(topAccounts);
   } catch (error) {
     res.status(500).send(`Could not fetch top accounts: ${error}`);
   }
 };
-export const getAccountDetails = async (req, res) => {
+export const getAccountDetails = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
     const { publicKey, accountHash } = await processPublicKeyAndAccountHash(address);
-
-    // TODO determine address type
     const account = await accountDetailCalculation(publicKey);
     account.accountHash = accountHash;
     res.status(200).json(account);
@@ -52,13 +50,16 @@ export const getAccountDetails = async (req, res) => {
     res.status(500).send(`Could not fetch account details: ${error}`);
   }
 };
-export const getAccountTransfers = async (req, res) => {
+export const getAccountTransfers = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
-    const startIndex: number = req.query.startIndex;
-    const count: number = req.query.count;
+    const { startIndex, count } = req.query;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    let transfers = await getDeploysByTypeAndPublicKey(publicKey, startIndex, count);
+    let transfers = await getDeploysByTypeAndPublicKey(
+      publicKey,
+      Number(startIndex),
+      Number(count)
+    );
     transfers = transfers.filter((transfer) => transfer.deployType == 'transfer');
     res.status(200).json(transfers);
   } catch (err) {
@@ -66,19 +67,22 @@ export const getAccountTransfers = async (req, res) => {
   }
 };
 
-export const getAccountDeploys = async (req, res) => {
+export const getAccountDeploys = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
-    const startIndex: number = req.query.startIndex;
-    const count: number = req.query.count;
+    const { startIndex, count } = req.query;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    const deploys = await getDeploysByTypeAndPublicKey(publicKey, startIndex, count);
+    const deploys = await getDeploysByTypeAndPublicKey(
+      publicKey,
+      Number(startIndex),
+      Number(count)
+    );
     res.status(200).json(deploys);
   } catch (err) {
     res.status(500).send(`Could not fetch delegation history: ${err}`);
   }
 };
-export const getAccountDelegations = async (req, res) => {
+export const getAccountDelegations = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
@@ -89,7 +93,7 @@ export const getAccountDelegations = async (req, res) => {
   }
 };
 
-export const getAccountUndelegations = async (req, res) => {
+export const getAccountUndelegations = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
@@ -100,7 +104,7 @@ export const getAccountUndelegations = async (req, res) => {
   }
 };
 
-export const getAccountRewards = async (req, res) => {
+export const getAccountRewards = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
     const startIndex: number = Number(req.query.startIndex);
@@ -113,7 +117,7 @@ export const getAccountRewards = async (req, res) => {
   }
 };
 
-export const getAccountEraRewards = async (req, res) => {
+export const getAccountEraRewards = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
@@ -177,7 +181,7 @@ export const accountDetailCalculation = async (publicKey: string): Promise<Accou
     const reward = await getTotalRewardsByPublicKey(account.publicKey);
     account.totalReward = reward[0]?.totalReward;
     account.unstaking = await getUnstakingAmount(account.publicKey);
-    account.availableBalance = await getAccountBalanceByPublicKey(account.publicKey);
+    account.availableBalance = await getAccountBalanceByAddress(account.publicKey);
     account.totalBalance = account.availableBalance + account.totalStaked + account.unstaking;
     return account;
   } catch (error) {
@@ -210,7 +214,7 @@ export const processPublicKeyAndAccountHash = async (
   }
 };
 
-export const getAccountAddressType = async (req, res) => {
+export const getAccountAddressType = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
     const { isPublicKey, accountHash } = await processPublicKeyAndAccountHash(address);
@@ -237,5 +241,16 @@ export const getAccountAddressType = async (req, res) => {
     }
   } catch (error) {
     res.status(500).send(`Couldn't fetch account address info: ${error}`);
+  }
+};
+
+export const getAccountBalance = async (req: Request, res: Response) => {
+  try {
+    const { address } = req.params;
+
+    const balance = await getAccountBalanceByAddress(address);
+    res.status(200).json(balance);
+  } catch (error) {
+    res.status(500).send(`Could not fetch account balance ${error}`);
   }
 };
