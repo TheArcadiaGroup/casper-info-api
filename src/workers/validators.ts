@@ -189,10 +189,10 @@ export const fetchValidatorsInfo = async () => {
     const validatorsInfoResult: ValidatorsInfoResult = await casperService.getValidatorsInfo();
     const bids: any = validatorsInfoResult.auction_state.bids;
     const eraValidatorsInfo = validatorsInfoResult.auction_state.era_validators;
-    let totalStakes: number[] = [0, 0];
+    let totalWeights: number[] = [0, 0];
     eraValidatorsInfo.forEach((eraValidatorInfo, i) => {
       eraValidatorInfo.validator_weights.forEach((validatorWeight) => {
-        totalStakes[i] += Number(ethers.utils.formatUnits(validatorWeight.weight, 9));
+        totalWeights[i] += Number(ethers.utils.formatUnits(validatorWeight.weight, 9));
       });
     });
     bids &&
@@ -234,52 +234,52 @@ export const fetchValidatorsInfo = async () => {
     eraValidatorsInfo.forEach((eraValidatorInfo, i) => {
       eraValidatorInfo.validator_weights.forEach((validatorWeight) => {
         const totalBid = Number(ethers.utils.formatUnits(validatorWeight.weight, 9));
-        let networkPercentage = (totalBid / totalStakes[i]) * 100;
+        let networkPercentage = (totalBid / totalWeights[i]) * 100;
         if (i == 0) {
           currentEraValidators.push({
             publicKey: validatorWeight.public_key,
-            eraId: 0,
+            eraId: eraValidatorInfo.era_id,
             selfStake: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).selfStake,
             delegationRate: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).delegationRate,
             numOfDelegators: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
-            ).networkPercentage,
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
+            ).numOfDelegators,
             totalBid,
             selfStakePercentage: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).selfStakePercentage,
             networkPercentage,
             rank: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).rank
           });
           bidValidators.find(
-            (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+            (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
           ).networkPercentage = networkPercentage;
         } else {
           nextEraValidators.push({
             publicKey: validatorWeight.public_key,
-            eraId: 0,
+            eraId: eraValidatorInfo.era_id,
             selfStake: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).selfStake,
             delegationRate: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).delegationRate,
             numOfDelegators: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).numOfDelegators,
             totalBid,
             selfStakePercentage: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).selfStakePercentage,
             networkPercentage,
             rank: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).rank
           });
         }

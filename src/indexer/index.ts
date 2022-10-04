@@ -12,7 +12,6 @@ export class BlockIndexer {
     const endBlock = Number(process.env.END_BLOCK);
     for (let i = startBlock; i <= endBlock; i++) {
       const block = await getBlockByHeightFromDB(i);
-      // console.log('Block to add', block?.blockHeight);
       if (!block) addBlockToQueryQueue(i);
     }
   }
