@@ -20,12 +20,16 @@ const deploySchema = new mongoose.Schema(
     status: String,
     fromAccountHash: {
       type: String,
-      required: false
+      required: false,
+      index: true
     },
+    fromAccountBalance: Number,
     toAccountHash: {
       type: String,
-      required: false
+      required: false,
+      index: true
     },
+    toAccountBalance: Number,
     deployType: { type: String, index: true }
   },
   { versionKey: false, _id: false }

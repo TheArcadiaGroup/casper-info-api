@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
 import { group } from 'console';
 import { casperService } from '@utils';
+import { getAccountBalanceByAddress } from '@utils/accounts';
 let amountInNextParsed = false;
 let amount: number;
 export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') => {

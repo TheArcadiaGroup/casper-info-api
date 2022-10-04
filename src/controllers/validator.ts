@@ -29,6 +29,7 @@ export const setCurrentEraValidator = async (currentEraValidator: any) => {
       { publicKey: currentEraValidator.publicKey },
       {
         publicKey: currentEraValidator.publicKey,
+        eraId: currentEraValidator.eraId,
         numOfDelegators: currentEraValidator.numOfDelegators,
         delegationRate: currentEraValidator.delegationRate,
         totalBid: currentEraValidator.totalBid,
@@ -49,6 +50,7 @@ export const setNextEraValidator = async (nextEraValidator: any) => {
       { publicKey: nextEraValidator.publicKey },
       {
         publicKey: nextEraValidator.publicKey,
+        eraId: nextEraValidator.eraId,
         numOfDelegators: nextEraValidator.numOfDelegators,
         delegationRate: nextEraValidator.delegationRate,
         totalBid: nextEraValidator.totalBid,

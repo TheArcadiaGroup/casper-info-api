@@ -44,8 +44,8 @@ services:
     ports:
       - 6379:6379
     restart: unless-stopped
-    depends_on:
-       - traefik
+    # depends_on:
+    #    - traefik
     networks:
       - casper-info
     labels:
@@ -65,8 +65,8 @@ services:
       - ./.env
     volumes:
       - mongodbdata:/data/db
-    depends_on:
-      - traefik
+    # depends_on:
+    #   - traefik
     networks:
       - casper-info
     labels:
@@ -91,7 +91,7 @@ services:
     depends_on:
       - redis
       - mongodb
-      - traefik
+      # - traefik
     networks:
       - casper-info
     labels:
