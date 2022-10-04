@@ -8,11 +8,11 @@ import { processBlockQuery, processSaveBlock } from '@workers/blocks';
 import { processDeployQuery } from '@workers/deploys';
 import { processEraSummaryQuery } from '@workers/era';
 import {
-  addValidatorsInfoFetch,
   processBidDelegatorSave,
   processBidOrValidatorSave,
   processValidatorsInfoFetch,
-  processValidatorUpdate
+  processValidatorUpdate,
+  validatorInfoFetchCron
 } from '@workers/validators';
 import { processAccountUpdate } from '@workers/accounts';
 import {
@@ -74,7 +74,7 @@ export const Init = async () => {
         }
       } else {
         eventStream.connect();
-        addValidatorsInfoFetch();
+        validatorInfoFetchCron();
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();
