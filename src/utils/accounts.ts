@@ -10,8 +10,8 @@ export const getAccountBalanceByAddress = async (address: string): Promise<numbe
     console.log('Balance PK: ', publicKey);
     const balance = publicKey
       ? await casperClient.balanceOfByPublicKey(CLPublicKey.fromHex(publicKey))
-      : '';
-    return Number(ethers.utils.formatUnits(balance, 9));
+      : null;
+    return balance && Number(ethers.utils.formatUnits(balance, 9));
   } catch (error) {
     throw new Error(`Could not fetch account balance: ${error}`);
   }

@@ -251,6 +251,6 @@ export const getAccountBalance = async (req: Request, res: Response) => {
     const balance = await getAccountBalanceByAddress(address);
     res.status(200).json(balance);
   } catch (error) {
-    res.status(500).send(`Could not fetch account balanceL ${error}`);
+    res.status(500).send(`Could not fetch account balance ${error}`);
   }
 };

@@ -49,20 +49,8 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
               .toAccountHashStr()
               .replace('account-hash-', '')
           : '',
-      fromAccountBalance:
-        hashType === 'transfer'
-          ? getAccountBalanceByAddress(
-              CLPublicKey.fromHex(deployResult.deploy?.header?.account)
-                .toAccountHashStr()
-                .replace('account-hash-', '')
-            )
-          : null,
       toAccountHash:
         hashType === 'transfer' ? deployResult.deploy.session?.Transfer?.args[1][1]?.parsed : '',
-      toAccountBalance:
-        hashType === 'transfer'
-          ? getAccountBalanceByAddress(deployResult.deploy.session?.Transfer?.args[1][1]?.parsed)
-          : null,
       status: deployResult?.execution_results[0]?.result?.Success ? 'success' : 'fail',
       deployType: hashType
     },
