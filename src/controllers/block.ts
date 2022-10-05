@@ -133,6 +133,7 @@ export const getBlockTransfers = async (req: Request, res: Response) => {
     res.status(500).send(`Could not fetch block transfers ${error}`);
   }
 };
+
 export const setBlock = async (block: any) => {
   await Block.findOneAndUpdate(
     { blockHeight: block.header.height },
@@ -174,10 +175,10 @@ export const setBlock = async (block: any) => {
   // });
 };
 
-export const getLastAddedBlock = async () => {
+export const getBlockByPublicKeyFromDB = async (blockHash: string) => {
   try {
-    return await Block.findOne().sort('-_id');
+    return await Block.findOne({ blockHash });
   } catch (error) {
     throw new Error(error);
   }
-}
+};

@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { CasperServiceByJsonRPC, CLPublicKey } from 'casper-js-sdk';
-import { ethers } from 'ethers';
-import { casperService, getCurrentEra } from '@utils';
+import { CLPublicKey } from 'casper-js-sdk';
+import { getCurrentEra } from '@utils';
 import { getAccountBalanceByAddress, getUnstakingAmount } from '@utils/accounts';
 import {
   getEraRewardsByPublicKey,
@@ -11,12 +10,12 @@ import {
 import {
   getAllBidsFromDB,
   getBidByPublicKeyFromDB,
-  getValidatorDelegators,
   getValidatorDelegatorsFromDB
 } from '@controllers/validator';
 import { getDeploysByEntryPointAndPublicKey, getDeploysByTypeAndPublicKey } from './deploy';
 import { Account } from '@models/accounts';
-import { logger } from '@logger';
+import { getBlockByPublicKeyFromDB } from './block';
+
 type AccountDetails = {
   publicKey?: string;
   accountHash?: string;
@@ -244,6 +243,37 @@ export const getAccountAddressType = async (req: Request, res: Response) => {
   }
 };
 
+export const getAccountAddressSearch = async (req: Request, res: Response ) => {
+  const { address } = req.params
+  const { publicKey, accountHash, isPublicKey } = await processPublicKeyAndAccountHash(address);
+
+  /**
+  * If address is account public key or hash
+  */
+  if (isPublicKey) {
+    res.redirect(`/v1/accounts/${address}`);
+  } else {
+    if (address === accountHash && publicKey !== null) {
+      res.redirect(`/v1/accounts/${publicKey}`);
+    }
+  }
+
+  /**
+  * If address is validator public key
+  */
+  const isValidator = await getBidByPublicKeyFromDB(address)
+  if (isValidator !== null) {
+    res.redirect(`/v1/validators/${address}`);
+  }
+
+  /**
+  * If address is block hash
+  */
+  const isBlock = await getBlockByPublicKeyFromDB(address);
+  if (isBlock !== null) {
+    res.redirect(`/v1/blocks/${address}/transfers`);
+  }
+}
 export const getAccountBalance = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
