@@ -18,8 +18,15 @@ export const searchAddress = async (req: Request, res: Response) => {
   /**
    * If address is account public key
    */
-  const { publicKey } = await processPublicKeyAndAccountHash(address);
+  const { publicKey, accountHash } = await processPublicKeyAndAccountHash(address);
   if (publicKey) {
+    return res.redirect(`${process.env.CLIENT_URL}/accounts/${address}`);
+  }
+
+  /**
+   * If address is account hash
+  */
+  if (publicKey === null && accountHash) {
     return res.redirect(`${process.env.CLIENT_URL}/accounts/${address}`);
   }
 
