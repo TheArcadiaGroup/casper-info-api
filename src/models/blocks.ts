@@ -16,8 +16,8 @@ const blockSchema = new mongoose.Schema(
     transfers: Number,
     deploys: Number,
     timestamp: Date,
-    isSwitchBlock: Boolean,
-    validatorPublicKey: String
+    isSwitchBlock: { type: Boolean, index: true },
+    validatorPublicKey: { type: String, index: true }
   },
   { versionKey: false, _id: false }
 );

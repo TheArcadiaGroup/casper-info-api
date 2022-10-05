@@ -6,6 +6,7 @@ import {
 import {
   setBid,
   setCurrentEraValidator,
+  setDelegator,
   setNextEraValidator,
   updateBidPerformanceAndRewards
 } from '@controllers/validator';
@@ -36,6 +37,13 @@ type EraValidator = {
   networkPercentage: number;
   rank?: number;
 };
+type Delegator = {
+  publicKey?: string;
+  validatorPublicKey?: string;
+  stakedAmount?: number;
+  bondingPurse?: string;
+  delegatee?: string;
+};
 
 export const validatorsInfoFetch = new Bull('validators-info', {
   redis: {
@@ -55,6 +63,28 @@ export const bidPerformanceAndRewardsUpdate = new Bull('validator-update', {
     port: Number(process.env.REDIS_PORT)
   }
 });
+export const bidDelegatorSave = new Bull('bid-delegator-save', {
+  redis: {
+    host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT)
+  }
+});
+export const addBidDelegatorSave = async (delegator: any) => {
+  await bidDelegatorSave.add(delegator, {
+    attempts: 10,
+    removeOnComplete: true,
+    removeOnFail: 1000
+  });
+};
+export const processBidDelegatorSave = async () => {
+  bidDelegatorSave.process(50, async (job, done) => {
+    setDelegator(job.data)
+      .then(() => {
+        done();
+      })
+      .catch((err) => done(new Error(err)));
+  });
+};
 export const addBidOrValidatorSave = async (
   validator,
   dataType: 'bid' | 'current-era' | 'next-era'
@@ -100,19 +130,19 @@ export const addValidatorsInfoFetch = async () => {
   await validatorsInfoFetch.add(
     {},
     {
-      repeat: {
-        // Repeat query every 10 minutes
-        every: 2 * 60 * 1000
-      },
       removeOnComplete: true,
       removeOnFail: 1000,
       attempts: 10
     }
   );
 };
+export const validatorInfoFetchCron = () => {
+  setInterval(async () => {
+    await addValidatorsInfoFetch();
+  }, 10 * 60 * 1000);
+};
 export const processValidatorsInfoFetch = async () => {
   validatorsInfoFetch.process(async (job, done) => {
-    console.log('Fetch');
     fetchValidatorsInfo()
       .then(() => {
         done();
@@ -143,10 +173,6 @@ export const updateBid = async (eraId: number) => {
       (await getBidRewardsByEraId(validator._id, eraId))[0]?.totalRewards || 0;
     const totalDelegatorRewards: number =
       (await getBidDelegatorRewardsByEraId(validator._id, eraId))[0]?.totalDelegatorRewards || 0;
-    console
-      .log
-      // `Total Seed: ${validator._id} >> ${totalValidatorRewards} >> ${totalDelegatorRewards}`
-      ();
     validator._id &&
       (await updateBidPerformanceAndRewards(
         validator._id,
@@ -164,10 +190,10 @@ export const fetchValidatorsInfo = async () => {
     const validatorsInfoResult: ValidatorsInfoResult = await casperService.getValidatorsInfo();
     const bids: any = validatorsInfoResult.auction_state.bids;
     const eraValidatorsInfo = validatorsInfoResult.auction_state.era_validators;
-    let totalStakes: number[] = [0, 0];
+    let totalWeights: number[] = [0, 0];
     eraValidatorsInfo.forEach((eraValidatorInfo, i) => {
       eraValidatorInfo.validator_weights.forEach((validatorWeight) => {
-        totalStakes[i] += Number(ethers.utils.formatUnits(validatorWeight.weight, 9));
+        totalWeights[i] += Number(ethers.utils.formatUnits(validatorWeight.weight, 9));
       });
     });
     bids &&
@@ -175,6 +201,14 @@ export const fetchValidatorsInfo = async () => {
         const selfStake = Number(ethers.utils.formatUnits(bid.bid.staked_amount, 9));
         let totalDelegated = 0;
         bid?.bid?.delegators?.forEach((delegator) => {
+          let _delegator: Delegator = {
+            publicKey: delegator.public_key,
+            validatorPublicKey: bid.public_key,
+            stakedAmount: Number(ethers.utils.formatUnits(delegator.staked_amount, 9)),
+            bondingPurse: delegator.bonding_purse,
+            delegatee: delegator.delegatee
+          };
+          addBidDelegatorSave(_delegator);
           totalDelegated += Number(ethers.utils.formatUnits(delegator.staked_amount, 9));
         });
         const totalBid = selfStake + totalDelegated;
@@ -192,7 +226,7 @@ export const fetchValidatorsInfo = async () => {
           inactive: bid.bid.inactive
         });
       });
-    // Sorting,ranking  and adding to save queue
+
     bidValidators = bidValidators.sort((a, b) => b.totalBid - a.totalBid);
     bidValidators &&
       bidValidators.forEach((bid, i) => {
@@ -201,52 +235,52 @@ export const fetchValidatorsInfo = async () => {
     eraValidatorsInfo.forEach((eraValidatorInfo, i) => {
       eraValidatorInfo.validator_weights.forEach((validatorWeight) => {
         const totalBid = Number(ethers.utils.formatUnits(validatorWeight.weight, 9));
-        let networkPercentage = (totalBid / totalStakes[i]) * 100;
+        let networkPercentage = (totalBid / totalWeights[i]) * 100;
         if (i == 0) {
           currentEraValidators.push({
             publicKey: validatorWeight.public_key,
-            eraId: 0,
+            eraId: eraValidatorInfo.era_id,
             selfStake: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).selfStake,
             delegationRate: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).delegationRate,
             numOfDelegators: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
-            ).networkPercentage,
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
+            ).numOfDelegators,
             totalBid,
             selfStakePercentage: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).selfStakePercentage,
             networkPercentage,
             rank: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).rank
           });
           bidValidators.find(
-            (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+            (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
           ).networkPercentage = networkPercentage;
         } else {
           nextEraValidators.push({
             publicKey: validatorWeight.public_key,
-            eraId: 0,
+            eraId: eraValidatorInfo.era_id,
             selfStake: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).selfStake,
             delegationRate: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).delegationRate,
             numOfDelegators: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).numOfDelegators,
             totalBid,
             selfStakePercentage: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).selfStakePercentage,
             networkPercentage,
             rank: bidValidators.find(
-              (bidValidator) => (bidValidator.publicKey = validatorWeight.public_key)
+              (bidValidator) => bidValidator.publicKey == validatorWeight.public_key
             ).rank
           });
         }

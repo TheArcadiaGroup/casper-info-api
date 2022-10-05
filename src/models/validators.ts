@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { mongo } from 'mongoose';
 const validatorInfoSchema = new mongoose.Schema({
   name: String,
   email: String,
@@ -56,6 +56,15 @@ const eraValidatorSchema = new mongoose.Schema(
   { versionKey: false }
 );
 
+const delegatorSchema = new mongoose.Schema({
+  publicKey: { type: String, index: true },
+  validatorPublicKey: { type: String, index: true },
+  stakedAmount: Number,
+  bondingPurse: String,
+  delegatee: String
+});
+
 export const Bid = mongoose.model('Bid', bidSchema);
 export const CurrentEraValidator = mongoose.model('CurrentEraValidator', eraValidatorSchema);
 export const NextEraValidator = mongoose.model('NextEraValidator', eraValidatorSchema);
+export const Delegators = mongoose.model('Delegator', delegatorSchema);

@@ -1,8 +1,11 @@
+import { Request, Response } from 'express';
 import { Deploy } from '@models/deploys';
 import { logger } from '@logger';
 import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
 import { group } from 'console';
+import { casperService } from '@utils';
+import { getAccountBalanceByAddress } from '@utils/accounts';
 let amountInNextParsed = false;
 let amount: number;
 export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') => {
@@ -68,19 +71,28 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
   amount = 0;
 };
 
-export const getDeploys = async (req: any, res: any) => {
-  const startIndex: number = req.query.startIndex;
-  const count: number = req.query.count;
+export const getDeploys = async (req: Request, res: Response) => {
+  const { startIndex, count } = req.query;
   await Deploy.find()
     .sort({ timestamp: 'desc' })
-    .skip(startIndex - 1)
-    .limit(count)
+    .skip(Number(startIndex) - 1)
+    .limit(Number(count))
     .then((deploys) => {
       res.status(200).json(deploys);
     })
     .catch((err) => {
       res.status(500);
     });
+};
+
+export const getDeployByHash = async (req: Request, res: Response) => {
+  try {
+    const { hash } = req.params;
+    const deploy = await casperService.getDeployInfo(hash);
+    res.status(200).json(deploy);
+  } catch (error) {
+    res.status(500).send(`Could not fetch deploy details: ${error}`);
+  }
 };
 
 const getAmount = (session): number => {
@@ -101,36 +113,19 @@ const getAmount = (session): number => {
   return amount ?? 0;
 };
 
-export const getDeploysByEntryPointAndPublicKey = async (
-  publicKey: string,
-  entryPoint: string,
-  startIndex?: number,
-  count?: number
-) => {
-  if (count > 0) {
-    return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] })
-      .sort({ timestamp: 'desc' })
-      .skip(startIndex - 1)
-      .limit(count)
-      .catch((err) => {
-        // TODO handle error
-        throw new Error(err);
-      });
-  } else {
-    return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] }).catch((err) => {
-      // TODO handle error
-      throw new Error(err);
-    });
-  }
+export const getDeploysByEntryPointAndPublicKey = async (publicKey: string, entryPoint: string) => {
+  return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] }).catch((err) => {
+    // TODO handle error
+    throw new Error(err);
+  });
 };
 export const getDeploysByTypeAndPublicKey = async (
   publicKey: string,
-  deployType: string,
   startIndex?: number,
   count?: number
 ) => {
   if (count > 0) {
-    return await Deploy.find({ $and: [{ publicKey }, { deployType }] })
+    return await Deploy.find({ $and: [{ publicKey }] })
       .sort({ timestamp: 'desc' })
       .skip(startIndex - 1)
       .limit(count)
@@ -139,7 +134,7 @@ export const getDeploysByTypeAndPublicKey = async (
         throw new Error(err);
       });
   } else {
-    return await Deploy.find({ $and: [{ publicKey }, { deployType }] }).catch((err) => {
+    return await Deploy.find({ $and: [{ publicKey }] }).catch((err) => {
       // TODO handle error
       throw new Error(err);
     });
@@ -152,7 +147,7 @@ export const getTransferByBlockHash = async (blockHash: string) => {
     throw new Error(err);
   });
 };
-export const getDeployVolumes = async (req, res) => {
+export const getDeployVolumes = async (req: Request, res: Response) => {
   await Deploy.aggregate([
     { $sort: { timestamp: -1 } },
     {

@@ -16,23 +16,30 @@ export const getCurrentEra = async (): Promise<number | void> => {
 };
 
 export const getBlockEra = async (blockHash: string): Promise<number | void> => {
-  return await casperService
-    .getBlockInfo(blockHash)
-    .then((blockResult) => {
-      return blockResult.block.header.era_id as number;
-    })
-    .catch((err) => {
-      // TODO handle error
-      console.log(err);
-    });
+  try {
+    const blockResult = await casperService.getBlockInfo(blockHash);
+    return blockResult.block.header.era_id as number;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const getLatestState = async (): Promise<GetStatusResult> => {
   try {
-    return await casperService.getStatus()  
+    return await casperService.getStatus();
   } catch (error) {
     throw new Error(error);
   }
+};
+
+export const checkBlockID = (id: any, currentHeight: number): 'hash' | 'height' | 'unknown' => {
+  let idType: 'hash' | 'height' | 'unknown' = 'unknown';
+  isNaN(id) && id.length == 64
+    ? (idType = 'hash')
+    : !isNaN(id) && parseInt(id) > 0 && parseInt(id) < currentHeight
+    ? (idType = 'height')
+    : 'unknown';
+  return idType;
 };
 
 export const getRedisConnectionDetails = () => {
