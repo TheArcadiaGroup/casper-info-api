@@ -130,15 +130,16 @@ export const addValidatorsInfoFetch = async () => {
   await validatorsInfoFetch.add(
     {},
     {
-      repeat: {
-        // Repeat query every 10 minutes
-        every: 2 * 60 * 1000
-      },
       removeOnComplete: true,
       removeOnFail: 1000,
       attempts: 10
     }
   );
+};
+export const validatorInfoFetchCron = () => {
+  setInterval(async () => {
+    await addValidatorsInfoFetch();
+  }, 10 * 60 * 1000);
 };
 export const processValidatorsInfoFetch = async () => {
   validatorsInfoFetch.process(async (job, done) => {
