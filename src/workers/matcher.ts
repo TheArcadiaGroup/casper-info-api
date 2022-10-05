@@ -1,6 +1,6 @@
 import Bull from "bull";
 import { addBlockToQueryQueue } from "@workers/blocks";
-import { getBlockByHeight, getLastAddedBlock } from "@controllers/block";
+import { getBlockByHeightFromDB } from "@controllers/block";
 import { getLatestState } from "@utils";
 
 export const blockMathcerQueue = new Bull('block-matcher', {
@@ -15,7 +15,7 @@ export const addMissedBlocks = async (currentBlockHeight: number, blockRange: nu
     const startBlock = currentBlockHeight - blockRange;
 
     for (let i = startBlock; i <= currentBlockHeight; i++) {
-      const block = await getBlockByHeight(i);
+      const block = await getBlockByHeightFromDB(i);
       if (!block) addBlockToQueryQueue(i);
     }
   }, 5 * 60 * 1000 ); //repeat each 5 minutes
