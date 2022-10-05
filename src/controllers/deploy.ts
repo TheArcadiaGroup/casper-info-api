@@ -165,6 +165,7 @@ export const getDeployVolumes = async (req: Request, res: Response) => {
       res.status(500).send(`Could not fetch deploy volumes: ${err}`);
     });
 };
+
 export const getTransfersCount = async (): Promise<{ _id: string; count: number }[]> => {
   return await Deploy.aggregate([
     { $match: { entryPoint: 'transfer' } },
@@ -174,3 +175,11 @@ export const getTransfersCount = async (): Promise<{ _id: string; count: number 
     throw new Error(err);
   });
 };
+
+export const getDeployByPublicKey = async ( deployHash: string) => {
+  try {
+    return await Deploy.findOne({ deployHash });
+  } catch (error) {
+    console.log(error);
+  }
+}
