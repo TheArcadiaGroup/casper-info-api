@@ -27,12 +27,12 @@ export const getBlockEra = async (blockHash: string): Promise<number | void> => 
     });
 };
 
-export const getLatestState = async (): Promise<GetStatusResult | void> => {
-  return await casperService.getStatus().catch((err) => {
-    // TODO handle error
-    console.log(err);
-    throw new Error(err);
-  });
+export const getLatestState = async (): Promise<GetStatusResult> => {
+  try {
+    return await casperService.getStatus()  
+  } catch (error) {
+    throw new Error(error);
+  }
 };
 
 export const getRedisConnectionDetails = () => {

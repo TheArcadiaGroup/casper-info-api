@@ -1,6 +1,7 @@
 import Bull from "bull";
 import { addBlockToQueryQueue } from "@workers/blocks";
 import { getBlockByHeight, getLastAddedBlock } from "@controllers/block";
+import { getLatestState } from "@utils";
 
 export const blockMathcerQueue = new Bull('block-matcher', {
   redis: {
@@ -9,36 +10,24 @@ export const blockMathcerQueue = new Bull('block-matcher', {
   }
 });
 
-export const addMissedBlocksInterval = async () => {
-  await blockMathcerQueue.add(
-    {},
-    {
-      repeat: {
-        // Repeat query every 5 minutes
-        every: 5 * 60 * 1000
-      },
-      removeOnComplete: true,
-      removeOnFail: 1000,
-      attempts: 10
-    }
-  );
-};
+export const addMissedBlocks = async (currentBlockHeight: number, blockRange: number) => {
+  setInterval(async () => {
+    const startBlock = currentBlockHeight - blockRange;
 
-export const addMissedBlocks = async (currentBlock: number, blockRange: number) => {
-  const startBlock = currentBlock - blockRange;
-  for (let i = startBlock; i <= currentBlock; i++) {
-    const block = await getBlockByHeight(i);
-    if (!block) addBlockToQueryQueue(i);
-  }
+    for (let i = startBlock; i <= currentBlockHeight; i++) {
+      const block = await getBlockByHeight(i);
+      if (!block) addBlockToQueryQueue(i);
+    }
+  }, 5 * 60 * 1000 ); //repeat each 5 minutes
 };
 
 export const processMissedBlocks = async () => {
-  console.log('block matcher queue is started');
-  const currentBlock = await getLastAddedBlock();
+  let chainState = await getLatestState();
+  const currentBlockHeight = chainState.last_added_block_info.height;
   const blockRange = 100;
 
   blockMathcerQueue.process(async (job, done) => {
-    addMissedBlocks(currentBlock.blockHeight, blockRange)
+    addMissedBlocks(currentBlockHeight, blockRange)
       .then(() => {
         done();
       })
