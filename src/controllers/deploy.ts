@@ -50,7 +50,9 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
               .replace('account-hash-', '')
           : '',
       toAccountHash:
-        hashType === 'transfer' ? deployResult.deploy.session?.Transfer?.args[1][1]?.parsed : '',
+        hashType === 'transfer'
+          ? getToAccountHash(deployResult.deploy.session?.Transfer?.args[1][1]?.parsed)
+          : '',
       status: deployResult?.execution_results[0]?.result?.Success ? 'success' : 'fail',
       deployType: hashType
     },
@@ -112,20 +114,26 @@ const getAmount = (session): number => {
   // console.log(amount);
   return amount ?? 0;
 };
-
+const getToAccountHash = (hash): string => {
+  try {
+    return CLPublicKey.fromHex(hash).toAccountHashStr().replace('account-hash-', '');
+  } catch (error) {
+    return hash;
+  }
+};
 export const getDeploysByEntryPointAndPublicKey = async (publicKey: string, entryPoint: string) => {
   return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] }).catch((err) => {
     // TODO handle error
     throw new Error(err);
   });
 };
-export const getDeploysByTypeAndPublicKey = async (
-  publicKey: string,
+export const getDeploysByTypeAndPublicKeyOrAccountHash = async (
+  address: string,
   startIndex?: number,
   count?: number
 ) => {
   if (count > 0) {
-    return await Deploy.find({ $and: [{ publicKey }] })
+    return await Deploy.find({ $or: [{ publicKey: address }, { toAccountHash: address }] })
       .sort({ timestamp: 'desc' })
       .skip(startIndex - 1)
       .limit(count)
@@ -134,10 +142,12 @@ export const getDeploysByTypeAndPublicKey = async (
         throw new Error(err);
       });
   } else {
-    return await Deploy.find({ $and: [{ publicKey }] }).catch((err) => {
-      // TODO handle error
-      throw new Error(err);
-    });
+    return await Deploy.find({ $or: [{ publicKey: address }, { toAccountHash: address }] }).catch(
+      (err) => {
+        // TODO handle error
+        throw new Error(err);
+      }
+    );
   }
 };
 
@@ -176,10 +186,10 @@ export const getTransfersCount = async (): Promise<{ _id: string; count: number 
   });
 };
 
-export const getDeployByPublicKey = async ( deployHash: string) => {
+export const getDeployByPublicKey = async (deployHash: string) => {
   try {
     return await Deploy.findOne({ deployHash });
   } catch (error) {
     console.log(error);
   }
-}
+};
