@@ -12,7 +12,10 @@ import {
   getBidByPublicKeyFromDB,
   getValidatorDelegatorsFromDB
 } from '@controllers/validator';
-import { getDeploysByEntryPointAndPublicKey, getDeploysByTypeAndPublicKey } from './deploy';
+import {
+  getDeploysByEntryPointAndPublicKey,
+  getDeploysByTypeAndPublicKeyOrAccountHash
+} from './deploy';
 import { Account } from '@models/accounts';
 import { getBlockByPublicKeyFromDB } from './block';
 
@@ -54,7 +57,7 @@ export const getAccountTransfers = async (req: Request, res: Response) => {
     const { address } = req.params;
     const { startIndex, count } = req.query;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    let transfers = await getDeploysByTypeAndPublicKey(
+    let transfers = await getDeploysByTypeAndPublicKeyOrAccountHash(
       publicKey,
       Number(startIndex),
       Number(count)
@@ -71,7 +74,7 @@ export const getAccountDeploys = async (req: Request, res: Response) => {
     const { address } = req.params;
     const { startIndex, count } = req.query;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    const deploys = await getDeploysByTypeAndPublicKey(
+    const deploys = await getDeploysByTypeAndPublicKeyOrAccountHash(
       publicKey,
       Number(startIndex),
       Number(count)
@@ -130,7 +133,7 @@ export const getAccountEraRewards = async (req: Request, res: Response) => {
 
 export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
   const accountDetails = await accountDetailCalculation(publicKey);
-  let deploys = await getDeploysByTypeAndPublicKey(publicKey);
+  let deploys = await getDeploysByTypeAndPublicKeyOrAccountHash(publicKey);
   deploys = deploys.filter((deploy) => deploy.deployType === 'deploy');
   await Account.findOneAndUpdate(
     { publicKey },
@@ -231,11 +234,11 @@ export const getAccountAddressType = async (req: Request, res: Response) => {
       }
     } else if (accountHash) {
       res.status(200).json({
-        type: 'Unknown'
+        type: 'Account Hash'
       });
     } else {
       res.status(200).json({
-        type: 'Account Hash'
+        type: 'Unknown'
       });
     }
   } catch (error) {
@@ -243,13 +246,13 @@ export const getAccountAddressType = async (req: Request, res: Response) => {
   }
 };
 
-export const getAccountAddressSearch = async (req: Request, res: Response ) => {
-  const { address } = req.params
+export const getAccountAddressSearch = async (req: Request, res: Response) => {
+  const { address } = req.params;
   const { publicKey, accountHash, isPublicKey } = await processPublicKeyAndAccountHash(address);
 
   /**
-  * If address is account public key or hash
-  */
+   * If address is account public key or hash
+   */
   if (isPublicKey) {
     res.redirect(`/v1/accounts/${address}`);
   } else {
@@ -259,21 +262,21 @@ export const getAccountAddressSearch = async (req: Request, res: Response ) => {
   }
 
   /**
-  * If address is validator public key
-  */
-  const isValidator = await getBidByPublicKeyFromDB(address)
+   * If address is validator public key
+   */
+  const isValidator = await getBidByPublicKeyFromDB(address);
   if (isValidator !== null) {
     res.redirect(`/v1/validators/${address}`);
   }
 
   /**
-  * If address is block hash
-  */
+   * If address is block hash
+   */
   const isBlock = await getBlockByPublicKeyFromDB(address);
   if (isBlock !== null) {
     res.redirect(`/v1/blocks/${address}/transfers`);
   }
-}
+};
 export const getAccountBalance = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;

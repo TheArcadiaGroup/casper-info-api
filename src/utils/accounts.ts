@@ -7,7 +7,6 @@ import { processPublicKeyAndAccountHash } from '@controllers/account';
 export const getAccountBalanceByAddress = async (address: string): Promise<number> => {
   try {
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    console.log('Balance PK: ', publicKey);
     const balance = publicKey
       ? await casperClient.balanceOfByPublicKey(CLPublicKey.fromHex(publicKey))
       : null;
