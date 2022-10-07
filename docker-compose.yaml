@@ -40,7 +40,7 @@ services:
   #REDIS 
   redis:
     container_name: redis
-    image: redis
+    image: redis:alpine
     ports:
       - 6379:6379
     restart: unless-stopped
@@ -48,6 +48,7 @@ services:
     #    - traefik
     networks:
       - casper-info
+    command: redis-server --appendonly yes --replica-read-only no
     labels:
       - "traefik.enable=true"
       - "traefik.tcp.services.redis.loadbalancer.server.port=6379"

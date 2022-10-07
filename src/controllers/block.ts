@@ -161,24 +161,4 @@ export const setBlock = async (block: any) => {
         }
       });
     });
-  // TODO consider saving raw block data
-  // await RawBlock.create({
-  //   block
-  // }).catch((err) => {
-  //   logger.error({
-  //     rawBlockDB: {
-  //       blockHash: block.header.height,
-  //       errMessage: `${err}`,
-  //       rawData: block
-  //     }
-  //   });
-  // });
-};
-
-export const getBlockByPublicKeyFromDB = async (blockHash: string) => {
-  try {
-    return await Block.findOne({ blockHash });
-  } catch (error) {
-    throw new Error(error);
-  }
 };
