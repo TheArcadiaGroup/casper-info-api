@@ -80,13 +80,13 @@ export const getRewardsByPublicKey = async (
 ) => {
   return await Reward.aggregate([
     { $match: { $or: [{ validatorPublicKey: publicKey }, { delegatorPublicKey: publicKey }] } },
-    { $sort: { eraTimestamp: -1 } },
     {
       $group: {
         _id: { $dateToString: { format: '%m/%d/%Y', date: '$eraTimestamp' } },
         totalReward: { $sum: '$amount' }
       }
     },
+    { $sort: { "_id": -1 } },
     { $skip: startIndex - 1 },
     { $limit: count }
   ]).catch((err) => {
