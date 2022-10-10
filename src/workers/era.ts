@@ -4,6 +4,7 @@ import { logger } from '@logger';
 import Bull from 'bull';
 import { addValidatorUpdate } from '@workers/validators';
 import { casperService } from '@utils';
+import { addRewardSave } from './rewards';
 export const queryEraSummary = new Bull('era-summary-query', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
@@ -35,7 +36,7 @@ export const QueryEraSummary = async (switchBlockHash: string, eraTimestamp) => 
     .then(async (eraSummary: EraSummary) => {
       const { seigniorageAllocations } = eraSummary.StoredValue.EraInfo;
       seigniorageAllocations?.forEach(async (reward) => {
-        await setReward(reward, eraSummary.eraId, eraTimestamp);
+        await addRewardSave(reward, eraSummary.eraId, eraTimestamp);
       });
       if (process.env.INDEXER !== 'true') {
         addValidatorUpdate(eraSummary.eraId);

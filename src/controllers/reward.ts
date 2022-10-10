@@ -2,6 +2,8 @@ import { Reward } from '@models/rewards';
 import { SeigniorageAllocation } from 'casper-js-sdk/dist/lib/StoredValue';
 import { ethers } from 'ethers';
 import { logger } from '@logger';
+import { getSwitchBlocks } from './block';
+import { addEraSwitchBlockHash } from '@workers/era';
 
 export const setReward = async (
   seigniorageAllocation: SeigniorageAllocation,
@@ -38,18 +40,21 @@ export const setReward = async (
       eraTimestamp
     },
     { new: true, upsert: true }
-  ).catch((err) => {
-    logger.error({
-      rewardDB: {
-        hash: seigniorageAllocation.Delegator
-          ? `Delegator ${seigniorageAllocation.Delegator.delegatorPublicKey}`
-          : `Validator ${seigniorageAllocation.Validator.validatorPublicKey}`,
-        errMessage: `${err}`
-      }
+  )
+    .then((reward) => {
+      console.log(reward.eraId);
+    })
+    .catch((err) => {
+      logger.error({
+        rewardDB: {
+          hash: seigniorageAllocation.Delegator
+            ? `Delegator ${seigniorageAllocation.Delegator.delegatorPublicKey}`
+            : `Validator ${seigniorageAllocation.Validator.validatorPublicKey}`,
+          errMessage: `${err}`
+        }
+      });
     });
-  });
 };
-//  Promise<{ _id: string; count: number }[]>;
 export const getBidPerformanceAggregation = async (eraId: number) => {
   return await Reward.aggregate([
     { $match: { eraId: { $gte: eraId - 360 } } },
@@ -126,21 +131,38 @@ export const getTotalEraRewardsByEraId = async (
   ]);
 };
 
-export const getBidRewardsByEraId = async (
-  validatorPublicKey: string,
-  eraId
+export const getBidRewards = async (
+  validatorPublicKey: string
 ): Promise<{ _id: null; totalRewards: number }[]> => {
   return await Reward.aggregate([
-    { $match: { validatorPublicKey, eraId } },
+    { $match: { validatorPublicKey } },
     { $group: { _id: null, totalRewards: { $sum: '$amount' } } }
   ]);
 };
-export const getBidDelegatorRewardsByEraId = async (
-  validatorPublicKey: string,
-  eraId
+export const getBidDelegatorRewards = async (
+  validatorPublicKey: string
 ): Promise<{ _id: null; totalDelegatorRewards: number }[]> => {
   return await Reward.aggregate([
-    { $match: { delegatorValidatorPublicKey: validatorPublicKey, eraId } },
+    { $match: { delegatorValidatorPublicKey: validatorPublicKey } },
     { $group: { _id: null, totalDelegatorRewards: { $sum: '$amount' } } }
   ]);
+};
+export const matchRewards = async () => {
+  // setInterval(async () => {
+  try {
+    let switchBlocks = await getSwitchBlocks();
+    const rewardsEras = await Reward.aggregate([{ $group: { _id: '$eraId' } }]);
+    rewardsEras?.forEach((rewardsEra) => {
+      const index = switchBlocks.findIndex((block) => block.blockHeight === rewardsEra._id);
+      switchBlocks.splice(index, 1);
+    });
+    console.log(switchBlocks.length);
+    // switchBlocks = switchBlocks.slice(0, 50);
+    switchBlocks?.forEach(async (block) => {
+      addEraSwitchBlockHash(block.blockHash, block.timestamp);
+    });
+  } catch (error) {
+    throw new Error(`Could not fetch match rewards: ${error}`);
+  }
+  // }, 10 * 60 * 1000);
 };

@@ -24,8 +24,12 @@ import {
   failedAccountUpdatesHandler,
   failedValidatorInforFetchHandler,
   failedBidOrValidatorSaveHandler,
-  failedBidDelegatorSaveHandler
+  failedBidDelegatorSaveHandler,
+  failedRewardSaveHandler
 } from '@workers/queueFailureHandler';
+import { getSwitchBlocks } from '@controllers/block';
+import { matchRewards } from '@controllers/reward';
+import { processRewardSave } from '@workers/rewards';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
   blockSave = 'BLOCK_SAVE',
@@ -59,10 +63,13 @@ export const Init = async () => {
             failedDeployQueriesHandler();
             break;
           case workerType.eraSummaryandPerfomanceCalculation:
+            // matchRewards();
             processEraSummaryQuery();
             processValidatorUpdate();
+            processRewardSave();
             failedEraSummaryQueriesHandler();
             failedValidatorUpdatesHandler();
+            failedRewardSaveHandler();
             break;
           case workerType.accountUpdate:
             processAccountUpdate();
@@ -73,14 +80,19 @@ export const Init = async () => {
             break;
         }
       } else {
-        eventStream.connect();
-        validatorInfoFetchCron();
+        // eventStream.connect();
+        // validatorInfoFetchCron();
+
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();
         processEraSummaryQuery();
         processValidatorUpdate();
+        processRewardSave();
         processAccountUpdate();
+        processValidatorsInfoFetch();
+        processBidOrValidatorSave();
+        processBidDelegatorSave();
         failedBlockQueriesHandler();
         failedBlockSavesHandler();
         failedDeployQueriesHandler();
@@ -90,9 +102,7 @@ export const Init = async () => {
         failedValidatorInforFetchHandler();
         failedBidOrValidatorSaveHandler();
         failedBidDelegatorSaveHandler();
-        processValidatorsInfoFetch();
-        processBidOrValidatorSave();
-        processBidDelegatorSave();
+        failedRewardSaveHandler();
       }
       const app: Application = express();
       app.use(cors(), express.json(), express.urlencoded({ extended: true }), router);

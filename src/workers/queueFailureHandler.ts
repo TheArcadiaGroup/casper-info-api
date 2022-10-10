@@ -8,6 +8,7 @@ import {
   validatorsInfoFetch
 } from '@workers/validators';
 import { queryAndSaveDeploy } from '@workers/deploys';
+import { rewardSaving } from './rewards';
 
 export const failedBlockQueriesHandler = () => {
   setInterval(async () => {
@@ -53,8 +54,8 @@ export const failedEraSummaryQueriesHandler = () => {
   setInterval(async () => {
     const failedEraSummaryQueries = await queryEraSummary.getFailed();
     failedEraSummaryQueries &&
-      failedEraSummaryQueries.forEach(async (job) => {
-        await queryEraSummary.add(job.data, job.opts);
+      failedEraSummaryQueries?.forEach(async (job) => {
+        await queryEraSummary.add(job?.data, job.opts);
         job.remove();
       });
   }, 500);
@@ -108,6 +109,17 @@ export const failedBidDelegatorSaveHandler = () => {
     failedBidValidatorSave &&
       failedBidValidatorSave.forEach(async (job) => {
         await bidDelegatorSave.add(job.data, job.opts);
+        job.remove();
+      });
+  }, 500);
+};
+
+export const failedRewardSaveHandler = () => {
+  setInterval(async () => {
+    const failedRewardSave = await rewardSaving.getFailed();
+    failedRewardSave &&
+      failedRewardSave.forEach(async (job) => {
+        await rewardSaving.add(job.data, job.opts);
         job.remove();
       });
   }, 500);

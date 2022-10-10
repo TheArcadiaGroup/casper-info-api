@@ -4,7 +4,7 @@ const rewardSchema = new mongoose.Schema(
   {
     validatorPublicKey: { type: String, index: true },
     delegatorPublicKey: { type: String, index: true },
-    delegatorValidatorPublicKey: String,
+    delegatorValidatorPublicKey: { type: String, index: true },
     amount: Number,
     eraId: { type: Number, index: true },
     eraTimestamp: Date
