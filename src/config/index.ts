@@ -80,9 +80,9 @@ export const Init = async () => {
             break;
         }
       } else {
-        // eventStream.connect();
-        // validatorInfoFetchCron();
-
+        eventStream.connect();
+        validatorInfoFetchCron();
+        matchRewards();
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();

@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 import { logger } from '@logger';
 import { getSwitchBlocks } from './block';
 import { addEraSwitchBlockHash } from '@workers/era';
+import { blockQuery } from '@workers/blocks';
 
 export const setReward = async (
   seigniorageAllocation: SeigniorageAllocation,
@@ -40,20 +41,16 @@ export const setReward = async (
       eraTimestamp
     },
     { new: true, upsert: true }
-  )
-    .then((reward) => {
-      console.log(reward.eraId);
-    })
-    .catch((err) => {
-      logger.error({
-        rewardDB: {
-          hash: seigniorageAllocation.Delegator
-            ? `Delegator ${seigniorageAllocation.Delegator.delegatorPublicKey}`
-            : `Validator ${seigniorageAllocation.Validator.validatorPublicKey}`,
-          errMessage: `${err}`
-        }
-      });
+  ).catch((err) => {
+    logger.error({
+      rewardDB: {
+        hash: seigniorageAllocation.Delegator
+          ? `Delegator ${seigniorageAllocation.Delegator.delegatorPublicKey}`
+          : `Validator ${seigniorageAllocation.Validator.validatorPublicKey}`,
+        errMessage: `${err}`
+      }
     });
+  });
 };
 export const getBidPerformanceAggregation = async (eraId: number) => {
   return await Reward.aggregate([
@@ -148,21 +145,39 @@ export const getBidDelegatorRewards = async (
   ]);
 };
 export const matchRewards = async () => {
-  // setInterval(async () => {
+  setInterval(async () => {
+    try {
+      let switchBlocks = await getSwitchBlocks();
+      let missingEras = await getMissingEras(switchBlocks[0].eraID);
+      // missingEras = missingEras.sort((a, b) => b - a);
+      // console.log(missingEras.length);
+      missingEras = missingEras.slice(0, 10);
+      missingEras.forEach((era) => {
+        const block = switchBlocks.find((block) => block.eraID === era);
+        console.log(era, block.eraID, block.blockHash);
+        block && addEraSwitchBlockHash(block?.blockHash, block?.timestamp);
+      });
+    } catch (error) {
+      throw new Error(`Could not fetch match rewards: ${error}`);
+    }
+  }, 5 * 60 * 1000);
+};
+
+export const getMissingEras = async (currentEraId: number) => {
   try {
-    let switchBlocks = await getSwitchBlocks();
-    const rewardsEras = await Reward.aggregate([{ $group: { _id: '$eraId' } }]);
-    rewardsEras?.forEach((rewardsEra) => {
-      const index = switchBlocks.findIndex((block) => block.blockHeight === rewardsEra._id);
-      switchBlocks.splice(index, 1);
-    });
-    console.log(switchBlocks.length);
-    // switchBlocks = switchBlocks.slice(0, 50);
-    switchBlocks?.forEach(async (block) => {
-      addEraSwitchBlockHash(block.blockHash, block.timestamp);
-    });
+    let missingEras = [];
+    for (let i = 0; i <= 6664; i++) {
+      const reward = await Reward.aggregate([
+        { $match: { eraId: i } },
+        { $sort: { eraId: -1 } },
+        { $group: { _id: '$eraId' } }
+      ]);
+      if (reward.length < 1) {
+        missingEras.push(i);
+      }
+    }
+    return missingEras;
   } catch (error) {
-    throw new Error(`Could not fetch match rewards: ${error}`);
+    throw new Error(error);
   }
-  // }, 10 * 60 * 1000);
 };

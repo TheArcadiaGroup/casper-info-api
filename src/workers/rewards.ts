@@ -24,9 +24,8 @@ export const addRewardSave = async (
   );
 };
 export const processRewardSave = async () => {
-  rewardSaving.process(1000, async (job, done) => {
+  rewardSaving.process(10000, async (job, done) => {
     try {
-      // console.log(job.id);
       const { reward, eraId, eraTimestamp } = job.data;
       await setReward(reward, eraId, eraTimestamp);
       done();

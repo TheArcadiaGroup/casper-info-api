@@ -87,7 +87,7 @@ export const getBlockByHashOrHeight = async (req: Request, res: Response) => {
 
 export const getSwitchBlocks = async () => {
   try {
-    return await Block.find({ isSwitchBlock: true }).sort({ blockHeight: 'asc' });
+    return await Block.find({ isSwitchBlock: true }).sort({ blockHeight: 'desc' });
   } catch (error) {
     // TODO handle error
     throw new Error(`Could fetch switch blocks ${error}`);
