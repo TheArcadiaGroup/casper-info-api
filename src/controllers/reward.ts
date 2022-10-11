@@ -108,10 +108,11 @@ export const getEraRewardsByPublicKey = async (publicKey: string, limitEra: numb
     { $sort: { eraTimestamp: -1 } },
     {
       $group: {
-        _id: { $dateToString: { format: '%m/%d/%Y', date: '$eraTimestamp' } },
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$eraTimestamp' } },
         totalReward: { $sum: '$amount' }
       }
-    }
+    },
+    { $sort: { '_id': -1 } },
   ]).catch((err) => {
     // TODO handle error
     throw new Error(err);
