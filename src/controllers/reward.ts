@@ -83,10 +83,11 @@ export const getRewardsByPublicKey = async (
     { $sort: { eraTimestamp: -1 } },
     {
       $group: {
-        _id: { $dateToString: { format: '%m/%d/%Y', date: '$eraTimestamp' } },
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$eraTimestamp' } },
         totalReward: { $sum: '$amount' }
       }
     },
+    { $sort: { '_id': -1 } },
     { $skip: startIndex - 1 },
     { $limit: count }
   ]).catch((err) => {
