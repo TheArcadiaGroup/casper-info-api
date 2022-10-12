@@ -91,7 +91,6 @@ export const Init = async () => {
       } else {
         eventStream.connect();
         validatorInfoFetchCron();
-        addBlockToQueryQueue(1175121);
         // matchRewards();
         // eraMatchTrigger();
         processBlockQuery();
