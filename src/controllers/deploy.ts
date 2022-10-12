@@ -3,9 +3,7 @@ import { Deploy } from '@models/deploys';
 import { logger } from '@logger';
 import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
-import { group } from 'console';
 import { casperService } from '@utils';
-import { getAccountBalanceByAddress } from '@utils/accounts';
 let amountInNextParsed = false;
 let amount: number;
 export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') => {
@@ -19,7 +17,6 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
       : deployResult.deploy?.session?.ModuleBytes
       ? 'WASM Deploy'
       : 'N/A';
-  entryPoint = entryPoint.replace('_', ' ');
   await Deploy.findOneAndUpdate(
     { deployHash: deployResult.deploy?.hash },
     {
@@ -27,7 +24,7 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
       publicKey: deployResult.deploy?.header?.account,
       blockHash: deployResult?.execution_results[0].block_hash,
       timestamp: deployResult.deploy.header.timestamp,
-      entryPoint,
+      entryPoint: entryPoint.replace(/_/g, ' '),
       amount: getAmount(deployResult.deploy.session),
       cost: Number(
         ethers.utils.formatUnits(

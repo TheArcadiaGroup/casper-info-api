@@ -42,6 +42,14 @@ export const QueryAndSaveDeploys = async (data) => {
           deployResult.deploy?.header?.account,
           new Date(deployResult.deploy.header.timestamp)
         );
+        const validatorPublicKey = deployRes.deploy?.session?.StoredContractByHash?.args?.find(
+          (value) => {
+            return value[0] === 'validator';
+          }
+        )[1]?.parsed;
+        if (validatorPublicKey) {
+          addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
+        }
       })
       .catch((err) => {
         logger.error({ deployRPC: { deployHash: hash, errMessage: `${err}` } });
