@@ -4,9 +4,14 @@ import { indexer } from '@indexer';
 import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
-import { processBlockQuery, processSaveBlock } from '@workers/blocks';
+import { addBlockToQueryQueue, processBlockQuery, processSaveBlock } from '@workers/blocks';
 import { processDeployQuery } from '@workers/deploys';
-import { eraMatchTrigger, processEraMatch, processEraSummaryQuery } from '@workers/era';
+import {
+  addEraSwitchBlockHash,
+  eraMatchTrigger,
+  processEraMatch,
+  processEraSummaryQuery
+} from '@workers/era';
 import {
   processBidDelegatorSave,
   processBidOrValidatorSave,
@@ -84,10 +89,11 @@ export const Init = async () => {
             break;
         }
       } else {
-        // eventStream.connect();
-        // validatorInfoFetchCron();
+        eventStream.connect();
+        validatorInfoFetchCron();
+        addBlockToQueryQueue(1175121);
         // matchRewards();
-        eraMatchTrigger();
+        // eraMatchTrigger();
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();
@@ -98,7 +104,7 @@ export const Init = async () => {
         processValidatorsInfoFetch();
         processBidOrValidatorSave();
         processBidDelegatorSave();
-        processEraMatch();
+        // processEraMatch();
         failedBlockQueriesHandler();
         failedBlockSavesHandler();
         failedDeployQueriesHandler();
@@ -109,7 +115,7 @@ export const Init = async () => {
         failedBidOrValidatorSaveHandler();
         failedBidDelegatorSaveHandler();
         failedRewardSaveHandler();
-        failedEraMatchHandler();
+        // failedEraMatchHandler();
       }
       const app: Application = express();
       app.use(cors(), express.json(), express.urlencoded({ extended: true }), router);

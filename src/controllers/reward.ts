@@ -87,8 +87,15 @@ export const getTotalRewardsByPublicKey = async (
   publicKey: string
 ): Promise<{ id: string; totalReward: number }[]> => {
   return await Reward.aggregate([
-    { $match: { $or: [{ validatorPublicKey: publicKey }, { delegatorPublicKey: publicKey }] } },
-    { $group: { _id: null, totalReward: { $sum: '$amount' } } },
+    {
+      $match: {
+        $or: [
+          { 'reward.validatorPublicKey': publicKey },
+          { 'reward.delegatorPublicKey': publicKey }
+        ]
+      }
+    },
+    { $group: { _id: null, totalReward: { $sum: '$reward.amount' } } },
     { $limit: 1 }
   ]).catch((err) => {
     // TODO handle error
@@ -101,14 +108,22 @@ export const getRewardsByPublicKey = async (
   count: number
 ) => {
   return await Reward.aggregate([
-    { $match: { $or: [{ validatorPublicKey: publicKey }, { delegatorPublicKey: publicKey }] } },
+    {
+      $match: {
+        $or: [
+          { 'reward.validatorPublicKey': publicKey },
+          { 'reward.delegatorPublicKey': publicKey }
+        ]
+      }
+    },
     { $sort: { eraTimestamp: -1 } },
     {
       $group: {
-        _id: { $dateToString: { format: '%m/%d/%Y', date: '$eraTimestamp' } },
-        totalReward: { $sum: '$amount' }
+        _id: { $dateToString: { format: '%m-%d-%Y', date: '$eraTimestamp' } },
+        totalReward: { $sum: '$reward.amount' }
       }
     },
+    { $sort: { _id: -1 } },
     { $skip: startIndex - 1 },
     { $limit: count }
   ]).catch((err) => {
@@ -120,7 +135,12 @@ export const getEraRewardsByPublicKey = async (publicKey: string, limitEra: numb
     {
       $match: {
         $and: [
-          { $or: [{ validatorPublicKey: publicKey }, { delegatorPublicKey: publicKey }] },
+          {
+            $or: [
+              { 'reward.validatorPublicKey': publicKey },
+              { 'reward.delegatorPublicKey': publicKey }
+            ]
+          },
           { eraId: { $gte: limitEra } }
         ]
       }
@@ -128,10 +148,12 @@ export const getEraRewardsByPublicKey = async (publicKey: string, limitEra: numb
     { $sort: { eraTimestamp: -1 } },
     {
       $group: {
-        _id: { $dateToString: { format: '%m/%d/%Y', date: '$eraTimestamp' } },
-        totalReward: { $sum: '$amount' }
+        // _id: { $dateToString: { format: '%m-%d-%Y', date: '$eraTimestamp' } },
+        _id: '$eraTimestamp',
+        totalReward: { $sum: '$reward.amount' }
       }
-    }
+    },
+    { $sort: { _id: -1 } }
   ]).catch((err) => {
     // TODO handle error
     throw new Error(err);
@@ -142,23 +164,23 @@ export const getTotalEraRewardsByEraId = async (
 ): Promise<{ _id: number; totalReward }[]> => {
   return await Reward.aggregate([
     { $match: { eraId } },
-    { $group: { _id: '$eraId', totalReward: { $sum: '$amount' } } }
+    { $group: { _id: '$eraId', totalReward: { $sum: '$reward.amount' } } }
   ]);
 };
 export const getBidRewards = async (
   validatorPublicKey: string
 ): Promise<{ _id: null; totalRewards: number }[]> => {
   return await Reward.aggregate([
-    { $match: { validatorPublicKey } },
-    { $group: { _id: null, totalRewards: { $sum: '$amount' } } }
+    { $match: { 'reward.validatorPublicKey': validatorPublicKey } },
+    { $group: { _id: null, totalRewards: { $sum: '$reward.amount' } } }
   ]);
 };
 export const getBidDelegatorRewards = async (
   validatorPublicKey: string
 ): Promise<{ _id: null; totalDelegatorRewards: number }[]> => {
   return await Reward.aggregate([
-    { $match: { delegatorValidatorPublicKey: validatorPublicKey } },
-    { $group: { _id: null, totalDelegatorRewards: { $sum: '$amount' } } }
+    { $match: { 'reward.delegatorValidatorPublicKey': validatorPublicKey } },
+    { $group: { _id: null, totalDelegatorRewards: { $sum: '$reward.amount' } } }
   ]);
 };
 export const matchRewards = async () => {
@@ -182,7 +204,7 @@ export const matchRewards = async () => {
 export const getMissingEras = async (currentEraId: number) => {
   try {
     let missingEras = [];
-    for (let i = 0; i <= 6664; i++) {
+    for (let i = 0; i <= currentEraId; i++) {
       const reward = await Reward.aggregate([
         { $match: { eraId: i } },
         { $sort: { eraId: -1 } },
