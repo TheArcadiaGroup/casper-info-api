@@ -6,7 +6,7 @@ import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
 import { processBlockQuery, processSaveBlock } from '@workers/blocks';
 import { processDeployQuery } from '@workers/deploys';
-import { processEraSummaryQuery } from '@workers/era';
+import { eraMatchTrigger, processEraMatch, processEraSummaryQuery } from '@workers/era';
 import {
   processBidDelegatorSave,
   processBidOrValidatorSave,
@@ -25,7 +25,8 @@ import {
   failedValidatorInforFetchHandler,
   failedBidOrValidatorSaveHandler,
   failedBidDelegatorSaveHandler,
-  failedRewardSaveHandler
+  failedRewardSaveHandler,
+  failedEraMatchHandler
 } from '@workers/queueFailureHandler';
 import { getSwitchBlocks } from '@controllers/block';
 import { matchRewards } from '@controllers/reward';
@@ -80,9 +81,10 @@ export const Init = async () => {
             break;
         }
       } else {
-        eventStream.connect();
-        validatorInfoFetchCron();
-        matchRewards();
+        // eventStream.connect();
+        // validatorInfoFetchCron();
+        // matchRewards();
+        eraMatchTrigger();
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();
@@ -93,6 +95,7 @@ export const Init = async () => {
         processValidatorsInfoFetch();
         processBidOrValidatorSave();
         processBidDelegatorSave();
+        processEraMatch();
         failedBlockQueriesHandler();
         failedBlockSavesHandler();
         failedDeployQueriesHandler();
@@ -103,6 +106,7 @@ export const Init = async () => {
         failedBidOrValidatorSaveHandler();
         failedBidDelegatorSaveHandler();
         failedRewardSaveHandler();
+        failedEraMatchHandler();
       }
       const app: Application = express();
       app.use(cors(), express.json(), express.urlencoded({ extended: true }), router);
@@ -113,5 +117,3 @@ export const Init = async () => {
       process.exit(1);
     });
 };
-
-// mongodb+srv://casper-trench:casper-trench@localhost:27017/casper-info?retryWrites=true&w=majority

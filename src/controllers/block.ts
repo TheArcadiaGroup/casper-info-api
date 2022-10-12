@@ -93,7 +93,14 @@ export const getSwitchBlocks = async () => {
     throw new Error(`Could fetch switch blocks ${error}`);
   }
 };
-
+export const getSwitchBlockByEraId = async (eraID: number) => {
+  try {
+    return await Block.findOne({ isSwitchBlock: true, eraID });
+  } catch (error) {
+    // TODO handle error
+    throw new Error(`Could fetch switch blocks ${error}`);
+  }
+};
 export const getBlockByHash = async (req: Request, res: Response) => {
   try {
     const { blockHash } = req.params;

@@ -1,6 +1,6 @@
 import { accountUpdate } from '@workers/accounts';
 import { blockQuery, blockSave } from '@workers/blocks';
-import { queryEraSummary } from '@workers/era';
+import { eraMatch, queryEraSummary } from '@workers/era';
 import {
   bidDelegatorSave,
   bidOrValidatorSave,
@@ -113,7 +113,16 @@ export const failedBidDelegatorSaveHandler = () => {
       });
   }, 500);
 };
-
+export const failedEraMatchHandler = () => {
+  setInterval(async () => {
+    const failedEraMatch = await eraMatch.getFailed();
+    failedEraMatch &&
+      failedEraMatch.forEach(async (job) => {
+        job && (await eraMatch.add(job.data, job.opts));
+        job && job.remove();
+      });
+  }, 500);
+};
 export const failedRewardSaveHandler = () => {
   setInterval(async () => {
     const failedRewardSave = await rewardSaving.getFailed();
