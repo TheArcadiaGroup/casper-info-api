@@ -69,7 +69,6 @@ export const Init = async () => {
             failedDeployQueriesHandler();
             break;
           case workerType.eraSummaryandPerfomanceCalculation:
-            // matchRewards();
             eraMatchTrigger();
             processEraSummaryQuery();
             processValidatorUpdate();
@@ -91,8 +90,6 @@ export const Init = async () => {
       } else {
         eventStream.connect();
         validatorInfoFetchCron();
-        // matchRewards();
-        // eraMatchTrigger();
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();
@@ -103,7 +100,6 @@ export const Init = async () => {
         processValidatorsInfoFetch();
         processBidOrValidatorSave();
         processBidDelegatorSave();
-        // processEraMatch();
         failedBlockQueriesHandler();
         failedBlockSavesHandler();
         failedDeployQueriesHandler();
@@ -114,7 +110,6 @@ export const Init = async () => {
         failedBidOrValidatorSaveHandler();
         failedBidDelegatorSaveHandler();
         failedRewardSaveHandler();
-        // failedEraMatchHandler();
       }
       const app: Application = express();
       app.use(cors(), express.json(), express.urlencoded({ extended: true }), router);
