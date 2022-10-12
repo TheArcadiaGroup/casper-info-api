@@ -3,7 +3,6 @@ import { Block } from '@models/blocks';
 import { logger } from '@logger';
 import { getTransferByBlockHash } from './deploy';
 import { casperService, checkBlockID, getLatestState } from '@utils';
-import { add } from 'winston';
 export const getBlocks = (req: Request, res: Response) => {
   const { startIndex, count } = req.query;
   Block.find()
@@ -86,6 +85,22 @@ export const getBlockByHashOrHeight = async (req: Request, res: Response) => {
   }
 };
 
+export const getSwitchBlocks = async () => {
+  try {
+    return await Block.find({ isSwitchBlock: true }).sort({ blockHeight: 'desc' });
+  } catch (error) {
+    // TODO handle error
+    throw new Error(`Could fetch switch blocks ${error}`);
+  }
+};
+export const getSwitchBlockByEraId = async (eraID: number) => {
+  try {
+    return await Block.findOne({ isSwitchBlock: true, eraID });
+  } catch (error) {
+    // TODO handle error
+    throw new Error(`Could fetch switch blocks ${error}`);
+  }
+};
 export const getBlockByHash = async (req: Request, res: Response) => {
   try {
     const { blockHash } = req.params;

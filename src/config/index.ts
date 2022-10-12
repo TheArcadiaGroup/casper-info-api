@@ -4,9 +4,14 @@ import { indexer } from '@indexer';
 import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
-import { processBlockQuery, processSaveBlock } from '@workers/blocks';
+import { addBlockToQueryQueue, processBlockQuery, processSaveBlock } from '@workers/blocks';
 import { processDeployQuery } from '@workers/deploys';
-import { processEraSummaryQuery } from '@workers/era';
+import {
+  addEraSwitchBlockHash,
+  eraMatchTrigger,
+  processEraMatch,
+  processEraSummaryQuery
+} from '@workers/era';
 import {
   processBidDelegatorSave,
   processBidOrValidatorSave,
@@ -24,8 +29,13 @@ import {
   failedAccountUpdatesHandler,
   failedValidatorInforFetchHandler,
   failedBidOrValidatorSaveHandler,
-  failedBidDelegatorSaveHandler
+  failedBidDelegatorSaveHandler,
+  failedRewardSaveHandler,
+  failedEraMatchHandler
 } from '@workers/queueFailureHandler';
+import { getSwitchBlocks } from '@controllers/block';
+import { matchRewards } from '@controllers/reward';
+import { processRewardSave } from '@workers/rewards';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
   blockSave = 'BLOCK_SAVE',
@@ -59,10 +69,16 @@ export const Init = async () => {
             failedDeployQueriesHandler();
             break;
           case workerType.eraSummaryandPerfomanceCalculation:
+            // matchRewards();
+            eraMatchTrigger();
             processEraSummaryQuery();
             processValidatorUpdate();
+            processRewardSave();
+            processEraMatch();
             failedEraSummaryQueriesHandler();
             failedValidatorUpdatesHandler();
+            failedRewardSaveHandler();
+            failedEraMatchHandler();
             break;
           case workerType.accountUpdate:
             processAccountUpdate();
@@ -75,12 +91,19 @@ export const Init = async () => {
       } else {
         eventStream.connect();
         validatorInfoFetchCron();
+        // matchRewards();
+        // eraMatchTrigger();
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();
         processEraSummaryQuery();
         processValidatorUpdate();
+        processRewardSave();
         processAccountUpdate();
+        processValidatorsInfoFetch();
+        processBidOrValidatorSave();
+        processBidDelegatorSave();
+        // processEraMatch();
         failedBlockQueriesHandler();
         failedBlockSavesHandler();
         failedDeployQueriesHandler();
@@ -90,9 +113,8 @@ export const Init = async () => {
         failedValidatorInforFetchHandler();
         failedBidOrValidatorSaveHandler();
         failedBidDelegatorSaveHandler();
-        processValidatorsInfoFetch();
-        processBidOrValidatorSave();
-        processBidDelegatorSave();
+        failedRewardSaveHandler();
+        // failedEraMatchHandler();
       }
       const app: Application = express();
       app.use(cors(), express.json(), express.urlencoded({ extended: true }), router);
@@ -103,5 +125,3 @@ export const Init = async () => {
       process.exit(1);
     });
 };
-
-// mongodb+srv://casper-trench:casper-trench@localhost:27017/casper-info?retryWrites=true&w=majority

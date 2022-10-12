@@ -1,12 +1,23 @@
 import { EventName, EventStream, GetBlockResult } from 'casper-js-sdk';
-import { casperService } from '@utils';
-import { addBlockToSaveQueue } from '@workers/blocks';
+import { casperService, getLatestState } from '@utils';
+import { addBlockToQueryQueue, addBlockToSaveQueue } from '@workers/blocks';
 import { addDeployHashes } from '@workers/deploys';
 import { addEraSwitchBlockHash } from '@workers/era';
+import { getBlockByHeightFromDB } from '@controllers/block';
 
 class EventStreamHandler {
-  constructor() {}
-
+  constructor() {
+    this.match();
+  }
+  async match() {
+    const chainState = await getLatestState();
+    const latestBlockHeight = chainState.last_added_block_info.height;
+    for (let i = latestBlockHeight - 100; i <= latestBlockHeight; i++) {
+      const block = await getBlockByHeightFromDB(i);
+      if (!block) addBlockToQueryQueue(i);
+    }
+    console.log('Done matching');
+  }
   async connect() {
     const latestBlock: GetBlockResult = await casperService.getLatestBlockInfo();
     const currentHeight: number = latestBlock && (latestBlock.block?.header.height as number);

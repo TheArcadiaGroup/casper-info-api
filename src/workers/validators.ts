@@ -1,7 +1,7 @@
 import {
-  getBidDelegatorRewardsByEraId,
+  getBidDelegatorRewards,
   getBidPerformanceAggregation,
-  getBidRewardsByEraId
+  getBidRewards
 } from '@controllers/reward';
 import {
   setBid,
@@ -170,9 +170,9 @@ export const updateBid = async (eraId: number) => {
   const validatorPerformanceAggregation = await getBidPerformanceAggregation(eraId);
   validatorPerformanceAggregation?.forEach(async (validator) => {
     const totalValidatorRewards: number =
-      (await getBidRewardsByEraId(validator._id, eraId))[0]?.totalRewards || 0;
+      (await getBidRewards(validator._id))[0]?.totalRewards || 0;
     const totalDelegatorRewards: number =
-      (await getBidDelegatorRewardsByEraId(validator._id, eraId))[0]?.totalDelegatorRewards || 0;
+      (await getBidDelegatorRewards(validator._id))[0]?.totalDelegatorRewards || 0;
     validator._id &&
       (await updateBidPerformanceAndRewards(
         validator._id,

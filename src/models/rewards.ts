@@ -2,15 +2,15 @@ import mongoose from 'mongoose';
 
 const rewardSchema = new mongoose.Schema(
   {
-    validatorPublicKey: { type: String, index: true },
-    delegatorPublicKey: { type: String, index: true },
-    delegatorValidatorPublicKey: String,
-    amount: Number,
+    reward: { type: {}, index: true },
     eraId: { type: Number, index: true },
-    eraTimestamp: Date
+    eraTimestamp: { type: Date, index: true }
   },
   { versionKey: false }
 );
-
+const matchedEraSchema = new mongoose.Schema(
+  { eraId: { type: Number, required: true, unique: true } },
+  { versionKey: false }
+);
 export const Reward = mongoose.model('Rewards', rewardSchema);
-Reward.createIndexes();
+export const MatchedEra = mongoose.model('MatchedEras', matchedEraSchema);
