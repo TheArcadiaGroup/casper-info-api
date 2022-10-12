@@ -1,4 +1,4 @@
-import { AltReward, MatchedEra, Reward } from '@models/rewards';
+import { MatchedEra, Reward } from '@models/rewards';
 import { SeigniorageAllocation } from 'casper-js-sdk/dist/lib/StoredValue';
 import { ethers } from 'ethers';
 import { logger } from '@logger';
@@ -8,79 +8,6 @@ import { blockQuery } from '@workers/blocks';
 import { rewardSaving } from '@workers/rewards';
 
 export const setReward = async (
-  seigniorageAllocation: SeigniorageAllocation,
-  eraId: number,
-  eraTimestamp: Date
-) => {
-  // .catch((err) => {
-
-  // });
-  try {
-    await Reward.findOneAndUpdate(
-      {
-        // validatorPublicKey: seigniorageAllocation.Validator
-        //   ? seigniorageAllocation.Validator.validatorPublicKey
-        //   : '',
-        // delegatorPublicKey: seigniorageAllocation.Delegator
-        //   ? seigniorageAllocation.Delegator.delegatorPublicKey
-        //   : '',
-        // eraId
-        validatorPublicKey: seigniorageAllocation.Validator
-          ? seigniorageAllocation.Validator.validatorPublicKey
-          : '',
-        delegatorPublicKey: seigniorageAllocation.Delegator
-          ? seigniorageAllocation.Delegator.delegatorPublicKey
-          : '',
-        delegatorValidatorPublicKey: seigniorageAllocation.Delegator
-          ? seigniorageAllocation.Delegator.validatorPublicKey
-          : '',
-        amount: ethers.utils.formatUnits(
-          seigniorageAllocation.Delegator
-            ? seigniorageAllocation.Delegator.amount
-            : seigniorageAllocation.Validator.amount,
-          9
-        )
-      },
-      {
-        validatorPublicKey: seigniorageAllocation.Validator
-          ? seigniorageAllocation.Validator.validatorPublicKey
-          : '',
-        delegatorPublicKey: seigniorageAllocation.Delegator
-          ? seigniorageAllocation.Delegator.delegatorPublicKey
-          : '',
-        delegatorValidatorPublicKey: seigniorageAllocation.Delegator
-          ? seigniorageAllocation.Delegator.validatorPublicKey
-          : '',
-        amount: ethers.utils.formatUnits(
-          seigniorageAllocation.Delegator
-            ? seigniorageAllocation.Delegator.amount
-            : seigniorageAllocation.Validator.amount,
-          9
-        ),
-        eraId,
-        eraTimestamp
-      },
-      { new: true, upsert: true }
-    );
-  } catch (error) {
-    logger.error({
-      rewardDB: {
-        hash: seigniorageAllocation.Delegator
-          ? `Delegator ${seigniorageAllocation.Delegator.delegatorPublicKey}`
-          : `Validator ${seigniorageAllocation.Validator.validatorPublicKey}`,
-        errMessage: `${error}`
-      }
-    });
-  }
-};
-export const setMatchedEra = async (eraId: number) => {
-  try {
-    await MatchedEra.create({ eraId });
-  } catch (error) {
-    throw new Error(error);
-  }
-};
-export const setAltReward = async (
   seigniorageAllocation: SeigniorageAllocation,
   eraId: number,
   eraTimestamp: Date
@@ -106,7 +33,7 @@ export const setAltReward = async (
       };
     }
 
-    await AltReward.findOneAndUpdate(
+    await Reward.findOneAndUpdate(
       {
         reward,
         eraId,
@@ -133,9 +60,16 @@ export const setAltReward = async (
     });
   }
 };
+export const setMatchedEra = async (eraId: number) => {
+  try {
+    await MatchedEra.create({ eraId });
+  } catch (error) {
+    throw new Error(error);
+  }
+};
 export const getLatestMatchedEra = async () => {
   try {
-    return await MatchedEra.find().sort({ eraId: 'desc' }).limit(1);
+    return await MatchedEra.find().sort({ eraId: 'asc' }).limit(1);
   } catch (error) {
     throw new Error(error);
   }
@@ -143,13 +77,12 @@ export const getLatestMatchedEra = async () => {
 export const getBidPerformanceAggregation = async (eraId: number) => {
   return await Reward.aggregate([
     { $match: { eraId: { $gte: eraId - 360 } } },
-    { $group: { _id: '$validatorPublicKey', count: { $sum: 1 } } }
+    { $group: { _id: '$reward.validatorPublicKey', count: { $sum: 1 } } }
   ]).catch((err) => {
     // TODO handle error
     throw new Error(err);
   });
 };
-
 export const getTotalRewardsByPublicKey = async (
   publicKey: string
 ): Promise<{ id: string; totalReward: number }[]> => {
@@ -162,7 +95,6 @@ export const getTotalRewardsByPublicKey = async (
     throw new Error(err);
   });
 };
-
 export const getRewardsByPublicKey = async (
   publicKey: string,
   startIndex: number,
@@ -183,7 +115,6 @@ export const getRewardsByPublicKey = async (
     throw new Error(err);
   });
 };
-
 export const getEraRewardsByPublicKey = async (publicKey: string, limitEra: number) => {
   return await Reward.aggregate([
     {
@@ -206,7 +137,6 @@ export const getEraRewardsByPublicKey = async (publicKey: string, limitEra: numb
     throw new Error(err);
   });
 };
-
 export const getTotalEraRewardsByEraId = async (
   eraId: number
 ): Promise<{ _id: number; totalReward }[]> => {
@@ -215,7 +145,6 @@ export const getTotalEraRewardsByEraId = async (
     { $group: { _id: '$eraId', totalReward: { $sum: '$amount' } } }
   ]);
 };
-
 export const getBidRewards = async (
   validatorPublicKey: string
 ): Promise<{ _id: null; totalRewards: number }[]> => {
@@ -250,7 +179,6 @@ export const matchRewards = async () => {
     }
   }, 5000);
 };
-
 export const getMissingEras = async (currentEraId: number) => {
   try {
     let missingEras = [];
@@ -271,8 +199,7 @@ export const getMissingEras = async (currentEraId: number) => {
 };
 export const getEraRewards = async (eraId: number) => {
   try {
-    return await AltReward.find({ eraId });
-    // return await Reward.find({ eraId });
+    return await Reward.find({ eraId });
   } catch (error) {
     throw new Error(error);
   }

@@ -65,12 +65,15 @@ export const Init = async () => {
             break;
           case workerType.eraSummaryandPerfomanceCalculation:
             // matchRewards();
+            eraMatchTrigger();
             processEraSummaryQuery();
             processValidatorUpdate();
             processRewardSave();
+            processEraMatch();
             failedEraSummaryQueriesHandler();
             failedValidatorUpdatesHandler();
             failedRewardSaveHandler();
+            failedEraMatchHandler();
             break;
           case workerType.accountUpdate:
             processAccountUpdate();

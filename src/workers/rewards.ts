@@ -1,4 +1,4 @@
-import { setAltReward, setReward } from '@controllers/reward';
+import { setReward } from '@controllers/reward';
 import Bull from 'bull';
 import { SeigniorageAllocation } from 'casper-js-sdk/dist/lib/StoredValue';
 
@@ -24,11 +24,10 @@ export const addRewardSave = async (
   );
 };
 export const processRewardSave = async () => {
-  rewardSaving.process(20000, async (job, done) => {
+  rewardSaving.process(500, async (job, done) => {
     try {
       const { reward, eraId, eraTimestamp } = job.data;
-      // await setReward(reward, eraId, eraTimestamp);
-      await setAltReward(reward, eraId, eraTimestamp);
+      await setReward(reward, eraId, eraTimestamp);
       done();
     } catch (error) {
       done(new Error(error));

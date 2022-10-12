@@ -6,6 +6,7 @@ import { casperClient, casperService } from '@utils';
 import { addRewardSave, rewardSaving } from './rewards';
 import { getEraRewards, getLatestMatchedEra, setMatchedEra, setReward } from '@controllers/reward';
 import { getSwitchBlockByEraId } from '@controllers/block';
+let isMatchReady = true;
 export const queryEraSummary = new Bull('era-summary-query', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
@@ -75,42 +76,53 @@ export const QueryEraSummary = async (switchBlockHash: string, eraTimestamp) => 
 };
 export const matchEra = async () => {
   try {
+    isMatchReady = false;
     // check if any pending work
     const waitingRewardsSaves = await rewardSaving.getJobCounts();
+    // console.log(
+    //   `${waitingRewardsSaves.active} <> ${waitingRewardsSaves.delayed} <> ${waitingRewardsSaves.waiting} <>${waitingRewardsSaves.failed} <>`
+    // );
     if (
       waitingRewardsSaves.active > 1 ||
       waitingRewardsSaves.delayed > 1 ||
       waitingRewardsSaves.waiting > 1 ||
       waitingRewardsSaves.failed > 1
-    )
+    ) {
+      isMatchReady = true;
       return;
+    }
     // fetch most recently checked era
     let latestMatchedEra = await getLatestMatchedEra();
     // determine next era to check
     let nextEra: number;
-    latestMatchedEra.length < 1 ? (nextEra = 0) : (nextEra = latestMatchedEra[0]?.eraId + 1);
+    latestMatchedEra.length < 1 ? (nextEra = 6702) : (nextEra = latestMatchedEra[0]?.eraId - 1);
     console.log(`Era to match: ${nextEra}`);
     // fetch next switch block
     const nextSwitchBlock = await getSwitchBlockByEraId(nextEra);
+    if (!nextSwitchBlock) {
+      isMatchReady = true;
+      return;
+    }
     // fetch the era summary
-    const eraSummary = await casperService.getEraInfoBySwitchBlock(nextSwitchBlock.blockHash);
-    const { seigniorageAllocations } = eraSummary.StoredValue.EraInfo;
+    const eraSummary =
+      nextSwitchBlock && (await casperService.getEraInfoBySwitchBlock(nextSwitchBlock?.blockHash));
+    const { seigniorageAllocations } = eraSummary && eraSummary.StoredValue.EraInfo;
     // fetch era saved rewards count
     const savedEraRewards = await getEraRewards(nextEra);
     // compare saved rewards vs fetched rewards
     console.log(`${savedEraRewards.length} <> ${seigniorageAllocations.length}`);
     if (savedEraRewards.length === seigniorageAllocations.length) {
       await setMatchedEra(nextEra);
+      isMatchReady = true;
       return;
     }
     // if no match, update rewards
     seigniorageAllocations?.forEach(async (reward) => {
       await addRewardSave(reward, eraSummary.eraId, nextSwitchBlock.timestamp);
     });
-    // console.log(seigniorageAllocations.slice(0, 20));
-    // logger.info(seigniorageAllocations);
     // add new checked era
     await setMatchedEra(nextEra);
+    isMatchReady = true;
   } catch (error) {
     console.log('Update error: ', error);
     throw new Error(error);
@@ -118,6 +130,6 @@ export const matchEra = async () => {
 };
 export const eraMatchTrigger = () => {
   setInterval(() => {
-    addEraMatch();
-  }, 15000);
+    isMatchReady && addEraMatch();
+  }, 3000);
 };
