@@ -155,22 +155,24 @@ export const getTransferByBlockHash = async (blockHash: string) => {
   });
 };
 export const getDeployVolumes = async (req: Request, res: Response) => {
-  await Deploy.aggregate([
-    { $sort: { timestamp: -1 } },
-    {
-      $group: {
-        _id: { $dateToString: { format: '%m/%d/%Y', date: '$timestamp' } },
-        volume: { $sum: 1 }
-      }
-    },
-    { $limit: 14 }
-  ])
-    .then((volumes) => {
-      res.status(200).json(volumes);
-    })
-    .catch((err) => {
-      res.status(500).send(`Could not fetch deploy volumes: ${err}`);
-    });
+  try {
+    const { days } = req.params;
+    const volumes = await Deploy.aggregate([
+      { $sort: { timestamp: -1 } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+          volume: { $sum: 1 },
+          amount: { $sum: '$amount' }
+        }
+      },
+      { $sort: { _id: -1 } },
+      { $limit: Number(days) }
+    ]);
+    res.status(200).json(volumes);
+  } catch (error) {
+    res.status(500).send(`Could not fetch deploy volumes: ${error}`);
+  }
 };
 
 export const getTransfersCount = async (): Promise<{ _id: string; count: number }[]> => {
