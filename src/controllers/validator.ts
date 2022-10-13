@@ -83,20 +83,6 @@ export const setDelegator = async (delegator: any) => {
     throw new Error(`Could not save current era validator: ${error}`);
   }
 };
-export const updateBidPerformanceAndRewards = async (
-  publicKey: string,
-  performance: number,
-  totalValidatorRewards: number,
-  totalDelegatorRewards: number
-) => {
-  await Bid.findOneAndUpdate(
-    { publicKey },
-    { performance, $inc: { totalValidatorRewards, totalDelegatorRewards } },
-    { new: true, upsert: true }
-  ).catch((err) => {
-    throw new Error(err);
-  });
-};
 export const seedBidRewards = async (req: Request, res: Response) => {
   const { currentEraId } = req.params;
   for (let i = 0; i <= Number(currentEraId); i++) {
