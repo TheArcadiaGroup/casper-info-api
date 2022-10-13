@@ -27,10 +27,12 @@ class EventStreamHandler {
       const block = result.body.BlockAdded.block;
       if (currentHeight > 0 && block.header.height >= currentHeight) {
         addBlockToSaveQueue(block);
-        block?.body?.deploy_hashes?.length > 0 &&
-          addDeployHashes(block?.body?.deploy_hashes, 'deploy');
-        block?.body?.transfer_hashes?.length > 0 &&
-          addDeployHashes(block?.body?.transfer_hashes, 'transfer');
+        block?.body?.deploy_hashes?.forEach((hash) => {
+          addDeployHashes(hash, 'deploy');
+        });
+        block?.body?.transfer_hashes?.forEach((hash) => {
+          addDeployHashes(hash, 'transfer');
+        });
         if (block.header.era_end) {
           addEraSwitchBlockHash(block.hash, block.header.timestamp);
         }

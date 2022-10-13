@@ -67,11 +67,12 @@ export const QueryBlock = async (blockHeight: number) => {
       // Type JsonBlock missing body.
       const block: any = blockInfoResult.block;
       addBlockToSaveQueue(block);
-      // TODO uncomment
-
-      addDeployHashes(block?.body?.deploy_hashes, 'deploy');
-
-      addDeployHashes(block?.body?.transfer_hashes, 'transfer');
+      block?.body?.deploy_hashes?.forEach((hash) => {
+        addDeployHashes(hash, 'deploy');
+      });
+      block?.body?.transfer_hashes?.forEach((hash) => {
+        addDeployHashes(hash, 'transfer');
+      });
       if (block.header.era_end) {
         addEraSwitchBlockHash(block.hash, block.header.timestamp);
       }

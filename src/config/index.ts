@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
 import { addBlockToQueryQueue, processBlockQuery, processSaveBlock } from '@workers/blocks';
-import { processDeployQuery } from '@workers/deploys';
+import { processDeployQuery, processDeploySave } from '@workers/deploys';
 import {
   addEraSwitchBlockHash,
   eraMatchTrigger,
@@ -31,7 +31,8 @@ import {
   failedBidOrValidatorSaveHandler,
   failedBidDelegatorSaveHandler,
   failedRewardSaveHandler,
-  failedEraMatchHandler
+  failedEraMatchHandler,
+  failedDeploySavesHandler
 } from '@workers/queueFailureHandler';
 import { getSwitchBlocks } from '@controllers/block';
 import { matchRewards } from '@controllers/reward';
@@ -66,7 +67,9 @@ export const Init = async () => {
             break;
           case workerType.deployQuery:
             processDeployQuery();
+            processDeploySave();
             failedDeployQueriesHandler();
+            failedDeploySavesHandler();
             break;
           case workerType.eraSummaryandPerfomanceCalculation:
             eraMatchTrigger();
@@ -93,6 +96,7 @@ export const Init = async () => {
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();
+        processDeploySave();
         processEraSummaryQuery();
         processValidatorUpdate();
         processRewardSave();
@@ -103,6 +107,7 @@ export const Init = async () => {
         failedBlockQueriesHandler();
         failedBlockSavesHandler();
         failedDeployQueriesHandler();
+        failedDeploySavesHandler();
         failedEraSummaryQueriesHandler();
         failedValidatorUpdatesHandler();
         failedAccountUpdatesHandler();

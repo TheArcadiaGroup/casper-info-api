@@ -7,7 +7,7 @@ import {
   bidPerformanceAndRewardsUpdate,
   validatorsInfoFetch
 } from '@workers/validators';
-import { queryAndSaveDeploy } from '@workers/deploys';
+import { queryDeploy, saveDeploy } from '@workers/deploys';
 import { rewardSaving } from './rewards';
 
 export const failedBlockQueriesHandler = () => {
@@ -40,11 +40,22 @@ export const failedBlockSavesHandler = () => {
 
 export const failedDeployQueriesHandler = () => {
   setInterval(async () => {
-    const failedDeployQueries = await queryAndSaveDeploy.getFailed();
+    const failedDeployQueries = await queryDeploy.getFailed();
     // console.log(JSON.stringify(failedDeployQueries[0], null, 2));
     failedDeployQueries &&
       failedDeployQueries.forEach(async (job) => {
-        job && (await queryAndSaveDeploy.add(job.data, job.opts));
+        job && (await queryDeploy.add(job.data, job.opts));
+        job && job.remove();
+      });
+  }, 500);
+};
+
+export const failedDeploySavesHandler = () => {
+  setInterval(async () => {
+    const failedDeploySaves = await saveDeploy.getFailed();
+    failedDeploySaves &&
+      failedDeploySaves.forEach(async (job) => {
+        job && (await saveDeploy.add(job.data, job.opts));
         job && job.remove();
       });
   }, 500);
