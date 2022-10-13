@@ -162,14 +162,19 @@ export const getDeployVolumes = async (req: Request, res: Response) => {
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
-          volume: { $sum: 1 },
-          amount: { $sum: '$amount' }
+          volume: { $sum: 1 }
         }
       },
       { $sort: { _id: -1 } },
-      { $limit: Number(days) }
+      { $skip: 1 },
+      { $limit: Number(days) + 1 }
     ]);
-    res.status(200).json(volumes);
+    const totalDeploys = await Deploy.find().count();
+    const deploys = {
+      volumes,
+      totalDeploys
+    };
+    res.status(200).json(deploys);
   } catch (error) {
     res.status(500).send(`Could not fetch deploy volumes: ${error}`);
   }
