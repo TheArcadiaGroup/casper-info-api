@@ -16,7 +16,6 @@ class EventStreamHandler {
       const block = await getBlockByHeightFromDB(i);
       if (!block) addBlockToQueryQueue(i);
     }
-    console.log('Done matching');
   }
   async connect() {
     const latestBlock: GetBlockResult = await casperService.getLatestBlockInfo();

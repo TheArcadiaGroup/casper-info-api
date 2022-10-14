@@ -4,6 +4,7 @@ import Bull from 'bull';
 import { addAccountUpdate } from './accounts';
 import { casperService } from '@utils';
 import { GetDeployResult } from 'casper-js-sdk';
+import { addQueryContract } from './contracts';
 export const queryDeploy = new Bull('deploy-query', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
@@ -35,6 +36,7 @@ export const processDeployQuery = async () => {
       .catch((err) => done(new Error(err)));
   });
 };
+// Add deploy to deploy saving queue
 export const addDeployToSave = async (deploy: GetDeployResult, type: string) => {
   await saveDeploy.add(
     { deploy, type },
@@ -62,7 +64,7 @@ export const QueryDeploy = async (data) => {
     const deployResult = await casperService.getDeployInfo(hash);
     const deployRes: any = deployResult;
     await addDeployToSave(deployRes, hashType);
-    addAccountUpdate(
+    await addAccountUpdate(
       deployResult.deploy?.header?.account,
       new Date(deployResult.deploy.header.timestamp)
     );
@@ -72,8 +74,13 @@ export const QueryDeploy = async (data) => {
       }
     )[1]?.parsed;
     if (validatorPublicKey) {
-      addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
+      await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
     }
+    const contractHash: string =
+      deployRes.deploy?.session?.StoredContractByHash?.hash ||
+      deployRes.deploy?.session?.StoredContractByName?.hash ||
+      '';
+    await addQueryContract(contractHash, new Date(deployResult.deploy.header.timestamp));
   } catch (error) {
     logger.error({ deployRPC: { deployHash: hash, errMessage: `${error}` } });
   }

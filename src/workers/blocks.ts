@@ -19,15 +19,11 @@ export const blockSave = new Bull('block-save', {
   }
 });
 export const addBlockToQueryQueue = async (blockHeight: number) => {
-  await blockQuery
-    .add(blockHeight, {
-      attempts: 10,
-      removeOnComplete: true,
-      removeOnFail: 1000
-    })
-    .then((job) => {
-      console.log(job.data);
-    });
+  await blockQuery.add(blockHeight, {
+    attempts: 10,
+    removeOnComplete: true,
+    removeOnFail: 1000
+  });
 };
 export const processBlockQuery = () => {
   blockQuery.process(40, (job, done) => {

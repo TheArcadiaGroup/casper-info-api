@@ -9,6 +9,7 @@ import {
 } from '@workers/validators';
 import { queryDeploy, saveDeploy } from '@workers/deploys';
 import { rewardSaving } from './rewards';
+import { queryContract, saveContract } from './contracts';
 
 export const failedBlockQueriesHandler = () => {
   setInterval(async () => {
@@ -60,7 +61,26 @@ export const failedDeploySavesHandler = () => {
       });
   }, 500);
 };
-
+export const failedContractQueriesHandler = () => {
+  setInterval(async () => {
+    const failedContractQueries = await queryContract.getFailed();
+    failedContractQueries &&
+      failedContractQueries.forEach(async (job) => {
+        job && (await queryContract.add(job.data, job.opts));
+        job && job.remove();
+      });
+  }, 500);
+};
+export const failedContractSavesHandler = () => {
+  setInterval(async () => {
+    const failedContractSaves = await saveContract.getFailed();
+    failedContractSaves &&
+      failedContractSaves.forEach(async (job) => {
+        job && (await saveContract.add(job.data, job.opts));
+        job && job.remove();
+      });
+  }, 500);
+};
 export const failedEraSummaryQueriesHandler = () => {
   setInterval(async () => {
     const failedEraSummaryQueries = await queryEraSummary.getFailed();

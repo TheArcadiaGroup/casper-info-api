@@ -4,14 +4,9 @@ import { indexer } from '@indexer';
 import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
-import { addBlockToQueryQueue, processBlockQuery, processSaveBlock } from '@workers/blocks';
+import { processBlockQuery, processSaveBlock } from '@workers/blocks';
 import { processDeployQuery, processDeploySave } from '@workers/deploys';
-import {
-  addEraSwitchBlockHash,
-  eraMatchTrigger,
-  processEraMatch,
-  processEraSummaryQuery
-} from '@workers/era';
+import { eraMatchTrigger, processEraMatch, processEraSummaryQuery } from '@workers/era';
 import {
   processBidDelegatorSave,
   processBidOrValidatorSave,
@@ -32,11 +27,12 @@ import {
   failedBidDelegatorSaveHandler,
   failedRewardSaveHandler,
   failedEraMatchHandler,
-  failedDeploySavesHandler
+  failedDeploySavesHandler,
+  failedContractQueriesHandler,
+  failedContractSavesHandler
 } from '@workers/queueFailureHandler';
-import { getSwitchBlocks } from '@controllers/block';
-import { matchRewards } from '@controllers/reward';
 import { processRewardSave } from '@workers/rewards';
+import { processQueryContract, processSaveContract } from '@workers/contracts';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
   blockSave = 'BLOCK_SAVE',
@@ -97,6 +93,8 @@ export const Init = async () => {
         processSaveBlock();
         processDeployQuery();
         processDeploySave();
+        processQueryContract();
+        processSaveContract();
         processEraSummaryQuery();
         processValidatorUpdate();
         processRewardSave();
@@ -108,6 +106,8 @@ export const Init = async () => {
         failedBlockSavesHandler();
         failedDeployQueriesHandler();
         failedDeploySavesHandler();
+        failedContractQueriesHandler();
+        failedContractSavesHandler();
         failedEraSummaryQueriesHandler();
         failedValidatorUpdatesHandler();
         failedAccountUpdatesHandler();
