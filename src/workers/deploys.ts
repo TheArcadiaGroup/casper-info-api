@@ -1,10 +1,16 @@
 import { setDeploy } from '@controllers/deploy';
 import { logger } from '@logger';
 import Bull from 'bull';
+import axios from 'axios';
 import { addAccountUpdate } from './accounts';
 import { casperService } from '@utils';
 import { GetDeployResult } from 'casper-js-sdk';
 import { addQueryContract } from './contracts';
+
+let page = 6959;
+let pageSize = 50000;
+let count = 0;
+
 export const queryDeploy = new Bull('deploy-query', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
@@ -37,9 +43,9 @@ export const processDeployQuery = async () => {
   });
 };
 // Add deploy to deploy saving queue
-export const addDeployToSave = async (deploy: GetDeployResult, type: string) => {
+export const addDeployToSave = async (deploy: GetDeployResult, hashType: string) => {
   await saveDeploy.add(
-    { deploy, type },
+    { deploy, hashType },
     {
       attempts: 10,
       removeOnComplete: true,
@@ -50,7 +56,8 @@ export const addDeployToSave = async (deploy: GetDeployResult, type: string) => 
 export const processDeploySave = async () => {
   saveDeploy.process(100, async (job, done) => {
     try {
-      await setDeploy(job.data.deploy, job.data.hash);
+      const { deploy, hashType } = job.data;
+      await setDeploy(deploy, hashType);
       done();
     } catch (error) {
       done(new Error(error));
@@ -84,4 +91,21 @@ export const QueryDeploy = async (data) => {
   } catch (error) {
     logger.error({ deployRPC: { deployHash: hash, errMessage: `${error}` } });
   }
+};
+
+export const matchDeploys = () => {
+  setInterval(async () => {
+    try {
+      const res = await axios.get(
+        `https://event-store-api-clarity-mainnet.make.services/extended-deploys?page=${page}&limit=100`
+        // `https://api.casperstats.io/chain/get-latest-txs?start=${page}&count=${pageSize}`
+      );
+      // console.log(res.data);
+      page--;
+      count += res.data?.length;
+      console.log(count);
+    } catch (error) {
+      console.log(error);
+    }
+  }, 1000);
 };

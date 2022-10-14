@@ -34,13 +34,4 @@ const deploySchema = new mongoose.Schema(
   },
   { versionKey: false, _id: false }
 );
-
-const rawDeploySchema = new mongoose.Schema(
-  {
-    deploy: {}
-  },
-  { versionKey: false, _id: false }
-);
-
 export const Deploy = mongoose.model('Deploy', deploySchema);
-// export const RawDeploy = mongoose.model('RawDeploy', rawDeploySchema);

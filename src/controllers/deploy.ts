@@ -4,69 +4,73 @@ import { logger } from '@logger';
 import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
 import { casperService } from '@utils';
+import { getAccountBalanceByAddress } from '@utils/accounts';
 let amountInNextParsed = false;
 let amount: number;
 export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') => {
-  let entryPoint: string =
-    deployResult?.deploy?.session?.StoredContractByHash ||
-    deployResult?.deploy?.session?.StoredContractByName
-      ? deployResult?.deploy?.session.StoredContractByHash?.entry_point ||
-        deployResult?.deploy?.session.StoredContractByName?.entry_point
-      : deployResult.deploy?.session?.Transfer
-      ? 'transfer'
-      : deployResult.deploy?.session?.ModuleBytes
-      ? 'WASM Deploy'
-      : 'N/A';
-  await Deploy.findOneAndUpdate(
-    { deployHash: deployResult.deploy?.hash },
-    {
-      deployHash: deployResult.deploy?.hash,
-      publicKey: deployResult.deploy?.header?.account,
-      blockHash: deployResult?.execution_results[0].block_hash,
-      timestamp: deployResult.deploy.header.timestamp,
-      entryPoint: entryPoint.replace(/_/g, ' '),
-      amount: getAmount(deployResult.deploy.session),
-      cost: Number(
-        ethers.utils.formatUnits(
-          deployResult?.execution_results[0]?.result?.Success?.cost ||
-            deployResult?.execution_results[0]?.result?.Failure?.cost,
-          9
-        )
-      ),
-      validator:
-        deployResult.deploy.session.StoredContractByHash?.entry_point == 'delegate' ||
-        deployResult.deploy.session.StoredContractByHash?.entry_point == 'undelegate'
-          ? deployResult.deploy.session.StoredContractByHash?.args?.find((value) => {
-              return value[0] == 'validator';
-            })[1]?.parsed
-          : '',
-      fromAccountHash:
-        hashType === 'transfer'
-          ? CLPublicKey.fromHex(deployResult.deploy?.header?.account)
-              .toAccountHashStr()
-              .replace('account-hash-', '')
-          : '',
-      toAccountHash:
-        hashType === 'transfer'
-          ? getToAccountHash(deployResult.deploy.session?.Transfer?.args[1][1]?.parsed)
-          : '',
-      status: deployResult?.execution_results[0]?.result?.Success ? 'success' : 'fail',
-      deployType: hashType
-    },
-    { new: true, upsert: true }
-  )
-    .then((deploy) => {
-      console.log(deploy.deployHash);
-    })
-    .catch((err) => {
-      logger.error({
-        deployDB: {
-          deployHash: deployResult.deploy.hash,
-          errMessage: `${err}`,
-          rawData: deployResult
-        }
-      });
+  try {
+    const entryPoint: string =
+      deployResult?.deploy?.session?.StoredContractByHash ||
+      deployResult?.deploy?.session?.StoredContractByName
+        ? deployResult?.deploy?.session.StoredContractByHash?.entry_point ||
+          deployResult?.deploy?.session.StoredContractByName?.entry_point
+        : deployResult.deploy?.session?.Transfer
+        ? 'transfer'
+        : deployResult.deploy?.session?.ModuleBytes
+        ? 'WASM Deploy'
+        : 'N/A';
+    const validator =
+      deployResult.deploy.session.StoredContractByHash?.entry_point == 'delegate' ||
+      deployResult.deploy.session.StoredContractByHash?.entry_point == 'undelegate'
+        ? deployResult.deploy.session.StoredContractByHash?.args?.find((value) => {
+            return value[0] == 'validator';
+          })[1]?.parsed
+        : '';
+    const fromAccountHash =
+      hashType === 'transfer'
+        ? CLPublicKey.fromHex(deployResult.deploy?.header?.account)
+            .toAccountHashStr()
+            .replace('account-hash-', '')
+        : '';
+    const toAccountHash =
+      hashType === 'transfer'
+        ? getToAccountHash(deployResult.deploy.session?.Transfer?.args[1][1]?.parsed)
+        : '';
+    await Deploy.findOneAndUpdate(
+      { deployHash: deployResult.deploy?.hash },
+      {
+        deployHash: deployResult.deploy?.hash,
+        publicKey: deployResult.deploy?.header?.account,
+        blockHash: deployResult?.execution_results[0].block_hash,
+        timestamp: deployResult.deploy.header.timestamp,
+        entryPoint: entryPoint.replace(/_/g, ' '),
+        amount: getAmount(deployResult.deploy.session),
+        cost: Number(
+          ethers.utils.formatUnits(
+            deployResult?.execution_results[0]?.result?.Success?.cost ||
+              deployResult?.execution_results[0]?.result?.Failure?.cost,
+            9
+          )
+        ),
+        validator,
+        fromAccountHash,
+        fromAccountBalance: fromAccountHash ? await getAccountBalanceByAddress(fromAccountHash) : 0,
+        toAccountHash,
+        toAccountBalance: toAccountHash ? await getAccountBalanceByAddress(toAccountHash) : 0,
+        status: deployResult?.execution_results[0]?.result?.Success ? 'success' : 'fail',
+        deployType: hashType
+      },
+      { new: true, upsert: true }
+    );
+  } catch (error) {
+    logger.error({
+      deployDB: {
+        deployHash: deployResult.deploy.hash,
+        errMessage: `${error}`,
+        rawData: deployResult
+      }
     });
+  }
   amount = 0;
 };
 

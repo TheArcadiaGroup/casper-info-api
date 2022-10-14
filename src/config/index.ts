@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
 import { processBlockQuery, processSaveBlock } from '@workers/blocks';
-import { processDeployQuery, processDeploySave } from '@workers/deploys';
+import { matchDeploys, processDeployQuery, processDeploySave } from '@workers/deploys';
 import { eraMatchTrigger, processEraMatch, processEraSummaryQuery } from '@workers/era';
 import {
   processBidDelegatorSave,
@@ -87,8 +87,9 @@ export const Init = async () => {
             break;
         }
       } else {
-        eventStream.connect();
-        validatorInfoFetchCron();
+        // eventStream.connect();
+        // validatorInfoFetchCron();
+        matchDeploys();
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();
