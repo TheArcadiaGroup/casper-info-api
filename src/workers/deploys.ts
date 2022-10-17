@@ -1,4 +1,4 @@
-import { setDeploy } from '@controllers/deploy';
+import { setDeploy, setDeployHash, getLatestDeployHashPage } from '@controllers/deploy';
 import { logger } from '@logger';
 import Bull from 'bull';
 import axios from 'axios';
@@ -7,10 +7,12 @@ import { casperService } from '@utils';
 import { GetDeployResult } from 'casper-js-sdk';
 import { addQueryContract } from './contracts';
 
-let page = 6959;
-let pageSize = 50000;
+let page = 1;
+let pageSize = 10000;
 let count = 0;
-
+setImmediate(async () => {
+  page = (await getLatestDeployHashPage()[0]?._id) || 0;
+});
 export const queryDeploy = new Bull('deploy-query', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
@@ -23,6 +25,32 @@ export const saveDeploy = new Bull('deploy-save', {
     port: Number(process.env.REDIS_PORT)
   }
 });
+export const saveDeployHash = new Bull('deploy-hash-save', {
+  redis: {
+    host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT)
+  }
+});
+export const addSaveDeployHash = async (deployHash: string, timestamp: Date, page: Number) => {
+  await saveDeployHash.add(
+    { deployHash, timestamp, page },
+    {
+      attempts: 10,
+      removeOnComplete: true,
+      removeOnFail: 1000
+    }
+  );
+};
+export const processSaveDeployHash = async () => {
+  saveDeployHash.process(100, async (job, done) => {
+    const { deployHash, timestamp, page } = job.data;
+    setDeployHash(deployHash, timestamp, page)
+      .then(() => {
+        done();
+      })
+      .catch((err) => done(new Error(err)));
+  });
+};
 export const addDeployHashes = async (hash: string, hashType: 'deploy' | 'transfer') => {
   await queryDeploy.add(
     { hash, hashType },
@@ -54,7 +82,7 @@ export const addDeployToSave = async (deploy: GetDeployResult, hashType: string)
   );
 };
 export const processDeploySave = async () => {
-  saveDeploy.process(100, async (job, done) => {
+  saveDeploy.process(500, async (job, done) => {
     try {
       const { deploy, hashType } = job.data;
       await setDeploy(deploy, hashType);
@@ -96,16 +124,30 @@ export const QueryDeploy = async (data) => {
 export const matchDeploys = () => {
   setInterval(async () => {
     try {
+      // console.log(`Page: ${page}`);
       const res = await axios.get(
         `https://event-store-api-clarity-mainnet.make.services/extended-deploys?page=${page}&limit=100`
         // `https://api.casperstats.io/chain/get-latest-txs?start=${page}&count=${pageSize}`
       );
       // console.log(res.data);
-      page--;
-      count += res.data?.length;
-      console.log(count);
+      // if (res?.data?.length > 0) {
+      //   res.data?.forEach(async (deploy) => {
+      //     // await addSaveDeployHash(deploy.deploy_hash, new Date(deploy.timestamp), page);
+      //   });
+      //   page += pageSize;
+      //   count += res.data?.length;
+      //   console.log(count, page);
+      // }
+      if (res?.data?.data?.length > 0) {
+        res.data?.data?.forEach(async (deploy) => {
+          await addSaveDeployHash(deploy.deploy_hash, new Date(deploy.timestamp), page);
+        });
+        page++;
+        count += res.data?.data?.length;
+        console.log(count, page);
+      }
     } catch (error) {
-      console.log(error);
+      console.log(`Err: `);
     }
-  }, 1000);
+  }, 10000);
 };

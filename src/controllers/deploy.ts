@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Deploy } from '@models/deploys';
+import { Deploy, DeployHash } from '@models/deploys';
 import { logger } from '@logger';
 import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
@@ -73,7 +73,29 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
   }
   amount = 0;
 };
-
+export const setDeployHash = async (deployHash: string, timestamp: Date, page: Number) => {
+  try {
+    await DeployHash.findOneAndUpdate(
+      { deployHash },
+      { deployHash, timestamp, page },
+      { new: true, upsert: true }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const getLatestDeployHashPage = async () => {
+  try {
+    return await DeployHash.aggregate([
+      { $group: { _id: '$page' } },
+      { $sort: { _id: 1 } },
+      { $limit: 1 }
+    ]);
+    // console.log(`Page: ${page}`);
+  } catch (error) {
+    throw new Error(`Could not get latest page: ${error}`);
+  }
+};
 export const getDeploys = async (req: Request, res: Response) => {
   const { startIndex, count } = req.query;
   await Deploy.find()

@@ -5,7 +5,12 @@ import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
 import { processBlockQuery, processSaveBlock } from '@workers/blocks';
-import { matchDeploys, processDeployQuery, processDeploySave } from '@workers/deploys';
+import {
+  matchDeploys,
+  processDeployQuery,
+  processDeploySave,
+  processSaveDeployHash
+} from '@workers/deploys';
 import { eraMatchTrigger, processEraMatch, processEraSummaryQuery } from '@workers/era';
 import {
   processBidDelegatorSave,
@@ -95,6 +100,7 @@ export const Init = async () => {
         processDeployQuery();
         processDeploySave();
         processQueryContract();
+        processSaveDeployHash();
         processSaveContract();
         processEraSummaryQuery();
         processValidatorUpdate();
