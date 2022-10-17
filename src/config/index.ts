@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
 import { processBlockQuery, processSaveBlock } from '@workers/blocks';
-import { processDeployQuery } from '@workers/deploys';
+import { matchDeploys, processDeployQuery, processDeploySave } from '@workers/deploys';
 import { eraMatchTrigger, processEraMatch, processEraSummaryQuery } from '@workers/era';
 import {
   processBidDelegatorSave,
@@ -26,9 +26,13 @@ import {
   failedBidOrValidatorSaveHandler,
   failedBidDelegatorSaveHandler,
   failedRewardSaveHandler,
-  failedEraMatchHandler
+  failedEraMatchHandler,
+  failedDeploySavesHandler,
+  failedContractQueriesHandler,
+  failedContractSavesHandler
 } from '@workers/queueFailureHandler';
 import { processRewardSave } from '@workers/rewards';
+import { processQueryContract, processSaveContract } from '@workers/contracts';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
   blockSave = 'BLOCK_SAVE',
@@ -58,8 +62,11 @@ export const Init = async () => {
             failedBlockSavesHandler();
             break;
           case workerType.deployQuery:
+            matchDeploys();
             processDeployQuery();
+            processDeploySave();
             failedDeployQueriesHandler();
+            failedDeploySavesHandler();
             break;
           case workerType.eraSummaryandPerfomanceCalculation:
             eraMatchTrigger();
@@ -87,6 +94,9 @@ export const Init = async () => {
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();
+        processDeploySave();
+        processQueryContract();
+        processSaveContract();
         processEraSummaryQuery();
         processEraMatch();
         processValidatorUpdate();
@@ -98,6 +108,9 @@ export const Init = async () => {
         failedBlockQueriesHandler();
         failedBlockSavesHandler();
         failedDeployQueriesHandler();
+        failedDeploySavesHandler();
+        failedContractQueriesHandler();
+        failedContractSavesHandler();
         failedEraSummaryQueriesHandler();
         failedEraMatchHandler();
         failedValidatorUpdatesHandler();

@@ -32,15 +32,7 @@ const deploySchema = new mongoose.Schema(
     toAccountBalance: Number,
     deployType: { type: String, index: true }
   },
-  { versionKey: false, _id: false }
-);
-
-const rawDeploySchema = new mongoose.Schema(
-  {
-    deploy: {}
-  },
-  { versionKey: false, _id: false }
+  { versionKey: false }
 );
 
 export const Deploy = mongoose.model('Deploy', deploySchema);
-// export const RawDeploy = mongoose.model('RawDeploy', rawDeploySchema);

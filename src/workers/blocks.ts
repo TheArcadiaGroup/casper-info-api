@@ -19,15 +19,11 @@ export const blockSave = new Bull('block-save', {
   }
 });
 export const addBlockToQueryQueue = async (blockHeight: number) => {
-  await blockQuery
-    .add(blockHeight, {
-      attempts: 10,
-      removeOnComplete: true,
-      removeOnFail: 1000
-    })
-    .then((job) => {
-      console.log(job.data);
-    });
+  await blockQuery.add(blockHeight, {
+    attempts: 10,
+    removeOnComplete: true,
+    removeOnFail: 1000
+  });
 };
 export const processBlockQuery = () => {
   blockQuery.process(40, (job, done) => {
@@ -67,11 +63,12 @@ export const QueryBlock = async (blockHeight: number) => {
       // Type JsonBlock missing body.
       const block: any = blockInfoResult.block;
       addBlockToSaveQueue(block);
-      // TODO uncomment
-
-      addDeployHashes(block?.body?.deploy_hashes, 'deploy');
-
-      addDeployHashes(block?.body?.transfer_hashes, 'transfer');
+      block?.body?.deploy_hashes?.forEach((hash) => {
+        addDeployHashes(hash, 'deploy');
+      });
+      block?.body?.transfer_hashes?.forEach((hash) => {
+        addDeployHashes(hash, 'transfer');
+      });
       if (block.header.era_end) {
         addEraSwitchBlockHash(block.hash, block.header.timestamp);
       }

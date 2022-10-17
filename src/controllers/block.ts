@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Block } from '@models/blocks';
 import { logger } from '@logger';
-import { getTransferByBlockHash } from './deploy';
+import { getDeploysByBlockHash } from './deploy';
 import { casperService, checkBlockID, getLatestState } from '@utils';
 export const getBlocks = (req: Request, res: Response) => {
   const { startIndex, count } = req.query;
@@ -141,7 +141,7 @@ export const getBlockByValidatorPublicKey = async (req: Request, res: Response) 
 export const getBlockTransfers = async (req: Request, res: Response) => {
   try {
     const { blockHash } = req.params;
-    let transfers = await getTransferByBlockHash(blockHash);
+    let transfers = await getDeploysByBlockHash(blockHash);
     transfers = transfers.filter((transfer) => transfer.entryPoint === 'transfer');
     res.status(200).json(transfers);
   } catch (error) {
