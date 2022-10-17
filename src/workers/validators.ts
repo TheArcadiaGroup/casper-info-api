@@ -186,7 +186,7 @@ export const fetchValidatorsInfo = async () => {
           publicKey: bid.public_key,
           numOfDelegators: bid?.bid?.delegators?.length,
           delegationRate: bid.bid?.delegation_rate,
-          performance: eraValidatorsInfo.length / 360,
+          performance: bid?.bid?.delegators?.length / 360,
           totalBid,
           totalDelegated,
           selfStake,
