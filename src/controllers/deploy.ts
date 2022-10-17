@@ -7,8 +7,9 @@ import { casperService } from '@utils';
 import { getAccountBalanceByAddress } from '@utils/accounts';
 let amountInNextParsed = false;
 let amount: number;
-export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') => {
+export const setDeploy = async (deployResult) => {
   try {
+    let hashType: 'deploy' | 'transfer';
     const entryPoint: string =
       deployResult?.deploy?.session?.StoredContractByHash ||
       deployResult?.deploy?.session?.StoredContractByName
@@ -26,6 +27,7 @@ export const setDeploy = async (deployResult, hashType: 'deploy' | 'transfer') =
             return value[0] == 'validator';
           })[1]?.parsed
         : '';
+    hashType = deployResult.deploy?.session?.Transfer ? 'transfer' : 'deploy';
     const fromAccountHash =
       hashType === 'transfer'
         ? CLPublicKey.fromHex(deployResult.deploy?.header?.account)

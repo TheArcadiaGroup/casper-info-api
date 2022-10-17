@@ -78,7 +78,7 @@ const getChainContract = async (contractHash: string, timestamp: Date) => {
     let blockState = await casperService.getBlockState(
       chainState?.last_added_block_info.state_root_hash,
       `hash-${contractHash}`,
-      null
+      []
     );
     const chainContract = blockState.Contract;
     // console.log(blockState.Contract);
@@ -91,7 +91,7 @@ const getChainContract = async (contractHash: string, timestamp: Date) => {
     blockState = await casperService.getBlockState(
       chainState?.last_added_block_info.state_root_hash,
       `hash-${contractPackageHash}` as string,
-      null
+      []
     );
     let contract: ContractJson = {
       contractHash,

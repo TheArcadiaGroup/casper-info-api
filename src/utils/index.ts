@@ -28,7 +28,9 @@ export const getLatestState = async (): Promise<GetStatusResult> => {
   try {
     return await casperService.getStatus();
   } catch (error) {
-    throw new Error(error);
+    // TODO Handle error
+    // throw new Error(error);
+    console.log(error);
   }
 };
 

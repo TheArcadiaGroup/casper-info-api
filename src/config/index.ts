@@ -32,7 +32,7 @@ import {
   failedContractSavesHandler
 } from '@workers/queueFailureHandler';
 import { processRewardSave } from '@workers/rewards';
-import { processQueryContract, processSaveContract } from '@workers/contracts';
+import { addQueryContract, processQueryContract, processSaveContract } from '@workers/contracts';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
   blockSave = 'BLOCK_SAVE',
@@ -89,6 +89,10 @@ export const Init = async () => {
         }
       } else {
         eventStream.connect();
+        // addQueryContract(
+        //   'be5906df393ba252bcb159aff098a1616fe2db2de998d4930b70d8c23a9eb773',
+        //   new Date()
+        // );
         // eraMatchTrigger();
         // validatorInfoFetchCron();
         processBlockQuery();

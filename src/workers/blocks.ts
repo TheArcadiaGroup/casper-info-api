@@ -3,7 +3,7 @@ import { logger } from '@logger';
 import { casperService } from '@utils';
 import Bull from 'bull';
 import { setBlock } from '@controllers/block';
-import { addDeployHashes } from './deploys';
+import { addDeployHash } from './deploys';
 import { addEraSwitchBlockHash } from './era';
 
 export const blockQuery = new Bull('block-query', {
@@ -64,10 +64,10 @@ export const QueryBlock = async (blockHeight: number) => {
       const block: any = blockInfoResult.block;
       addBlockToSaveQueue(block);
       block?.body?.deploy_hashes?.forEach((hash) => {
-        addDeployHashes(hash, 'deploy');
+        addDeployHash(hash);
       });
       block?.body?.transfer_hashes?.forEach((hash) => {
-        addDeployHashes(hash, 'transfer');
+        addDeployHash(hash);
       });
       if (block.header.era_end) {
         addEraSwitchBlockHash(block.hash, block.header.timestamp);
