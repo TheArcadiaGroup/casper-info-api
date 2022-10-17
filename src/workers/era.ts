@@ -79,9 +79,6 @@ export const matchEra = async () => {
     isMatchReady = false;
     // check if any pending work
     const waitingRewardsSaves = await rewardSaving.getJobCounts();
-    // console.log(
-    //   `${waitingRewardsSaves.active} <> ${waitingRewardsSaves.delayed} <> ${waitingRewardsSaves.waiting} <>${waitingRewardsSaves.failed} <>`
-    // );
     if (
       waitingRewardsSaves.active > 1 ||
       waitingRewardsSaves.delayed > 1 ||

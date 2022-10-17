@@ -34,14 +34,5 @@ const deploySchema = new mongoose.Schema(
   },
   { versionKey: false }
 );
-const deployHashSchema = new mongoose.Schema(
-  {
-    deployHash: { type: String, unique: true, required: true },
-    timestamp: Date,
-    page: { type: Number, index: true }
-  },
-  { versionKey: false }
-);
 
 export const Deploy = mongoose.model('Deploy', deploySchema);
-export const DeployHash = mongoose.model('DeployHash', deployHashSchema);
