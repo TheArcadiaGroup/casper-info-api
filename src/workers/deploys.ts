@@ -81,11 +81,12 @@ export const QueryDeploy = async (data) => {
     if (validatorPublicKey) {
       await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
     }
-    // const contractHash: string =
-    //   deployRes.deploy?.session?.StoredContractByHash?.hash ||
-    //   deployRes.deploy?.session?.StoredContractByName?.hash ||
-    //   '';
-    // await addQueryContract(contractHash, new Date(deployResult.deploy.header.timestamp));
+    const contractHash: string =
+      deployRes.deploy?.session?.StoredContractByHash?.hash ||
+      deployRes.deploy?.session?.StoredContractByName?.hash ||
+      '';
+    contractHash &&
+      (await addQueryContract(contractHash, new Date(deployResult.deploy.header.timestamp)));
   } catch (error) {
     logger.error({ deployRPC: { deployHash: hash, errMessage: `${error}` } });
   }
