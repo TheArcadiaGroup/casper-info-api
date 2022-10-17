@@ -69,7 +69,7 @@ export const setMatchedEra = async (eraId: number) => {
 };
 export const getLatestMatchedEra = async () => {
   try {
-    return await MatchedEra.find().sort({ eraId: 'asc' }).limit(1);
+    return await MatchedEra.find().sort({ eraId: 'desc' }).limit(1);
   } catch (error) {
     throw new Error(error);
   }

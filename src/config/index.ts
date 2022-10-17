@@ -89,6 +89,7 @@ export const Init = async () => {
         }
       } else {
         eventStream.connect();
+        eraMatchTrigger();
         validatorInfoFetchCron();
         processBlockQuery();
         processSaveBlock();
@@ -97,6 +98,7 @@ export const Init = async () => {
         processQueryContract();
         processSaveContract();
         processEraSummaryQuery();
+        processEraMatch();
         processValidatorUpdate();
         processRewardSave();
         processAccountUpdate();
@@ -110,6 +112,7 @@ export const Init = async () => {
         failedContractQueriesHandler();
         failedContractSavesHandler();
         failedEraSummaryQueriesHandler();
+        failedEraMatchHandler();
         failedValidatorUpdatesHandler();
         failedAccountUpdatesHandler();
         failedValidatorInforFetchHandler();

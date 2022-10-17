@@ -2,10 +2,11 @@ import { EraSummary } from 'casper-js-sdk';
 import { logger } from '@logger';
 import Bull from 'bull';
 import { addValidatorUpdate } from '@workers/validators';
-import { casperClient, casperService } from '@utils';
+import { casperClient, casperService, getLatestState } from '@utils';
 import { addRewardSave, rewardSaving } from './rewards';
 import { getEraRewards, getLatestMatchedEra, setMatchedEra, setReward } from '@controllers/reward';
 import { getSwitchBlockByEraId } from '@controllers/block';
+import { getChainState } from '@controllers/chain';
 let isMatchReady = true;
 export const queryEraSummary = new Bull('era-summary-query', {
   redis: {
@@ -90,9 +91,12 @@ export const matchEra = async () => {
     }
     // fetch most recently checked era
     let latestMatchedEra = await getLatestMatchedEra();
+    // check if last added era
+    const chainState = await getLatestState();
+    if (latestMatchedEra[0]?.eraId === chainState.last_added_block_info.era_id) return;
     // determine next era to check
     let nextEra: number;
-    latestMatchedEra.length < 1 ? (nextEra = 6702) : (nextEra = latestMatchedEra[0]?.eraId - 1);
+    latestMatchedEra.length < 1 ? (nextEra = 0) : (nextEra = latestMatchedEra[0]?.eraId + 1);
     console.log(`Era to match: ${nextEra}`);
     // fetch next switch block
     const nextSwitchBlock = await getSwitchBlockByEraId(nextEra);
