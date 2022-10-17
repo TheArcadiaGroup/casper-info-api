@@ -69,18 +69,21 @@ export const QueryDeploy = async (data) => {
     const deployResult = await casperService.getDeployInfo(hash);
     const deployRes: any = deployResult;
     await addDeployToSave(deployRes, hashType);
-    await addAccountUpdate(
-      deployResult.deploy?.header?.account,
-      new Date(deployResult.deploy.header.timestamp)
-    );
+    // TODO uncomment
+    // await addAccountUpdate(
+    //   deployResult.deploy?.header?.account,
+    //   new Date(deployResult.deploy.header.timestamp)
+    // );
     const validatorPublicKey = deployRes.deploy?.session?.StoredContractByHash?.args?.find(
       (value) => {
         return value[0] === 'validator';
       }
     )[1]?.parsed;
     if (validatorPublicKey) {
-      await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
+      // TODO uncomment
+      // await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
     }
+    // TODO uncomment
     // const contractHash: string =
     //   deployRes.deploy?.session?.StoredContractByHash?.hash ||
     //   deployRes.deploy?.session?.StoredContractByName?.hash ||
