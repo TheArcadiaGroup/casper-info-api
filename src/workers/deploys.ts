@@ -32,7 +32,7 @@ export const addDeployHash = async (deployHash: string) => {
   );
 };
 export const processDeployQuery = async () => {
-  queryDeploy.process(500, async (job, done) => {
+  queryDeploy.process(100, async (job, done) => {
     QueryDeploy(job.data.deployHash)
       .then(() => {
         done();
@@ -49,7 +49,7 @@ export const addDeployToSave = async (deploy: GetDeployResult) => {
   });
 };
 export const processDeploySave = async () => {
-  saveDeploy.process(1000, async (job, done) => {
+  saveDeploy.process(100, async (job, done) => {
     try {
       await setDeploy(job.data);
       done();
