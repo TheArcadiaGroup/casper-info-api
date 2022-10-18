@@ -42,7 +42,6 @@ export const processQueryContract = async () => {
   queryContract.process(100, async (job, done) => {
     try {
       const { contractHash } = job.data;
-      console.log(`Contract added: ${contractHash}`);
       await getChainContract(contractHash);
       done();
     } catch (error) {
@@ -108,7 +107,6 @@ const getChainContract = async (contractHash: string) => {
     };
     addSaveContract(contract);
   } catch (error) {
-    console.log(`Contract err: ${error}`);
     throw new Error(`Could not fetch contract from the chain: ${error}`);
   }
 };
@@ -128,11 +126,9 @@ export const seedContracts = async () => {
       deployJobsCount.delayed < 1
     ) {
       const deploys = await getDeploysFromDB(i, 1000, 'asc');
-      // console.log(deploys[0].deployHash);
       deploys?.forEach(async (deploy) => {
         await addDeployHash(deploy.deployHash);
         await setMatchedDeployIndex(i);
-        console.log(i);
         i++;
       });
     }
