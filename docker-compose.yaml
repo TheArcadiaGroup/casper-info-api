@@ -177,8 +177,8 @@ services:
       - mongodb
     networks:
       - casper-info
-  era-summary-query:
-    container_name: era-summary-query
+  contract-query:
+    container_name: contract-query
     build: .
     ports:
       - 6005:6005
@@ -186,6 +186,24 @@ services:
       - ./.env
     environment:
       - PORT=6005
+      - INDEXER=true
+      - NODE_ENV=prod
+      - WORKER_TYPE=CONTRACT_QUERY
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - casper-info
+  era-summary-query:
+    container_name: era-summary-query
+    build: .
+    ports:
+      - 6006:6006
+    env_file:
+      - ./.env
+    environment:
+      - PORT=6006
       - INDEXER=true
       - NODE_ENV=prod
       - WORKER_TYPE=ERA_SUMMARY_AND_PERFORMANCE_CALCULATION
@@ -199,11 +217,11 @@ services:
     container_name: account-update
     build: .
     ports:
-      - 6006:6006
+      - 6007:6007
     env_file:
       - ./.env
     environment:
-      - PORT=6006
+      - PORT=6007
       - INDEXER=true
       - NODE_ENV=prod
       - WORKER_TYPE=ACCOUNT_UPDATE

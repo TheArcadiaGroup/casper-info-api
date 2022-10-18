@@ -1,13 +1,13 @@
 import { getDeploysByBlockHash, setDeploy } from '@controllers/deploy';
 import { logger } from '@logger';
 import Bull from 'bull';
-import axios from 'axios';
 import { addAccountUpdate } from './accounts';
 import { casperService, getLatestState } from '@utils';
 import { GetDeployResult } from 'casper-js-sdk';
 import { addQueryContract } from './contracts';
 import { getBlockByHeightFromDB } from '@controllers/block';
 import { addBlockToQueryQueue } from './blocks';
+import { getContract } from '@controllers/contracts';
 
 export const queryDeploy = new Bull('deploy-query', {
   redis: {
@@ -32,7 +32,7 @@ export const addDeployHash = async (deployHash: string) => {
   );
 };
 export const processDeployQuery = async () => {
-  queryDeploy.process(100, async (job, done) => {
+  queryDeploy.process(500, async (job, done) => {
     QueryDeploy(job.data.deployHash)
       .then(() => {
         done();
@@ -49,7 +49,7 @@ export const addDeployToSave = async (deploy: GetDeployResult) => {
   });
 };
 export const processDeploySave = async () => {
-  saveDeploy.process(500, async (job, done) => {
+  saveDeploy.process(1000, async (job, done) => {
     try {
       await setDeploy(job.data);
       done();
@@ -64,24 +64,22 @@ export const QueryDeploy = async (deployHash: string) => {
     const deployResult = await casperService.getDeployInfo(deployHash);
     const deployRes: any = deployResult;
     await addDeployToSave(deployRes);
-    await addAccountUpdate(
-      deployResult.deploy?.header?.account,
-      new Date(deployResult.deploy.header.timestamp)
-    );
-    const validatorPublicKey = deployRes.deploy?.session?.StoredContractByHash?.args?.find(
-      (value) => {
-        return value[0] === 'validator';
-      }
-    )[1]?.parsed;
-    if (validatorPublicKey) {
-      await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
-    }
-    const contractHash: string =
-      deployRes.deploy?.session?.StoredContractByHash?.hash ||
-      deployRes.deploy?.session?.StoredContractByName?.hash ||
-      '';
-    contractHash &&
-      (await addQueryContract(contractHash, new Date(deployResult.deploy.header.timestamp)));
+    // await addAccountUpdate(
+    //   deployResult.deploy?.header?.account,
+    //   new Date(deployResult.deploy.header.timestamp)
+    // );
+    // const validatorPublicKey = deployRes.deploy?.session?.StoredContractByHash?.args?.find(
+    //   (value) => {
+    //     return value[0] === 'validator';
+    //   }
+    // )[1]?.parsed;
+    // if (validatorPublicKey) {
+    //   await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
+    // }
+    const contractHash: string = deployRes.deploy?.session?.StoredContractByHash?.hash || '';
+    const contract = contractHash && getContract(contractHash);
+    if (contract) return;
+    contractHash && (await addQueryContract(contractHash));
   } catch (error) {
     logger.error({ deployRPC: { deployHash, errMessage: `${error}` } });
   }

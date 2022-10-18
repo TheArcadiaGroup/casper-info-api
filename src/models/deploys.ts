@@ -35,4 +35,10 @@ const deploySchema = new mongoose.Schema(
   { versionKey: false }
 );
 
+const matchedDeploy = new mongoose.Schema(
+  { index: { type: Number, unique: true } },
+  { versionKey: false }
+);
+
 export const Deploy = mongoose.model('Deploy', deploySchema);
+export const MatchedDeploy = mongoose.model('MatchedDeploy', matchedDeploy);

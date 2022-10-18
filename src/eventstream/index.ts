@@ -7,7 +7,7 @@ import { getBlockByHeightFromDB } from '@controllers/block';
 
 class EventStreamHandler {
   constructor() {
-    this.match();
+    if (process.env.INDEXER !== 'true') this.match();
   }
   async match() {
     const chainState = await getLatestState();

@@ -66,7 +66,9 @@ export const failedContractQueriesHandler = () => {
     const failedContractQueries = await queryContract.getFailed();
     failedContractQueries &&
       failedContractQueries.forEach(async (job) => {
-        job && (await queryContract.add(job.data, job.opts));
+        if (!job.failedReason.includes('ValueNotFound')) {
+          job && (await queryContract.add(job.data, job.opts));
+        }
         job && job.remove();
       });
   }, 500);

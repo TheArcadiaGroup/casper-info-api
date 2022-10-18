@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
-import { Deploy } from '@models/deploys';
+import { Deploy, MatchedDeploy } from '@models/deploys';
 import { logger } from '@logger';
 import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
 import { casperService } from '@utils';
 import { getAccountBalanceByAddress } from '@utils/accounts';
+// import { Deploy } from 'casper-js-sdk/dist/lib/DeployUtil';
 let amountInNextParsed = false;
 let amount: number;
 export const setDeploy = async (deployResult) => {
@@ -75,20 +76,39 @@ export const setDeploy = async (deployResult) => {
   }
   amount = 0;
 };
-export const getDeploys = async (req: Request, res: Response) => {
-  const { startIndex, count } = req.query;
-  await Deploy.find()
-    .sort({ timestamp: 'desc' })
-    .skip(Number(startIndex) - 1)
-    .limit(Number(count))
-    .then((deploys) => {
-      res.status(200).json(deploys);
-    })
-    .catch((err) => {
-      res.status(500);
-    });
+export const setMatchedDeployIndex = async (index: number) => {
+  try {
+    await MatchedDeploy.findOneAndUpdate({ index }, { index }, { upsert: true });
+  } catch (error) {
+    throw new Error(`Could not save match deploy index: ${error}`);
+  }
 };
-
+export const getLatestMatchedDeployIndex = async () => {
+  try {
+    return await MatchedDeploy.find().sort({ index: 'desc' }).limit(1);
+  } catch (error) {
+    throw new Error(`Could not get latest matched deploy index: ${error}`);
+  }
+};
+export const getDeploys = async (req: Request, res: Response) => {
+  try {
+    const { startIndex, count } = req.query;
+    const deploys = await getDeploysFromDB(Number(startIndex), Number(count), 'desc');
+    res.status(200).json(deploys);
+  } catch (error) {
+    res.status(500).send(`Could not fetch deploys: ${error}`);
+  }
+};
+export const getDeploysFromDB = async (startIndex: number, count: number, sort: 'asc' | 'desc') => {
+  try {
+    return await Deploy.find()
+      .sort({ timestamp: sort })
+      .skip(startIndex - 1)
+      .limit(count);
+  } catch (error) {
+    throw new Error(`Could not fetch deploys from DB: ${error}`);
+  }
+};
 export const getDeployByHash = async (req: Request, res: Response) => {
   try {
     const { hash } = req.params;
@@ -193,6 +213,14 @@ export const getTransfersCount = async (): Promise<{ _id: string; count: number 
     // TODO handle error
     throw new Error(err);
   });
+};
+
+export const getDeploysCount = async (): Promise<number> => {
+  try {
+    return await Deploy.find().count();
+  } catch (error) {
+    throw new Error(`Could not fetch all deploys: ${error}`);
+  }
 };
 
 export const getDeployByPublicKey = async (deployHash: string) => {

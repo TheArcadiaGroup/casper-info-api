@@ -21,3 +21,10 @@ export const getContracts = async () => {
   try {
   } catch (error) {}
 };
+export const getContract = async (contractHash: string) => {
+  try {
+    return await Contract.findOne({ contractHash });
+  } catch (error) {
+    throw new Error(`Could not fetch contract from DB: ${error}`);
+  }
+};
