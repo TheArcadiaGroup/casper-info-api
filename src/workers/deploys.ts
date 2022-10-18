@@ -99,7 +99,6 @@ export const matchDeploys = async () => {
     ) {
       console.log('Queue busy');
     }
-    // console.log(i);
     // Fetch number of deploys and transfers for the block
     const block = await getBlockByHeightFromDB(i);
     // Fetch number of saved deploys and transfers for the block
@@ -109,8 +108,5 @@ export const matchDeploys = async () => {
       addBlockToQueryQueue(block?.blockHeight);
       console.log(`Block deploys matched: ${block?.blockHeight}`);
     }
-    console.log(
-      `Block deploys confirmed: ${i}: ${block?.transfers + block?.deploys}:${blockDeploys?.length}`
-    );
   }
 };
