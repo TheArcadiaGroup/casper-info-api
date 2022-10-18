@@ -1,17 +1,17 @@
 import { EventName, EventStream, GetBlockResult } from 'casper-js-sdk';
 import { casperService, getLatestState } from '@utils';
 import { addBlockToQueryQueue, addBlockToSaveQueue } from '@workers/blocks';
-import { addDeployHashes } from '@workers/deploys';
+import { addDeployHash } from '@workers/deploys';
 import { addEraSwitchBlockHash } from '@workers/era';
 import { getBlockByHeightFromDB } from '@controllers/block';
 
 class EventStreamHandler {
   constructor() {
-    this.match();
+    if (process.env.INDEXER !== 'true') this.match();
   }
   async match() {
     const chainState = await getLatestState();
-    const latestBlockHeight = chainState.last_added_block_info.height;
+    const latestBlockHeight = chainState?.last_added_block_info.height;
     for (let i = latestBlockHeight - 100; i <= latestBlockHeight; i++) {
       const block = await getBlockByHeightFromDB(i);
       if (!block) addBlockToQueryQueue(i);
@@ -27,10 +27,10 @@ class EventStreamHandler {
       if (currentHeight > 0 && block.header.height >= currentHeight) {
         addBlockToSaveQueue(block);
         block?.body?.deploy_hashes?.forEach((hash) => {
-          addDeployHashes(hash, 'deploy');
+          addDeployHash(hash);
         });
         block?.body?.transfer_hashes?.forEach((hash) => {
-          addDeployHashes(hash, 'transfer');
+          addDeployHash(hash);
         });
         if (block.header.era_end) {
           addEraSwitchBlockHash(block.hash, block.header.timestamp);

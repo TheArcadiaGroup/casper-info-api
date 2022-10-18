@@ -1,13 +1,13 @@
 import { getDeploysByBlockHash, setDeploy } from '@controllers/deploy';
 import { logger } from '@logger';
 import Bull from 'bull';
-import axios from 'axios';
 import { addAccountUpdate } from './accounts';
 import { casperService, getLatestState } from '@utils';
 import { GetDeployResult } from 'casper-js-sdk';
 import { addQueryContract } from './contracts';
 import { getBlockByHeightFromDB } from '@controllers/block';
 import { addBlockToQueryQueue } from './blocks';
+import { getContract } from '@controllers/contracts';
 
 export const queryDeploy = new Bull('deploy-query', {
   redis: {
@@ -21,9 +21,9 @@ export const saveDeploy = new Bull('deploy-save', {
     port: Number(process.env.REDIS_PORT)
   }
 });
-export const addDeployHashes = async (hash: string, hashType: 'deploy' | 'transfer') => {
+export const addDeployHash = async (deployHash: string) => {
   await queryDeploy.add(
-    { hash, hashType },
+    { deployHash },
     {
       attempts: 10,
       removeOnComplete: true,
@@ -32,8 +32,8 @@ export const addDeployHashes = async (hash: string, hashType: 'deploy' | 'transf
   );
 };
 export const processDeployQuery = async () => {
-  queryDeploy.process(100, async (job, done) => {
-    QueryDeploy(job.data)
+  queryDeploy.process(500, async (job, done) => {
+    QueryDeploy(job.data.deployHash)
       .then(() => {
         done();
       })
@@ -41,21 +41,17 @@ export const processDeployQuery = async () => {
   });
 };
 // Add deploy to deploy saving queue
-export const addDeployToSave = async (deploy: GetDeployResult, hashType: string) => {
-  await saveDeploy.add(
-    { deploy, hashType },
-    {
-      attempts: 10,
-      removeOnComplete: true,
-      removeOnFail: 1000
-    }
-  );
+export const addDeployToSave = async (deploy: GetDeployResult) => {
+  await saveDeploy.add(deploy, {
+    attempts: 10,
+    removeOnComplete: true,
+    removeOnFail: 1000
+  });
 };
 export const processDeploySave = async () => {
-  saveDeploy.process(500, async (job, done) => {
+  saveDeploy.process(1000, async (job, done) => {
     try {
-      const { deploy, hashType } = job.data;
-      await setDeploy(deploy, hashType);
+      await setDeploy(job.data);
       done();
     } catch (error) {
       done(new Error(error));
@@ -63,34 +59,29 @@ export const processDeploySave = async () => {
   });
 };
 
-export const QueryDeploy = async (data) => {
-  const { hash, hashType } = data;
+export const QueryDeploy = async (deployHash: string) => {
   try {
-    const deployResult = await casperService.getDeployInfo(hash);
+    const deployResult = await casperService.getDeployInfo(deployHash);
     const deployRes: any = deployResult;
-    await addDeployToSave(deployRes, hashType);
-    // TODO uncomment
+    await addDeployToSave(deployRes);
     // await addAccountUpdate(
     //   deployResult.deploy?.header?.account,
     //   new Date(deployResult.deploy.header.timestamp)
     // );
-    const validatorPublicKey = deployRes.deploy?.session?.StoredContractByHash?.args?.find(
-      (value) => {
-        return value[0] === 'validator';
-      }
-    )[1]?.parsed;
-    if (validatorPublicKey) {
-      // TODO uncomment
-      // await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
-    }
-    // TODO uncomment
-    // const contractHash: string =
-    //   deployRes.deploy?.session?.StoredContractByHash?.hash ||
-    //   deployRes.deploy?.session?.StoredContractByName?.hash ||
-    //   '';
-    // await addQueryContract(contractHash, new Date(deployResult.deploy.header.timestamp));
+    // const validatorPublicKey = deployRes.deploy?.session?.StoredContractByHash?.args?.find(
+    //   (value) => {
+    //     return value[0] === 'validator';
+    //   }
+    // )[1]?.parsed;
+    // if (validatorPublicKey) {
+    //   await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
+    // }
+    const contractHash: string = deployRes.deploy?.session?.StoredContractByHash?.hash || '';
+    const contract = contractHash && getContract(contractHash);
+    if (contract) return;
+    contractHash && (await addQueryContract(contractHash));
   } catch (error) {
-    logger.error({ deployRPC: { deployHash: hash, errMessage: `${error}` } });
+    logger.error({ deployRPC: { deployHash, errMessage: `${error}` } });
   }
 };
 

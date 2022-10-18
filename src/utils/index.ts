@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { CasperClient, CasperServiceByJsonRPC, GetStatusResult } from 'casper-js-sdk';
 import CoinGecko from 'coingecko-api';
 export const casperService = new CasperServiceByJsonRPC(process.env.RPC_URL as string);
@@ -28,7 +29,9 @@ export const getLatestState = async (): Promise<GetStatusResult> => {
   try {
     return await casperService.getStatus();
   } catch (error) {
-    throw new Error(error);
+    // TODO Handle error
+    // throw new Error(error);
+    console.log(error);
   }
 };
 
@@ -42,16 +45,25 @@ export const checkBlockID = (id: any, currentHeight: number): 'hash' | 'height' 
   return idType;
 };
 
-export const getRedisConnectionDetails = () => {
-  let redis: {
-    host: string;
-    port: number;
-  };
-  if (process.env.INDEXER == 'true') {
-    redis.host;
+export const rpcRequest = async (method: string, params: any) => {
+  try {
+    const config = {
+      url: process.env.RPC_URL,
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'id',
+        method,
+        params
+      })
+    };
+    const res = await axios.request(config);
+    return res.data.result && res.data.result;
+  } catch (error) {
+    // TODO handle error
+    console.log(`RPC Error: ${error}`);
   }
-  return redis;
 };
-
-//  host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
-//     port: Number(process.env.REDIS_PORT)

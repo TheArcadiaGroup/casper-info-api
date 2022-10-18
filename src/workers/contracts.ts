@@ -1,7 +1,16 @@
-import { setContract } from '@controllers/contracts';
-import { casperService, getLatestState } from '@utils';
+import { getContract, setContract } from '@controllers/contracts';
+import { TypedJSON, jsonMember, jsonObject } from 'typedjson';
+import {
+  getDeploys,
+  getDeploysCount,
+  getDeploysFromDB,
+  getLatestMatchedDeployIndex,
+  setMatchedDeployIndex
+} from '@controllers/deploy';
+import { casperService, getLatestState, rpcRequest } from '@utils';
 import Bull from 'bull';
 import { ContractPackageJson, EntryPoint } from 'casper-js-sdk/dist/lib/StoredValue';
+import { addDeployHash, queryDeploy } from './deploys';
 export type ContractJson = {
   contractHash: string;
   contractPackageHash: string;
@@ -10,11 +19,6 @@ export type ContractJson = {
   entryPoints: EntryPoint[];
   contractPackage?: ContractPackageJson;
   protocolVersion: string;
-  name?: string;
-  contractType?: string;
-  owner?: string;
-  deploys?: number;
-  timestamp: Date;
 };
 export const queryContract = new Bull('contract-query', {
   redis: {
@@ -23,9 +27,9 @@ export const queryContract = new Bull('contract-query', {
   }
 });
 
-export const addQueryContract = async (contractHash: string, timestamp: Date) => {
+export const addQueryContract = async (contractHash: string) => {
   await queryContract.add(
-    { contractHash, timestamp },
+    { contractHash },
     {
       attempts: 10,
       removeOnComplete: true,
@@ -37,8 +41,9 @@ export const addQueryContract = async (contractHash: string, timestamp: Date) =>
 export const processQueryContract = async () => {
   queryContract.process(100, async (job, done) => {
     try {
-      const { contractHash, timestamp } = job.data;
-      await getChainContract(contractHash, timestamp);
+      const { contractHash } = job.data;
+      console.log(`Contract added: ${contractHash}`);
+      await getChainContract(contractHash);
       done();
     } catch (error) {
       done(new Error(error));
@@ -72,7 +77,7 @@ export const processSaveContract = async () => {
   });
 };
 
-const getChainContract = async (contractHash: string, timestamp: Date) => {
+const getChainContract = async (contractHash: string) => {
   try {
     const chainState = await getLatestState();
     let blockState = await casperService.getBlockState(
@@ -81,7 +86,6 @@ const getChainContract = async (contractHash: string, timestamp: Date) => {
       []
     );
     const chainContract = blockState.Contract;
-    // console.log(blockState.Contract);
     if (!chainContract) return;
     const contractPackageHash = chainContract.contractPackageHash.replace(
       'contract-package-wasm',
@@ -100,12 +104,37 @@ const getChainContract = async (contractHash: string, timestamp: Date) => {
       namedKeys: chainContract.namedKeys,
       entryPoints: chainContract.entrypoints,
       contractPackage: blockState?.ContractPackage || null,
-      protocolVersion: chainContract.protocolVersion,
-      timestamp
+      protocolVersion: chainContract.protocolVersion
     };
-    // console.log(JSON.stringify(contract, null, 2));
     addSaveContract(contract);
   } catch (error) {
+    console.log(`Contract err: ${error}`);
     throw new Error(`Could not fetch contract from the chain: ${error}`);
+  }
+};
+
+export const seedContracts = async () => {
+  // while not all deploys haven't been queried, fetch deploy
+  // if nothing in deploy and contract queue, add deploy query to queue
+  let i = (await getLatestMatchedDeployIndex())[0]?.index || 1;
+
+  while (i <= (await getDeploysCount())) {
+    // If deploy queries are in queue, wait
+    const deployJobsCount = await queryDeploy.getJobCounts();
+    if (
+      deployJobsCount.active < 1 &&
+      deployJobsCount.waiting < 1 &&
+      deployJobsCount.failed < 1 &&
+      deployJobsCount.delayed < 1
+    ) {
+      const deploys = await getDeploysFromDB(i, 1000, 'asc');
+      // console.log(deploys[0].deployHash);
+      deploys?.forEach(async (deploy) => {
+        await addDeployHash(deploy.deployHash);
+        await setMatchedDeployIndex(i);
+        console.log(i);
+        i++;
+      });
+    }
   }
 };

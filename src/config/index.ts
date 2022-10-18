@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
 import { processBlockQuery, processSaveBlock } from '@workers/blocks';
-import { matchDeploys, processDeployQuery, processDeploySave } from '@workers/deploys';
+import { processDeployQuery, processDeploySave } from '@workers/deploys';
 import { eraMatchTrigger, processEraMatch, processEraSummaryQuery } from '@workers/era';
 import {
   processBidDelegatorSave,
@@ -32,11 +32,12 @@ import {
   failedContractSavesHandler
 } from '@workers/queueFailureHandler';
 import { processRewardSave } from '@workers/rewards';
-import { processQueryContract, processSaveContract } from '@workers/contracts';
+import { processQueryContract, processSaveContract, seedContracts } from '@workers/contracts';
 enum workerType {
   blockQuery = 'BLOCK_QUERY',
   blockSave = 'BLOCK_SAVE',
   deployQuery = 'DEPLOY_QUERY',
+  contractQuery = 'CONTRACT_QUERY',
   eraSummaryandPerfomanceCalculation = 'ERA_SUMMARY_AND_PERFORMANCE_CALCULATION',
   accountUpdate = 'ACCOUNT_UPDATE'
 }
@@ -62,11 +63,18 @@ export const Init = async () => {
             failedBlockSavesHandler();
             break;
           case workerType.deployQuery:
-            matchDeploys();
+            // matchDeploys();
             processDeployQuery();
             processDeploySave();
             failedDeployQueriesHandler();
             failedDeploySavesHandler();
+            break;
+          case workerType.contractQuery:
+            seedContracts();
+            processQueryContract();
+            processSaveContract();
+            failedContractQueriesHandler();
+            failedContractSavesHandler();
             break;
           case workerType.eraSummaryandPerfomanceCalculation:
             eraMatchTrigger();
