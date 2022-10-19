@@ -30,7 +30,8 @@ const deploySchema = new mongoose.Schema(
       index: true
     },
     toAccountBalance: Number,
-    deployType: { type: String, index: true }
+    deployType: { type: String, index: true },
+    contractHash: { type: String, index: true }
   },
   { versionKey: false }
 );

@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 import { CLPublicKey } from 'casper-js-sdk';
 import { casperService } from '@utils';
 import { getAccountBalanceByAddress } from '@utils/accounts';
+import { getContractFromDB } from './contracts';
 // import { Deploy } from 'casper-js-sdk/dist/lib/DeployUtil';
 let amountInNextParsed = false;
 let amount: number;
@@ -61,7 +62,11 @@ export const setDeploy = async (deployResult) => {
         toAccountHash,
         toAccountBalance: toAccountHash ? await getAccountBalanceByAddress(toAccountHash) : 0,
         status: deployResult?.execution_results[0]?.result?.Success ? 'success' : 'fail',
-        deployType: hashType
+        deployType: hashType,
+        contractHash:
+          deployResult.deploy?.session?.StoredContractByHash?.hash ||
+          deployResult.deploy?.session?.StoredContractByName?.hash ||
+          ''
       },
       { new: true, upsert: true }
     );
@@ -178,6 +183,20 @@ export const getDeploysByBlockHash = async (blockHash: string) => {
     // TODO handle error
     throw new Error(err);
   });
+};
+export const getDeploysByContractHash = async (req: Request, res: Response) => {
+  try {
+    const { hash } = req.params;
+    const contract = await getContractFromDB(hash);
+    const { startIndex, count } = req.query;
+    const contractDeploys = await Deploy.find({ contractHash: contract.contractHash })
+      .sort({ timestamp: 'desc' })
+      .skip(Number(startIndex) - 1)
+      .limit(Number(count));
+    res.status(200).json(contractDeploys).end();
+  } catch (error) {
+    res.status(500).send(`Could not fetch deploys by contract hash: ${error}`).end();
+  }
 };
 export const getDeployVolumes = async (req: Request, res: Response) => {
   try {
