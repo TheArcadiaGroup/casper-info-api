@@ -120,17 +120,18 @@ export const seedContracts = async () => {
     // If deploy queries are in queue, wait
     const deployJobsCount = await queryDeploy.getJobCounts();
     if (
-      deployJobsCount.active < 1 &&
-      deployJobsCount.waiting < 1 &&
-      deployJobsCount.failed < 1 &&
-      deployJobsCount.delayed < 1
+      deployJobsCount.active > 1 ||
+      deployJobsCount.waiting > 1 ||
+      deployJobsCount.failed > 1 ||
+      deployJobsCount.delayed > 1
     ) {
-      const deploys = await getDeploysFromDB(i, 1000, 'asc');
-      deploys?.forEach(async (deploy) => {
-        await addDeployHash(deploy.deployHash);
-        await setMatchedDeployIndex(i);
-        i++;
-      });
+      continue;
     }
+    const deploys = await getDeploysFromDB(i, 1000, 'asc');
+    deploys?.forEach(async (deploy) => {
+      await addDeployHash(deploy.deployHash);
+      await setMatchedDeployIndex(i);
+      i++;
+    });
   }
 };
