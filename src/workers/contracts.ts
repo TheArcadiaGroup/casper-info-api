@@ -11,6 +11,7 @@ import { casperService, getLatestState, rpcRequest } from '@utils';
 import Bull from 'bull';
 import { ContractPackageJson, EntryPoint } from 'casper-js-sdk/dist/lib/StoredValue';
 import { addDeployHash, queryDeploy, saveDeploy } from './deploys';
+import { logger } from '@logger';
 export type ContractJson = {
   contractHash: string;
   contractPackageHash: string;
@@ -107,7 +108,7 @@ const getChainContract = async (contractHash: string) => {
     };
     addSaveContract(contract);
   } catch (error) {
-    throw new Error(`Could not fetch contract from the chain: ${error}`);
+    logger.error({ contractRPC: { contractHash, errMessage: `${error}` } });
   }
 };
 

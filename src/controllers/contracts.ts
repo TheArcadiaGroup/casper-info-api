@@ -1,4 +1,5 @@
 import { Contract } from '@models/contracts';
+import { casperClient, casperService, getLatestState, rpcRequest } from '@utils';
 import { ContractJson } from '@workers/contracts';
 import { Request, Response } from 'express';
 
@@ -20,9 +21,9 @@ export const setContract = async (contract: ContractJson) => {
 export const getContracts = async (req: Request, res: Response) => {
   try {
     const contracts = await Contract.find();
-    res.status(200).json(contracts).end();
+    res.status(200).json(contracts);
   } catch (error) {
-    res.status(500).send(`Could not fetch contracts: ${error}`).end();
+    res.status(500).send(`Could not fetch contracts: ${error}`);
   }
 };
 export const getContractFromDB = async (hash: string) => {
@@ -36,8 +37,30 @@ export const getContract = async (req: Request, res: Response) => {
   try {
     const { hash } = req.params;
     const contract = await getContractFromDB(hash);
-    res.status(200).json(contract).end();
+    const chainState = await getLatestState();
+    const rawData = await rpcRequest('state_get_item', [
+      chainState?.last_added_block_info?.state_root_hash,
+      `hash-${hash}`,
+      []
+    ]);
+    contract.rawData = rawData?.stored_value;
+    res.status(200).json(contract);
   } catch (error) {
-    res.status(500).send(`Could not fetch contract: ${error}`).end();
+    res.status(500).send(`Could not fetch contract: ${error}`);
+  }
+};
+
+export const getUref = async (req: Request, res: Response) => {
+  try {
+    const { uref } = req.params;
+    const chainState = await getLatestState();
+    const rawData = await rpcRequest('state_get_item', [
+      chainState?.last_added_block_info?.state_root_hash,
+      uref,
+      []
+    ]);
+    res.status(200).json(rawData?.stored_value);
+  } catch (error) {
+    res.status(500).send(`Could not fetch contract uref: ${error}`);
   }
 };
