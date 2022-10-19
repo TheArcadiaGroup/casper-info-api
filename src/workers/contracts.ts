@@ -10,7 +10,7 @@ import {
 import { casperService, getLatestState, rpcRequest } from '@utils';
 import Bull from 'bull';
 import { ContractPackageJson, EntryPoint } from 'casper-js-sdk/dist/lib/StoredValue';
-import { addDeployHash, queryDeploy } from './deploys';
+import { addDeployHash, queryDeploy, saveDeploy } from './deploys';
 export type ContractJson = {
   contractHash: string;
   contractPackageHash: string;
@@ -118,12 +118,17 @@ export const seedContracts = async () => {
 
   while (i <= (await getDeploysCount())) {
     // If deploy queries are in queue, wait
-    const deployJobsCount = await queryDeploy.getJobCounts();
+    const deployQueryJobsCount = await queryDeploy.getJobCounts();
+    const deploySaveJobsCount = await saveDeploy.getJobCounts();
     if (
-      deployJobsCount.active > 1 ||
-      deployJobsCount.waiting > 1 ||
-      deployJobsCount.failed > 1 ||
-      deployJobsCount.delayed > 1
+      deployQueryJobsCount.active > 1 ||
+      deployQueryJobsCount.waiting > 1 ||
+      deployQueryJobsCount.failed > 1 ||
+      deployQueryJobsCount.delayed > 1 ||
+      deploySaveJobsCount.active > 1 ||
+      deploySaveJobsCount.waiting > 1 ||
+      deploySaveJobsCount.failed > 1 ||
+      deploySaveJobsCount.delayed > 1
     ) {
       continue;
     }
