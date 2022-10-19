@@ -6,6 +6,7 @@ import { statsRouter } from '@v1-routes/stats';
 import { validatorsRouter } from '@v1-routes/validators';
 import { chainRouter } from '@v1-routes/chain';
 import { searchRouter } from '@v1-routes/search';
+import { contractRouter } from './contracts';
 
 export const router = Router();
 router.use('/v1/blocks', blockRouter);
@@ -15,3 +16,4 @@ router.use('/v1/stats', statsRouter);
 router.use('/v1/validators', validatorsRouter);
 router.use('/v1/search', searchRouter);
 router.use('/v1/chain', chainRouter);
+router.use('/v1/contracts', contractRouter);
