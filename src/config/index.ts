@@ -43,7 +43,7 @@ enum workerType {
 }
 export const Init = async () => {
   const mongoURI: string =
-    process.env.NODE_ENV == 'dev' ? 'mongodb://35.209.5.49:27017' : process.env.MONGO_URI;
+    process.env.NODE_ENV == 'dev' ? 'mongodb://localhost:27017' : process.env.MONGO_URI;
   mongoose
     .connect(mongoURI, {
       user: process.env.MONGO_INITDB_ROOT_USERNAME,
@@ -96,9 +96,9 @@ export const Init = async () => {
             break;
         }
       } else {
-        // eventStream.connect();
-        // eraMatchTrigger();
-        // validatorInfoFetchCron();
+        eventStream.connect();
+        eraMatchTrigger();
+        validatorInfoFetchCron();
         processBlockQuery();
         processSaveBlock();
         processDeployQuery();
