@@ -1,7 +1,8 @@
 import { Contract } from '@models/contracts';
-import { casperClient, casperService, getLatestState, rpcRequest } from '@utils';
+import { getLatestState, rpcRequest } from '@utils';
 import { ContractJson } from '@workers/contracts';
 import { Request, Response } from 'express';
+import { getContractMonthlyDeployCount } from './deploy';
 
 export const setContract = async (contract: ContractJson) => {
   try {
@@ -21,11 +22,19 @@ export const setContract = async (contract: ContractJson) => {
 export const getContracts = async (req: Request, res: Response) => {
   try {
     const contracts = await Contract.find();
-    res.status(200).json(contracts);
+    const monthlyDeployCounts = await getContractMonthlyDeployCount();
+    for (let i = 0; i < contracts.length; i++) {
+      contracts[i].deploys =
+        monthlyDeployCounts?.find((deployCount) => deployCount?._id === contracts[i].contractHash)
+          ?.count || 0;
+    }
+
+    res.status(200).json(contracts.filter((contract) => contract.contractHash));
   } catch (error) {
     res.status(500).send(`Could not fetch contracts: ${error}`);
   }
 };
+
 export const getContractFromDB = async (hash: string) => {
   try {
     return await Contract.findOne({ $or: [{ contractHash: hash }, { contractPackageHash: hash }] });
