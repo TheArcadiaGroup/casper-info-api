@@ -76,9 +76,10 @@ export const QueryDeploy = async (deployHash: string) => {
     // if (validatorPublicKey) {
     //   await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
     // }
-    const contractHash: string = deployRes.deploy?.session?.StoredContractByHash?.hash || '';
-    const contract = contractHash && getContract(contractHash);
-    if (contract) return;
+    const contractHash: string =
+      deployRes.deploy?.session?.StoredContractByHash?.hash ||
+      deployRes.deploy?.session?.StoredContractByName?.hash ||
+      '';
     contractHash && (await addQueryContract(contractHash));
   } catch (error) {
     logger.error({ deployRPC: { deployHash, errMessage: `${error}` } });
