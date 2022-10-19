@@ -97,7 +97,7 @@ export const Init = async () => {
         }
       } else {
         eventStream.connect();
-        // eraMatchTrigger();
+        eraMatchTrigger();
         validatorInfoFetchCron();
         processBlockQuery();
         processSaveBlock();

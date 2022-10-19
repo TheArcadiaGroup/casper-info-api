@@ -13,6 +13,7 @@ const contractSchema = new mongoose.Schema(
     contractType: String,
     owner: String,
     deploys: Number,
+    rawData: {},
     timestamp: Date
   },
   { versionKey: false }

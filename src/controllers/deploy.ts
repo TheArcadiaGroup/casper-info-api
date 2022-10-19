@@ -198,6 +198,20 @@ export const getDeploysByContractHash = async (req: Request, res: Response) => {
     res.status(500).send(`Could not fetch deploys by contract hash: ${error}`).end();
   }
 };
+export const getContractMonthlyDeployCount = async () => {
+  try {
+    const thirtyDaysAgo = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 30).toISOString();
+    // return await Deploy.find({
+    //   timestamp: { $gte: new Date(thirtyDaysAgo) }
+    // });
+    return await Deploy.aggregate([
+      { $match: { timestamp: { $gte: new Date(thirtyDaysAgo) } } },
+      { $group: { _id: '$contractHash', count: { $sum: 1 } } }
+    ]);
+  } catch (error) {
+    throw new Error(`Could not fetch contract deploy count: ${error}`);
+  }
+};
 export const getDeployVolumes = async (req: Request, res: Response) => {
   try {
     const { days } = req.params;
@@ -246,6 +260,6 @@ export const getDeployByPublicKey = async (deployHash: string) => {
   try {
     return await Deploy.findOne({ deployHash });
   } catch (error) {
-    console.log(error);
+    throw new Error(`Could not fetch deploy by public key: ${error}`);
   }
 };
