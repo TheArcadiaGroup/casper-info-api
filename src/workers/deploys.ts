@@ -64,21 +64,19 @@ export const QueryDeploy = async (deployHash: string) => {
     const deployResult = await casperService.getDeployInfo(deployHash);
     const deployRes: any = deployResult;
     await addDeployToSave(deployRes);
-    // await addAccountUpdate(
-    //   deployResult.deploy?.header?.account,
-    //   new Date(deployResult.deploy.header.timestamp)
-    // );
-    // const validatorPublicKey = deployRes.deploy?.session?.StoredContractByHash?.args?.find(
-    //   (value) => {
-    //     return value[0] === 'validator';
-    //   }
-    // )[1]?.parsed;
-    // if (validatorPublicKey) {
-    //   await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
-    // }
+    await addAccountUpdate(
+      deployResult.deploy?.header?.account,
+      new Date(deployResult.deploy.header.timestamp)
+    );
+    const validatorPublicKey = deployRes.deploy?.session?.StoredContractByHash?.args?.find(
+      (value) => {
+        return value[0] === 'validator';
+      }
+    )[1]?.parsed;
+    if (validatorPublicKey) {
+      await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
+    }
     const contractHash: string = deployRes.deploy?.session?.StoredContractByHash?.hash || '';
-    const contract = contractHash && getContract(contractHash);
-    if (contract) return;
     contractHash && (await addQueryContract(contractHash));
   } catch (error) {
     logger.error({ deployRPC: { deployHash, errMessage: `${error}` } });
