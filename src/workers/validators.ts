@@ -8,7 +8,6 @@ import {
   setCurrentEraValidator,
   setDelegator,
   setNextEraValidator,
-  updateBidPerformanceAndRewards
 } from '@controllers/validator';
 import { casperService } from '@utils';
 import Bull from 'bull';
@@ -18,6 +17,7 @@ export type Bid = {
   publicKey: string;
   numOfDelegators: number;
   delegationRate: number;
+  performance: number;
   totalBid: number;
   totalDelegated: number;
   selfStake: number;
@@ -25,6 +25,8 @@ export type Bid = {
   inactive: boolean;
   networkPercentage: number;
   rank?: number;
+  totalValidatorRewards: number;
+  totalDelegatorRewards: number;
 };
 type EraValidator = {
   publicKey: string;
@@ -52,12 +54,6 @@ export const validatorsInfoFetch = new Bull('validators-info', {
   }
 });
 export const bidOrValidatorSave = new Bull('bid-or-validator-save', {
-  redis: {
-    host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT)
-  }
-});
-export const bidPerformanceAndRewardsUpdate = new Bull('validator-update', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT)
@@ -150,43 +146,12 @@ export const processValidatorsInfoFetch = async () => {
       .catch((err) => done(new Error(err)));
   });
 };
-export const addValidatorUpdate = async (eraId: number) => {
-  await bidPerformanceAndRewardsUpdate.add(eraId, {
-    attempts: 10,
-    removeOnComplete: true,
-    removeOnFail: 1000
-  });
-};
-export const processValidatorUpdate = async () => {
-  bidPerformanceAndRewardsUpdate.process(50, async (job, done) => {
-    updateBid(job.data)
-      .then(() => {
-        done();
-      })
-      .catch((err) => done(new Error(err)));
-  });
-};
-export const updateBid = async (eraId: number) => {
-  const validatorPerformanceAggregation = await getBidPerformanceAggregation(eraId);
-  validatorPerformanceAggregation?.forEach(async (validator) => {
-    const totalValidatorRewards: number =
-      (await getBidRewards(validator._id))[0]?.totalRewards || 0;
-    const totalDelegatorRewards: number =
-      (await getBidDelegatorRewards(validator._id))[0]?.totalDelegatorRewards || 0;
-    validator._id &&
-      (await updateBidPerformanceAndRewards(
-        validator._id,
-        validator.count / 360,
-        totalValidatorRewards,
-        totalDelegatorRewards
-      ));
-  });
-};
 export const fetchValidatorsInfo = async () => {
   try {
     let bidValidators: Bid[] = [];
     let currentEraValidators: EraValidator[] = [];
     let nextEraValidators: EraValidator[] = [];
+    
     const validatorsInfoResult: ValidatorsInfoResult = await casperService.getValidatorsInfo();
     const bids: any = validatorsInfoResult.auction_state.bids;
     const eraValidatorsInfo = validatorsInfoResult.auction_state.era_validators;
@@ -197,7 +162,7 @@ export const fetchValidatorsInfo = async () => {
       });
     });
     bids &&
-      bids.forEach((bid) => {
+      bids.forEach(async (bid) => {
         const selfStake = Number(ethers.utils.formatUnits(bid.bid.staked_amount, 9));
         let totalDelegated = 0;
         bid?.bid?.delegators?.forEach((delegator) => {
@@ -211,19 +176,25 @@ export const fetchValidatorsInfo = async () => {
           addBidDelegatorSave(_delegator);
           totalDelegated += Number(ethers.utils.formatUnits(delegator.staked_amount, 9));
         });
+
         const totalBid = selfStake + totalDelegated;
         const selfStakePercentage = (selfStake / totalBid) * 100;
+        const totalValidatorRewards: number = (await getBidRewards(bid.public_key))[0]?.totalRewards || 0;
+        const totalDelegatorRewards: number = (await getBidDelegatorRewards(bid.public_key))[0]?.totalDelegatorRewards || 0;
 
         bidValidators.push({
           publicKey: bid.public_key,
           numOfDelegators: bid?.bid?.delegators?.length,
           delegationRate: bid.bid?.delegation_rate,
+          performance: bid?.bid?.delegators?.length / 360,
           totalBid,
           totalDelegated,
           selfStake,
           selfStakePercentage,
           networkPercentage: 0,
-          inactive: bid.bid.inactive
+          inactive: bid.bid.inactive,
+          totalValidatorRewards,
+          totalDelegatorRewards
         });
       });
 
