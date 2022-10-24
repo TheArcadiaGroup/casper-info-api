@@ -389,3 +389,69 @@ e.g. https://api.cspr.fyi/v1/blocks/97c01eb4596f6e06891386c181d0530f9dc7cee9fb8f
   ...
 ]
 ```
+
+## Chain
+
+### Latest Chain State
+
+This returns the chain's latest state
+
+Endpoint: `https://api.cspr.fyi/v1/chain/latest-state`
+
+Method: `GET`
+
+e.g. https://api.cspr.fyi/v1/chain/latest-state
+
+```json
+{
+  "api_version": "1.4.8",
+  "chainspec_name": "casper",
+  "starting_state_root_hash": "82b925f7140976f69a85b654e5eb60b8a92826a1e0721661fd78e344f691e3f7",
+  "peers": [
+    {
+      "node_id": "tls:0004..99ad",
+      "address": "62.149.222.207:58186"
+    },
+    ...
+  ],
+  "last_added_block_info": {
+    "hash": "b364d210fd77886bffc2ba66c420270261b54e1090d10e3b6ef52ee1e99eb70a",
+    "timestamp": "2022-10-24T15:00:35.456Z",
+    "era_id": 6850,
+    "height": 1207424,
+    "state_root_hash": "896cc41bcf481ccdf89cff43d71ec71d322810a620cc58a42634095d25b05ae1",
+    "creator": "01b205c2bd03ce19cd2876ccc21a3566c407b631f3e714532ce0c9956bbac85811"
+  },
+  "our_public_signing_key": "01676bf10aa61247ea2cc992ce88f72ae0dbddb6c5563fd08e3f5d1d9e8b08d0ad",
+  "round_length": null,
+  "next_upgrade": null,
+  "build_version": "1.4.8-b94c4f79a-casper-mainnet",
+  "uptime": "1month 29days 16h 23m 56s 451ms"
+}
+```
+
+### Stats
+
+This returns an overview (top level stats) of what the network looks like.
+
+Endpoint: `https://api.cspr.fyi/v1/stats`
+
+Method: `GET`
+
+e.g. https://api.cspr.fyi/v1/stats
+
+```json
+{
+  "currentBlockHeight": 1207430,
+  "currentBlockTime": "2022-10-24T15:03:52.064Z",
+  "currentPrice": 0.04674432,
+  "marketCap": 484851133,
+  "circulatingSupply": 10444741752,
+  "totalSupply": 11238408059,
+  "activeValidators": 103,
+  "activeBids": 105,
+  "totalStakeBonded": 8616831434.335833,
+  "apy": 10.430547015788893,
+  "totalTransfers": 562230
+}
+```
