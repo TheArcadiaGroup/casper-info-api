@@ -1010,7 +1010,7 @@ Method: `GET`
 
 Query: `startIndex` and `count`.
 
-e.g. https://api.cspr.fyi/v1/deploys?startIndex=29181&count=10
+e.g. https://api.cspr.fyi/v1/deploys?startIndex=1&count=10
 
 ```json
 [
@@ -1366,4 +1366,191 @@ e.g. https://api.cspr.fyi/v1/deploys/volumes/14
   ],
   "totalDeploys": 708795
 }
+```
+
+## Validators
+
+### All Bids
+
+This returns a list of all bids.
+
+Endpoint: `https://api.cspr.fyi/v1/validators/bids`
+
+Method: `GET`
+
+e.g. https://api.cspr.fyi/v1/validators/bids
+
+```json
+[
+  {
+    "_id": "63398d8ce171002c64c53623",
+    "publicKey": "015fd964620f98e551065079e142840dac3fb25bd97a0d4722411cb439f9247d72",
+    "performance": 0.7305555555555555,
+    "totalDelegatorRewards": 1629097328.1280763,
+    "totalValidatorRewards": 195660320.34688172,
+    "delegationRate": 10,
+    "inactive": false,
+    "networkPercentage": 8.000482747061668,
+    "numOfDelegators": 119,
+    "rank": 1,
+    "selfStake": 639184.840896486,
+    "selfStakePercentage": 0.09296362674241634,
+    "totalBid": 687564441.3782818,
+    "totalDelegated": 686925256.5373853
+  },
+  ...
+]
+```
+
+### All Current Era Validators
+
+This returns a list of all current era validators.
+
+Endpoint: `https://api.cspr.fyi/v1/validators/current-era`
+
+Method: `GET`
+
+e.g. https://api.cspr.fyi/v1/validators/current-era
+
+```json
+[
+  {
+    "_id": "63398d8ce171002c64c53623",
+    "publicKey": "015fd964620f98e551065079e142840dac3fb25bd97a0d4722411cb439f9247d72",
+    "performance": 0.7305555555555555,
+    "totalDelegatorRewards": 1629097328.1280763,
+    "totalValidatorRewards": 195660320.34688172,
+    "delegationRate": 10,
+    "inactive": false,
+    "networkPercentage": 8.000482747061668,
+    "numOfDelegators": 119,
+    "rank": 1,
+    "selfStake": 639184.840896486,
+    "selfStakePercentage": 0.09296362674241634,
+    "totalBid": 687564441.3782818,
+    "totalDelegated": 686925256.5373853
+  },
+  ...
+]
+```
+
+### All Next Era Validators
+
+This returns a list of all next era validators.
+
+Endpoint: `https://api.cspr.fyi/v1/validators/next-era`
+
+Method: `GET`
+
+e.g. https://api.cspr.fyi/v1/validators/next-era
+
+```json
+[
+  {
+    "_id": "63398d8ce171002c64c53623",
+    "publicKey": "015fd964620f98e551065079e142840dac3fb25bd97a0d4722411cb439f9247d72",
+    "performance": 0.7305555555555555,
+    "totalDelegatorRewards": 1629097328.1280763,
+    "totalValidatorRewards": 195660320.34688172,
+    "delegationRate": 10,
+    "inactive": false,
+    "networkPercentage": 8.000482747061668,
+    "numOfDelegators": 119,
+    "rank": 1,
+    "selfStake": 639184.840896486,
+    "selfStakePercentage": 0.09296362674241634,
+    "totalBid": 687564441.3782818,
+    "totalDelegated": 686925256.5373853
+  },
+  ...
+]
+```
+
+### Validator Details
+
+This returns a validator's details.
+
+Endpoint: `https://api.cspr.fyi/v1/validators/{validatorPublicKey}`
+
+Method: `GET`
+
+Params: `validatorPublicKey`
+
+e.g. https://api.cspr.fyi/v1/validators/015fd964620f98e551065079e142840dac3fb25bd97a0d4722411cb439f9247d72
+
+```json
+{
+  "_id": "63398d8ce171002c64c53623",
+  "publicKey": "015fd964620f98e551065079e142840dac3fb25bd97a0d4722411cb439f9247d72",
+  "performance": 0.7305555555555555,
+  "totalDelegatorRewards": 1629097328.1280763,
+  "totalValidatorRewards": 195660320.34688172,
+  "delegationRate": 10,
+  "inactive": false,
+  "networkPercentage": 8.000482747061668,
+  "numOfDelegators": 119,
+  "rank": 1,
+  "selfStake": 639184.840896486,
+  "selfStakePercentage": 0.09296362674241634,
+  "totalBid": 687564441.3782818,
+  "totalDelegated": 686925256.5373853
+}
+```
+
+### Validator Delegators
+
+This returns a list of validator's delegators
+
+Endpoint: `https://api.cspr.fyi/v1/validators/{validatorPublicKey}/delegators`
+
+Method: `GET`
+
+Params: `validatorPublicKey`
+
+e.g. https://api.cspr.fyi/v1/validators/015fd964620f98e551065079e142840dac3fb25bd97a0d4722411cb439f9247d72/delegators
+
+```json
+[
+  {
+    "_id": "633aa7e3bfe93c554fa97ee5",
+    "publicKey": "01a0d23e084a95cdee9c2fb226d54033d645873a7c7c9739de2158725c7dfe672f",
+    "validatorPublicKey": "015fd964620f98e551065079e142840dac3fb25bd97a0d4722411cb439f9247d72",
+    "__v": 0,
+    "bondingPurse": "uref-96146807746aea13738c20e666636eceb9f4f1bf1ab54ddbf3554d277412f388-007",
+    "delegatee": "015fd964620f98e551065079e142840dac3fb25bd97a0d4722411cb439f9247d72",
+    "stakedAmount": 351199069.50583285
+  },
+  ...
+]
+```
+
+### Validator Blocks
+
+This returns a list of blocks proposed by the validator
+
+Endpoint: `https://api.cspr.fyi/v1/blocks/validator-blocks/{validatorPublicKey}?startIndex=1&count=10`
+
+Method: `GET`
+
+Params: `validatorPublicKey`
+
+Query: `startIndex` and `count`.
+
+e.g. https://api.cspr.fyi/v1/blocks/validator-blocks/015fd964620f98e551065079e142840dac3fb25bd97a0d4722411cb439f9247d72?startIndex=1&count=10
+
+```json
+[
+   {
+    "_id": "6356bf72a28076da5c9eb04d",
+    "blockHeight": 1207602,
+    "blockHash": "ea2ff8523773cc25c6a6bef0420d0921494d8f58995246011425e95e21d89481",
+    "deploys": 0,
+    "eraID": 6851,
+    "isSwitchBlock": false,
+    "timestamp": "2022-10-24T16:37:48.160Z",
+    "transfers": 0,
+    "validatorPublicKey": "015fd964620f98e551065079e142840dac3fb25bd97a0d4722411cb439f9247d72"
+  },
+  ...
+]
 ```
