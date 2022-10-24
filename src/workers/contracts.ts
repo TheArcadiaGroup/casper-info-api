@@ -1,17 +1,15 @@
-import { getContract, setContract } from '@controllers/contracts';
-import { TypedJSON, jsonMember, jsonObject } from 'typedjson';
+import { setContract } from '@controllers/contracts';
 import {
-  getDeploys,
   getDeploysCount,
   getDeploysFromDB,
-  getLatestMatchedDeployIndex,
-  setMatchedDeployIndex
+  getLatestMatchedDeployIndex
 } from '@controllers/deploy';
-import { casperService, getLatestState, rpcRequest } from '@utils';
+import { casperService, getLatestState } from '@utils';
 import Bull from 'bull';
 import { ContractPackageJson, EntryPoint } from 'casper-js-sdk/dist/lib/StoredValue';
-import { addDeployHash, queryDeploy, saveDeploy } from './deploys';
+import { addDeployHash, addMatchedDeployToSave, queryDeploy, saveDeploy } from './deploys';
 import { logger } from '@logger';
+import { accountUpdate } from './accounts';
 export type ContractJson = {
   contractHash: string;
   contractPackageHash: string;
@@ -20,6 +18,7 @@ export type ContractJson = {
   entryPoints: EntryPoint[];
   contractPackage?: ContractPackageJson;
   protocolVersion: string;
+  timestamp: Date;
 };
 export const queryContract = new Bull('contract-query', {
   redis: {
@@ -27,10 +26,15 @@ export const queryContract = new Bull('contract-query', {
     port: Number(process.env.REDIS_PORT)
   }
 });
-
-export const addQueryContract = async (contractHash: string) => {
+export const saveContract = new Bull('contract-save', {
+  redis: {
+    host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT)
+  }
+});
+export const addQueryContract = async (contractHash: string, timestamp: Date) => {
   await queryContract.add(
-    { contractHash },
+    { contractHash, timestamp },
     {
       attempts: 10,
       removeOnComplete: true,
@@ -38,26 +42,17 @@ export const addQueryContract = async (contractHash: string) => {
     }
   );
 };
-
 export const processQueryContract = async () => {
   queryContract.process(100, async (job, done) => {
     try {
-      const { contractHash } = job.data;
-      await getChainContract(contractHash);
+      const { contractHash, timestamp } = job.data;
+      await getChainContract(contractHash, timestamp);
       done();
     } catch (error) {
       done(new Error(error));
     }
   });
 };
-
-export const saveContract = new Bull('contract-save', {
-  redis: {
-    host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT)
-  }
-});
-
 export const addSaveContract = async (contract: ContractJson) => {
   await saveContract.add(contract, {
     attempts: 10,
@@ -65,7 +60,6 @@ export const addSaveContract = async (contract: ContractJson) => {
     removeOnFail: 1000
   });
 };
-
 export const processSaveContract = async () => {
   saveContract.process(100, async (job, done) => {
     try {
@@ -76,8 +70,7 @@ export const processSaveContract = async () => {
     }
   });
 };
-
-const getChainContract = async (contractHash: string) => {
+const getChainContract = async (contractHash: string, timestamp: Date) => {
   try {
     const chainState = await getLatestState();
     let blockState = await casperService.getBlockState(
@@ -104,23 +97,25 @@ const getChainContract = async (contractHash: string) => {
       namedKeys: chainContract.namedKeys,
       entryPoints: chainContract.entrypoints,
       contractPackage: blockState?.ContractPackage || null,
-      protocolVersion: chainContract.protocolVersion
+      protocolVersion: chainContract.protocolVersion,
+      timestamp
     };
     addSaveContract(contract);
   } catch (error) {
     logger.error({ contractRPC: { contractHash, errMessage: `${error}` } });
   }
 };
-
 export const seedContracts = async () => {
   // while not all deploys haven't been queried, fetch deploy
   // if nothing in deploy and contract queue, add deploy query to queue
   let i = (await getLatestMatchedDeployIndex())[0]?.index || 1;
-
   while (i <= (await getDeploysCount())) {
     // If deploy queries are in queue, wait
     const deployQueryJobsCount = await queryDeploy.getJobCounts();
     const deploySaveJobsCount = await saveDeploy.getJobCounts();
+    const accountUpdateJobsCount = await accountUpdate.getJobCounts();
+    const queryContractJobsCount = await queryContract.getJobCounts();
+    const saveContractJobsCount = await saveContract.getJobCounts();
     if (
       deployQueryJobsCount.active > 1 ||
       deployQueryJobsCount.waiting > 1 ||
@@ -129,15 +124,25 @@ export const seedContracts = async () => {
       deploySaveJobsCount.active > 1 ||
       deploySaveJobsCount.waiting > 1 ||
       deploySaveJobsCount.failed > 1 ||
-      deploySaveJobsCount.delayed > 1
+      deploySaveJobsCount.delayed > 1 ||
+      accountUpdateJobsCount.active > 1 ||
+      accountUpdateJobsCount.waiting > 1 ||
+      accountUpdateJobsCount.failed > 1 ||
+      accountUpdateJobsCount.delayed > 1 ||
+      queryContractJobsCount.active > 1 ||
+      queryContractJobsCount.waiting > 1 ||
+      queryContractJobsCount.failed > 1 ||
+      queryContractJobsCount.delayed > 1 ||
+      saveContractJobsCount.active > 1 ||
+      saveContractJobsCount.waiting > 1 ||
+      saveContractJobsCount.failed > 1 ||
+      saveContractJobsCount.delayed > 1
     ) {
       continue;
     }
-    const deploys = await getDeploysFromDB(i, 1000, 'asc');
-    deploys?.forEach(async (deploy) => {
-      await addDeployHash(deploy.deployHash);
-      await setMatchedDeployIndex(i);
-      i++;
-    });
+    const deploys = await getDeploysFromDB(i, 1, 'asc');
+    await addDeployHash(deploys[0].deployHash);
+    await addMatchedDeployToSave(i);
+    i++;
   }
 };

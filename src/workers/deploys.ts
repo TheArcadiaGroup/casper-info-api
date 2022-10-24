@@ -1,4 +1,4 @@
-import { getDeploysByBlockHash, setDeploy } from '@controllers/deploy';
+import { getDeploysByBlockHash, setDeploy, setMatchedDeployIndex } from '@controllers/deploy';
 import { logger } from '@logger';
 import Bull from 'bull';
 import { addAccountUpdate } from './accounts';
@@ -7,7 +7,6 @@ import { GetDeployResult } from 'casper-js-sdk';
 import { addQueryContract } from './contracts';
 import { getBlockByHeightFromDB } from '@controllers/block';
 import { addBlockToQueryQueue } from './blocks';
-import { getContract } from '@controllers/contracts';
 
 export const queryDeploy = new Bull('deploy-query', {
   redis: {
@@ -16,6 +15,12 @@ export const queryDeploy = new Bull('deploy-query', {
   }
 });
 export const saveDeploy = new Bull('deploy-save', {
+  redis: {
+    host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT)
+  }
+});
+export const saveMatchedDeploy = new Bull('match-deploy-save', {
   redis: {
     host: process.env.NODE_ENV == 'dev' ? 'localhost' : process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT)
@@ -59,28 +64,47 @@ export const processDeploySave = async () => {
   });
 };
 
+export const addMatchedDeployToSave = async (index: number) => {
+  await saveMatchedDeploy.add(index, {
+    attempts: 10,
+    removeOnComplete: true,
+    removeOnFail: 1000
+  });
+};
+export const processMatchedDeployToSave = async () => {
+  saveMatchedDeploy.process(100, async (job, done) => {
+    try {
+      await setMatchedDeployIndex(job.data);
+      done();
+    } catch (error) {
+      done(new Error(error));
+    }
+  });
+};
+
 export const QueryDeploy = async (deployHash: string) => {
   try {
-    const deployResult = await casperService.getDeployInfo(deployHash);
-    const deployRes: any = deployResult;
+    const deployRes: any = await casperService.getDeployInfo(deployHash);
     await addDeployToSave(deployRes);
-    // await addAccountUpdate(
-    //   deployResult.deploy?.header?.account,
-    //   new Date(deployResult.deploy.header.timestamp)
-    // );
-    // const validatorPublicKey = deployRes.deploy?.session?.StoredContractByHash?.args?.find(
-    //   (value) => {
-    //     return value[0] === 'validator';
-    //   }
-    // )[1]?.parsed;
-    // if (validatorPublicKey) {
-    //   await addAccountUpdate(validatorPublicKey, new Date(deployResult.deploy.header.timestamp));
-    // }
+    await addAccountUpdate(
+      deployRes.deploy?.header?.account,
+      new Date(deployRes.deploy.header.timestamp)
+    );
+    const validatorPublicKey = deployRes.deploy?.session?.StoredContractByHash?.args?.find(
+      (value) => {
+        return value[0] === 'validator';
+      }
+    )[1]?.parsed;
+    if (validatorPublicKey) {
+      await addAccountUpdate(validatorPublicKey, new Date(deployRes.deploy.header.timestamp));
+    }
     const contractHash: string =
       deployRes.deploy?.session?.StoredContractByHash?.hash ||
       deployRes.deploy?.session?.StoredContractByName?.hash ||
       '';
-    contractHash && (await addQueryContract(contractHash));
+
+    contractHash &&
+      (await addQueryContract(contractHash, new Date(deployRes.deploy.header.timestamp)));
   } catch (error) {
     logger.error({ deployRPC: { deployHash, errMessage: `${error}` } });
   }
