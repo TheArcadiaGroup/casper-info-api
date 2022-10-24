@@ -683,7 +683,7 @@ e.g. https://api.cspr.fyi/v1/contracts
 
 ### Contract Details
 
-This returns a details of a contract and contract package as well as raw contract or contract package data depending on the hash passed.
+This returns the details of a contract and contract package as well as raw contract or contract package data depending on the hash passed.
 
 Endpoint: `https://api.cspr.fyi/v1/contracts/{contractHash/contractPackageHash}`
 
@@ -691,7 +691,7 @@ Method: `GET`
 
 Params: `contractHash` or `contractPackageHash`
 
-e.g. https://api.cspr.fyi/v1/contracts
+e.g. https://api.cspr.fyi/v1/contracts/86f2d45f024d7bb7fb5266b2390d7c253b588a0a16ebd946a60cb4314600af74
 
 ```json
 {
@@ -995,5 +995,375 @@ e.g. https://api.cspr.fyi/v1/contracts/uref/uref-857cff86f3f15734787bcb63fc6445f
       }
     ]
   }
+}
+```
+
+## Deploys
+
+### All Deploys
+
+This returns a list of all deploys in the chain sort by timestamp in descending order.
+
+Endpoint: `https://api.cspr.fyi/v1/deploys?startIndex=1&count=10`
+
+Method: `GET`
+
+Query: `startIndex` and `count`.
+
+e.g. https://api.cspr.fyi/v1/deploys?startIndex=29181&count=10
+
+```json
+[
+  {
+    "_id": "633353e72aca8bb4a7275e8d",
+    "deployHash": "d3844eb80985e0ed71e607947181ed5a9bc16322b4a51d2c8f9880f8be9c386c",
+    "amount": 3710.355,
+    "blockHash": "d1e7b426adf2fa4a3b68f82010c0b3f661718628f989ba04044eb6ab8ece6201",
+    "cost": 2.70344316,
+    "deployType": "deploy",
+    "entryPoint": "unlock cspr",
+    "fromAccountHash": "",
+    "publicKey": "016a6339f34d4ec62f60f20dd7295b5b7872cd7c59a430320aab5baa823e1f524c",
+    "status": "fail",
+    "timestamp": "2022-09-22T11:02:04.661Z",
+    "toAccountHash": "",
+    "validator": ""
+  },
+  ...
+]
+```
+
+### Deploy Details
+
+This returns a deploys raw data.
+
+Endpoint: `https://api.cspr.fyi/v1/deploys/{deployHash}`
+
+Method: `GET`
+
+Params: `deployHash`
+
+e.g. https://api.cspr.fyi/v1/deploys/1ad50e305bf23db7b6c06ea726e4f38afdb05e93f692913084fb2f9b8d5520e3
+
+```json
+{
+  "api_version": "1.4.8",
+  "deploy": {
+    "hash": "1ad50e305bf23db7b6c06ea726e4f38afdb05e93f692913084fb2f9b8d5520e3",
+    "header": {
+      "account": "0203f3f44c9e80e2cedc1a2909631a3adea8866ee32187f74d0912387359b0ff36a2",
+      "timestamp": "2022-10-24T16:04:07.037Z",
+      "ttl": "30m",
+      "gas_price": 1,
+      "body_hash": "4e5c7a0c5e590ffaf4d1402f759025ef00acfb08e8c0d799a9637a02b91e2858",
+      "dependencies": [],
+      "chain_name": "casper"
+    },
+    "payment": {
+      "ModuleBytes": {
+        "module_bytes": "",
+        "args": [
+          [
+            "amount",
+            {
+              "cl_type": "U512",
+              "bytes": "0400e1f505",
+              "parsed": "100000000"
+            }
+          ]
+        ]
+      }
+    },
+    "session": {
+      "Transfer": {
+        "args": [
+          [
+            "amount",
+            {
+              "cl_type": "U512",
+              "bytes": "06007e2638e222",
+              "parsed": "38355000000000"
+            }
+          ],
+          [
+            "target",
+            {
+              "cl_type": {
+                "ByteArray": 32
+              },
+              "bytes": "a885f7d4312e8f766de13594ed459da5f4d04872b69843ef86848aa345d289f9",
+              "parsed": "a885f7d4312e8f766de13594ed459da5f4d04872b69843ef86848aa345d289f9"
+            }
+          ],
+          [
+            "id",
+            {
+              "cl_type": {
+                "Option": "U64"
+              },
+              "bytes": "010100000000000000",
+              "parsed": 1
+            }
+          ]
+        ]
+      }
+    },
+    "approvals": [
+      {
+        "signer": "0203f3f44c9e80e2cedc1a2909631a3adea8866ee32187f74d0912387359b0ff36a2",
+        "signature": "02db57c744435e5270ef302b1a7e4f87b66e934a0414372858d75b39921f157ed6043368fd2f1feda66906dc9d7c28cc84f346e3d7cff7bb2e651f0ebfd80207e1"
+      }
+    ]
+  },
+  "execution_results": [
+    {
+      "block_hash": "7036af0509ee06d09a0846a7e0b20e3b21b599673b70ad40f2583426a4f68025",
+      "result": {
+        "Success": {
+          "effect": {
+            "operations": [],
+            "transforms": [
+              {
+                "key": "account-hash-a885f7d4312e8f766de13594ed459da5f4d04872b69843ef86848aa345d289f9",
+                "transform": "Identity"
+              },
+              {
+                "key": "account-hash-a885f7d4312e8f766de13594ed459da5f4d04872b69843ef86848aa345d289f9",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-d2469afeb99130f0be7c9ce230a84149e6d756e306ef8cf5b8a49d5182e41676",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-d63c44078a1931b5dc4b80a7a0ec586164fd0470ce9f8b23f6d93b9e86c5944d",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-7cc1b1db4e08bbfe7bacf8e1ad828a5d9bcccbb33e55d322808c3a88da53213a",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-4475016098705466254edd18d267a9dad43e341d4dafadb507d0fe3cf2d4a74b",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-7950bf87377371651e0927198e2bc73074a43a804037cc4e20f4a2c21115b7ef",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-fe327f9815a1d016e1143db85e25a86341883949fd75ac1c1e7408a26c5b62ef",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-7950bf87377371651e0927198e2bc73074a43a804037cc4e20f4a2c21115b7ef",
+                "transform": {
+                  "WriteCLValue": {
+                    "cl_type": "U512",
+                    "bytes": "088eeed6f50ee75204",
+                    "parsed": "311565375682047630"
+                  }
+                }
+              },
+              {
+                "key": "balance-fe327f9815a1d016e1143db85e25a86341883949fd75ac1c1e7408a26c5b62ef",
+                "transform": {
+                  "AddUInt512": "100000000"
+                }
+              },
+              {
+                "key": "account-hash-a885f7d4312e8f766de13594ed459da5f4d04872b69843ef86848aa345d289f9",
+                "transform": "Identity"
+              },
+              {
+                "key": "account-hash-a885f7d4312e8f766de13594ed459da5f4d04872b69843ef86848aa345d289f9",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-d2469afeb99130f0be7c9ce230a84149e6d756e306ef8cf5b8a49d5182e41676",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-d63c44078a1931b5dc4b80a7a0ec586164fd0470ce9f8b23f6d93b9e86c5944d",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-7cc1b1db4e08bbfe7bacf8e1ad828a5d9bcccbb33e55d322808c3a88da53213a",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-4475016098705466254edd18d267a9dad43e341d4dafadb507d0fe3cf2d4a74b",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-7950bf87377371651e0927198e2bc73074a43a804037cc4e20f4a2c21115b7ef",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-fe327f9815a1d016e1143db85e25a86341883949fd75ac1c1e7408a26c5b62ef",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-7950bf87377371651e0927198e2bc73074a43a804037cc4e20f4a2c21115b7ef",
+                "transform": {
+                  "WriteCLValue": {
+                    "cl_type": "U512",
+                    "bytes": "088eeed6f50ee75204",
+                    "parsed": "311565375682047630"
+                  }
+                }
+              },
+              {
+                "key": "balance-fe327f9815a1d016e1143db85e25a86341883949fd75ac1c1e7408a26c5b62ef",
+                "transform": {
+                  "AddUInt512": "100000000"
+                }
+              },
+              {
+                "key": "hash-7cc1b1db4e08bbfe7bacf8e1ad828a5d9bcccbb33e55d322808c3a88da53213a",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-4475016098705466254edd18d267a9dad43e341d4dafadb507d0fe3cf2d4a74b",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-7950bf87377371651e0927198e2bc73074a43a804037cc4e20f4a2c21115b7ef",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-86f432aacc285acb9e8c596ccf5bc858b1d4e61089eda1ed7684532f35dd1452",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-7950bf87377371651e0927198e2bc73074a43a804037cc4e20f4a2c21115b7ef",
+                "transform": {
+                  "WriteCLValue": {
+                    "cl_type": "U512",
+                    "bytes": "088e70b0bd2cc45204",
+                    "parsed": "311527020682047630"
+                  }
+                }
+              },
+              {
+                "key": "balance-86f432aacc285acb9e8c596ccf5bc858b1d4e61089eda1ed7684532f35dd1452",
+                "transform": {
+                  "AddUInt512": "38355000000000"
+                }
+              },
+              {
+                "key": "transfer-0c27351140de9f1a401a7932d76f060e873c4e12f09102bc9884e46729cc4c5a",
+                "transform": {
+                  "WriteTransfer": {
+                    "deploy_hash": "1ad50e305bf23db7b6c06ea726e4f38afdb05e93f692913084fb2f9b8d5520e3",
+                    "from": "account-hash-496d542527e1a29f576ab7c3f4c947bfcdc9b4145f75f6ec40e36089432d7351",
+                    "to": "account-hash-a885f7d4312e8f766de13594ed459da5f4d04872b69843ef86848aa345d289f9",
+                    "source": "uref-7950bf87377371651e0927198e2bc73074a43a804037cc4e20f4a2c21115b7ef-007",
+                    "target": "uref-86f432aacc285acb9e8c596ccf5bc858b1d4e61089eda1ed7684532f35dd1452-004",
+                    "amount": "38355000000000",
+                    "gas": "0",
+                    "id": 1
+                  }
+                }
+              },
+              {
+                "key": "deploy-1ad50e305bf23db7b6c06ea726e4f38afdb05e93f692913084fb2f9b8d5520e3",
+                "transform": {
+                  "WriteDeployInfo": {
+                    "deploy_hash": "1ad50e305bf23db7b6c06ea726e4f38afdb05e93f692913084fb2f9b8d5520e3",
+                    "transfers": [
+                      "transfer-0c27351140de9f1a401a7932d76f060e873c4e12f09102bc9884e46729cc4c5a"
+                    ],
+                    "from": "account-hash-496d542527e1a29f576ab7c3f4c947bfcdc9b4145f75f6ec40e36089432d7351",
+                    "source": "uref-7950bf87377371651e0927198e2bc73074a43a804037cc4e20f4a2c21115b7ef-007",
+                    "gas": "100000000"
+                  }
+                }
+              },
+              {
+                "key": "hash-d2469afeb99130f0be7c9ce230a84149e6d756e306ef8cf5b8a49d5182e41676",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-d63c44078a1931b5dc4b80a7a0ec586164fd0470ce9f8b23f6d93b9e86c5944d",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-fe327f9815a1d016e1143db85e25a86341883949fd75ac1c1e7408a26c5b62ef",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-d2469afeb99130f0be7c9ce230a84149e6d756e306ef8cf5b8a49d5182e41676",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-7cc1b1db4e08bbfe7bacf8e1ad828a5d9bcccbb33e55d322808c3a88da53213a",
+                "transform": "Identity"
+              },
+              {
+                "key": "hash-4475016098705466254edd18d267a9dad43e341d4dafadb507d0fe3cf2d4a74b",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-fe327f9815a1d016e1143db85e25a86341883949fd75ac1c1e7408a26c5b62ef",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-80317247d4b533d23c473cb8e022c650735b6e93bc2ed6289e2aba88f82d893c",
+                "transform": "Identity"
+              },
+              {
+                "key": "balance-fe327f9815a1d016e1143db85e25a86341883949fd75ac1c1e7408a26c5b62ef",
+                "transform": {
+                  "WriteCLValue": {
+                    "cl_type": "U512",
+                    "bytes": "00",
+                    "parsed": "0"
+                  }
+                }
+              },
+              {
+                "key": "balance-80317247d4b533d23c473cb8e022c650735b6e93bc2ed6289e2aba88f82d893c",
+                "transform": {
+                  "AddUInt512": "100000000"
+                }
+              }
+            ]
+          },
+          "transfers": [
+            "transfer-0c27351140de9f1a401a7932d76f060e873c4e12f09102bc9884e46729cc4c5a"
+          ],
+          "cost": "100000000"
+        }
+      }
+    }
+  ]
+}
+```
+
+### Deploy volumes
+
+This returns an aggregation of daily deploy volumes per day for a specified number of days, as well as the total number of deploys.
+
+Endpoint: `https://api.cspr.fyi/v1/deploys/volumes/{numberOfDays}`
+
+Method: `GET`
+
+Params: `numberOfDays`
+
+`numberOfDays` is the number of the days for the volumes are fetched.
+
+e.g. https://api.cspr.fyi/v1/deploys/volumes/14
+
+```json
+{
+  "volumes": [
+    {
+      "_id": "2022-10-23",
+      "volume": 742
+    },
+    ...
+  ],
+  "totalDeploys": 708795
 }
 ```
