@@ -5,7 +5,11 @@ import mongoose from 'mongoose';
 import { router } from '@v1-routes';
 import { eventStream } from '@eventstream';
 import { processBlockQuery, processSaveBlock } from '@workers/blocks';
-import { processDeployQuery, processDeploySave } from '@workers/deploys';
+import {
+  processDeployQuery,
+  processDeploySave,
+  processMatchedDeployToSave
+} from '@workers/deploys';
 import { eraMatchTrigger, processEraMatch, processEraSummaryQuery } from '@workers/era';
 import {
   processBidDelegatorSave,
@@ -29,7 +33,8 @@ import {
   failedEraMatchHandler,
   failedDeploySavesHandler,
   failedContractQueriesHandler,
-  failedContractSavesHandler
+  failedContractSavesHandler,
+  failedMatchedDeploySavesHandler
 } from '@workers/queueFailureHandler';
 import { processRewardSave } from '@workers/rewards';
 import { processQueryContract, processSaveContract, seedContracts } from '@workers/contracts';
@@ -66,8 +71,10 @@ export const Init = async () => {
             // matchDeploys();
             processDeployQuery();
             processDeploySave();
+            processMatchedDeployToSave();
             failedDeployQueriesHandler();
             failedDeploySavesHandler();
+            failedMatchedDeploySavesHandler();
             break;
           case workerType.contractQuery:
             seedContracts();

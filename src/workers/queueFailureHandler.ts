@@ -7,7 +7,7 @@ import {
   bidPerformanceAndRewardsUpdate,
   validatorsInfoFetch
 } from '@workers/validators';
-import { queryDeploy, saveDeploy } from '@workers/deploys';
+import { queryDeploy, saveDeploy, saveMatchedDeploy } from '@workers/deploys';
 import { rewardSaving } from './rewards';
 import { queryContract, saveContract } from './contracts';
 
@@ -57,6 +57,16 @@ export const failedDeploySavesHandler = () => {
     failedDeploySaves &&
       failedDeploySaves.forEach(async (job) => {
         job && (await saveDeploy.add(job.data, job.opts));
+        job && job.remove();
+      });
+  }, 500);
+};
+export const failedMatchedDeploySavesHandler = () => {
+  setInterval(async () => {
+    const failedMatchedDeploySaves = await saveMatchedDeploy.getFailed();
+    failedMatchedDeploySaves &&
+      failedMatchedDeploySaves.forEach(async (job) => {
+        job && (await saveMatchedDeploy.add(job.data, job.opts));
         job && job.remove();
       });
   }, 500);
