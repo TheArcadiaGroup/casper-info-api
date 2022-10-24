@@ -1,6 +1,6 @@
 # CSPR.FYI Block Explorer API
 
-## Account
+## Accounts
 
 ### Top Accounts
 
@@ -30,6 +30,7 @@ e.g. https://api.cspr.fyi/v1/accounts/top-accounts?startIndex=1&count=10
     "transactionCount": 34,
     "activeDate": "2021-05-06T15:12:27.259Z"
   }
+  ...
 ]
 ```
 
@@ -283,6 +284,107 @@ e.g. https://api.cspr.fyi/v1/accounts/02038aaa4b340da663837d4341e4de5f2b475af57f
   {
     "_id": "2022-10-19T19:39:26.592Z",
     "totalReward": 14848.885269659
+  },
+  ...
+]
+```
+
+## Blocks
+
+### All Blocks
+
+This returns a blocks sorted in descending order from the latest block added to the chain.
+
+Endpoint: `https://api.cspr.fyi/v1/blocks?startIndex=1207343&count=10`
+
+Method: `GET`
+
+Query: `startIndex` and `count`.
+
+`startIndex` is the block number for which the query begins. It should begin with at most the latest block and is decremented by `count`.
+
+`count` is the represents the number of items in a page.
+
+**NOTE:** Please take note that `startIndex` for this endpoint is inverted.
+
+e.g. https://api.cspr.fyi/v1/blocks?startIndex=1207343&count=10
+
+```json
+[
+  {
+    "_id": "63569e4ba28076da5c9a9877",
+    "blockHeight": 1207343,
+    "blockHash": "51e557cf0698531414b474906ef049ac08219425b071c34eebbbe04a485df4e0",
+    "deploys": 0,
+    "eraID": 6850,
+    "isSwitchBlock": false,
+    "timestamp": "2022-10-24T14:16:21.248Z",
+    "transfers": 1,
+    "validatorPublicKey": "01ebaebffebe63ee6e35b88697dd9d5bfab23dac47cbd61a45efc8ea8d80ec9c38"
+  },
+  ...
+]
+```
+
+### Latest Blocks
+
+This returns a blocks sorted in descending order from the latest block added to the chain.
+
+Endpoint: `https://api.cspr.fyi/v1/blocks/latest/10`
+
+Method: `GET`
+
+Params: `numberOfLatestBlocks`
+
+`numberOfLatestBlocks` is the number of the most recent blocks that you'd like to fetch.
+
+e.g. https://api.cspr.fyi/v1/blocks/latest/10
+
+```json
+[
+  {
+    "_id": "63569e4ba28076da5c9a9877",
+    "blockHeight": 1207343,
+    "blockHash": "51e557cf0698531414b474906ef049ac08219425b071c34eebbbe04a485df4e0",
+    "deploys": 0,
+    "eraID": 6850,
+    "isSwitchBlock": false,
+    "timestamp": "2022-10-24T14:16:21.248Z",
+    "transfers": 1,
+    "validatorPublicKey": "01ebaebffebe63ee6e35b88697dd9d5bfab23dac47cbd61a45efc8ea8d80ec9c38"
+  },
+  ...
+]
+```
+
+### Block Transfers
+
+This returns transfers that were transacted in the block.
+
+Endpoint: `https://api.cspr.fyi/v1/blocks/{blockHash}/transfers`
+
+Method: `GET`
+
+Params: `blockHash`
+
+e.g. https://api.cspr.fyi/v1/blocks/97c01eb4596f6e06891386c181d0530f9dc7cee9fb8fbc57a417788168d16a17/transfers
+
+```json
+[
+  {
+    "_id": "634d2ec127e5a5aa6c70d95e",
+    "deployHash": "520e96018e49cb241e8b1178ab4aabbbceb9956f141c88a62bf1ea2eeb645cc1",
+    "amount": 10861.083360225,
+    "blockHash": "97c01eb4596f6e06891386c181d0530f9dc7cee9fb8fbc57a417788168d16a17",
+    "cost": 0.1,
+    "deployType": "transfer",
+    "entryPoint": "transfer",
+    "fromAccountHash": "45f3aa6ce2a450dd5a4f2cc4cc9054aded66de6b6cfc4ad977e7251cf94b649b",
+    "publicKey": "02029d865f743f9a67c82c84d443cbd8187bc4a08ca7b4c985f0caca1a4ee98b1f4c",
+    "status": "success",
+    "timestamp": "2022-09-06T11:22:04.727Z",
+    "toAccountHash": "89e3747a7070360c9223de962f8082bd8b071e33e6343b60f8804cf1d065209c",
+    "validator": ""
   },
   ...
 ]
