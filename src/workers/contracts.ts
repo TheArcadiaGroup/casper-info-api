@@ -108,8 +108,7 @@ const getChainContract = async (contractHash: string, timestamp: Date) => {
 export const seedContracts = async () => {
   // while not all deploys haven't been queried, fetch deploy
   // if nothing in deploy and contract queue, add deploy query to queue
-  // let i = (await getLatestMatchedDeployIndex())[0]?.index || 1;
-  let i = 500000;
+  let i = (await getLatestMatchedDeployIndex())[0]?.index || 1;
   while (i <= (await getDeploysCount())) {
     // If deploy queries are in queue, wait
     const deployQueryJobsCount = await queryDeploy.getJobCounts();
