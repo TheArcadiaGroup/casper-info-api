@@ -455,3 +455,545 @@ e.g. https://api.cspr.fyi/v1/stats
   "totalTransfers": 562230
 }
 ```
+
+## Contracts
+
+### All Contracts
+
+This returns a list of all contracts in the chain.
+
+Endpoint: `https://api.cspr.fyi/v1/contracts`
+
+Method: `GET`
+
+e.g. https://api.cspr.fyi/v1/contracts
+
+```json
+[
+  {
+    "_id": "634f98efae1e598026ac1ede",
+    "contractHash": "ccb576d6ce6dec84a551e48f0d0b7af89ddba44c7390b690036257a04a3ae9ea",
+    "contractPackageHash": "86f2d45f024d7bb7fb5266b2390d7c253b588a0a16ebd946a60cb4314600af74",
+    "contractPackage": {
+      "accessKey": "uref-be3a9a586b10eba01dc1392bcef73139ea2482be3af469eca12c5ae91a7ed6b4-007",
+      "versions": [
+        {
+          "protocolVersionMajor": 1,
+          "contractVersion": 1,
+          "contractHash": "contract-ccb576d6ce6dec84a551e48f0d0b7af89ddba44c7390b690036257a04a3ae9ea"
+        },
+        {
+          "protocolVersionMajor": 1,
+          "contractVersion": 2,
+          "contractHash": "contract-ccb576d6ce6dec84a551e48f0d0b7af89ddba44c7390b690036257a04a3ae9ea"
+        }
+      ],
+      "disabledVersions": [
+        {
+          "accessKey": 1,
+          "contractVersion": 1
+        }
+      ],
+      "groups": []
+    },
+    "contractWasmHash": "fab3d56479eaa20e8e1e7e6c03fca6b8a8424e0d0a24505d3a5edd6f01da61ff",
+    "entryPoints": [
+      {
+        "access": "Public",
+        "entryPointType": "Contract",
+        "name": "activate_bid",
+        "ret": "Unit",
+        "args": [
+          {
+            "name": "validator_public_key",
+            "clType": "PublicKey"
+          }
+        ]
+      },
+      {
+        "access": "Public",
+        "entryPointType": "Contract",
+        "name": "add_bid",
+        "ret": "U512",
+        "args": [
+          {
+            "name": "public_key",
+            "clType": "PublicKey"
+          },
+          {
+            "name": "delegation_rate",
+            "clType": "U8"
+          },
+          {
+            "name": "amount",
+            "clType": "U512"
+          }
+        ]
+      },
+      {
+        "access": "Public",
+        "entryPointType": "Contract",
+        "name": "delegate",
+        "ret": "U512",
+        "args": [
+          {
+            "name": "delegator",
+            "clType": "PublicKey"
+          },
+          {
+            "name": "validator",
+            "clType": "PublicKey"
+          },
+          {
+            "name": "amount",
+            "clType": "U512"
+          }
+        ]
+      },
+      {
+        "access": "Public",
+        "entryPointType": "Contract",
+        "name": "distribute",
+        "ret": "Unit",
+        "args": [
+          {
+            "name": "reward_factors",
+            "clType": {
+              "Map": {
+                "key": "PublicKey",
+                "value": "U64"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "access": "Public",
+        "entryPointType": "Contract",
+        "name": "get_era_validators",
+        "ret": {
+          "Option": {
+            "Map": {
+              "key": "PublicKey",
+              "value": "U512"
+            }
+          }
+        },
+        "args": []
+      },
+      {
+        "access": "Public",
+        "entryPointType": "Contract",
+        "name": "read_era_id",
+        "ret": "U64",
+        "args": []
+      },
+      {
+        "access": "Public",
+        "entryPointType": "Contract",
+        "name": "run_auction",
+        "ret": "Unit",
+        "args": [
+          {
+            "name": "era_end_timestamp_millis",
+            "clType": "U64"
+          }
+        ]
+      },
+      {
+        "access": "Public",
+        "entryPointType": "Contract",
+        "name": "slash",
+        "ret": "Unit",
+        "args": []
+      },
+      {
+        "access": "Public",
+        "entryPointType": "Contract",
+        "name": "undelegate",
+        "ret": "U512",
+        "args": [
+          {
+            "name": "delegator",
+            "clType": "PublicKey"
+          },
+          {
+            "name": "validator",
+            "clType": "PublicKey"
+          },
+          {
+            "name": "amount",
+            "clType": "U512"
+          }
+        ]
+      },
+      {
+        "access": "Public",
+        "entryPointType": "Contract",
+        "name": "withdraw_bid",
+        "ret": "U512",
+        "args": [
+          {
+            "name": "public_key",
+            "clType": "PublicKey"
+          },
+          {
+            "name": "amount",
+            "clType": "U512"
+          }
+        ]
+      }
+    ],
+    "namedKeys": [
+      {
+        "name": "auction_delay",
+        "key": "uref-928427e4ab2781ed13672499fffc1a3cc92a56a811c91c5dbf2ef8e508d07da8-007"
+      },
+      {
+        "name": "era_end_timestamp_millis",
+        "key": "uref-0061a68c3aa40357de889ce1b6685263496b7feb6932628e423bfa9f212c19d7-007"
+      },
+      {
+        "name": "era_id",
+        "key": "uref-f7330251e20a9d288a77353157f57f8b3f68d2249444b4b3b87d807be499207d-007"
+      },
+      {
+        "name": "locked_funds_period",
+        "key": "uref-1bf5b0d8bbf6a276482b104f0b1c520b2ef79d997e9e85a97ee911be39c50c0e-007"
+      },
+      {
+        "name": "seigniorage_recipients_snapshot",
+        "key": "uref-84f5ed5c5ec2de4cd4172149b0a9d97836dd1ecd793d5ebf4651c2eb4e54c129-007"
+      },
+      {
+        "name": "unbonding_delay",
+        "key": "uref-0ca3106ef95f578d07d9d55f5e0a2e973d5e8f6f9404c0a9ce30f5743b6173c5-007"
+      },
+      {
+        "name": "validator_slots",
+        "key": "uref-e24d4f4639e042dc22ed3841625c92ad9b0793e1d1e6e9050f41b6f80736d995-007"
+      }
+    ],
+    "protocolVersion": "1.4.5",
+    "deploys": 1435
+  },
+  ...
+]
+```
+
+### Contract Details
+
+This returns a details of a contract and contract package as well as raw contract or contract package data depending on the hash passed.
+
+Endpoint: `https://api.cspr.fyi/v1/contracts/{contractHash/contractPackageHash}`
+
+Method: `GET`
+
+Params: `contractHash` or `contractPackageHash`
+
+e.g. https://api.cspr.fyi/v1/contracts
+
+```json
+{
+  "_id": "634f98efae1e598026ac1ede",
+  "contractHash": "ccb576d6ce6dec84a551e48f0d0b7af89ddba44c7390b690036257a04a3ae9ea",
+  "contractPackageHash": "86f2d45f024d7bb7fb5266b2390d7c253b588a0a16ebd946a60cb4314600af74",
+  "contractPackage": {
+    "accessKey": "uref-be3a9a586b10eba01dc1392bcef73139ea2482be3af469eca12c5ae91a7ed6b4-007",
+    "versions": [
+      {
+        "protocolVersionMajor": 1,
+        "contractVersion": 1,
+        "contractHash": "contract-ccb576d6ce6dec84a551e48f0d0b7af89ddba44c7390b690036257a04a3ae9ea"
+      },
+      {
+        "protocolVersionMajor": 1,
+        "contractVersion": 2,
+        "contractHash": "contract-ccb576d6ce6dec84a551e48f0d0b7af89ddba44c7390b690036257a04a3ae9ea"
+      }
+    ],
+    "disabledVersions": [
+      {
+        "accessKey": 1,
+        "contractVersion": 1
+      }
+    ],
+    "groups": []
+  },
+  "contractWasmHash": "fab3d56479eaa20e8e1e7e6c03fca6b8a8424e0d0a24505d3a5edd6f01da61ff",
+  "entryPoints": [
+    {
+      "access": "Public",
+      "entryPointType": "Contract",
+      "name": "activate_bid",
+      "ret": "Unit",
+      "args": [
+        {
+          "name": "validator_public_key",
+          "clType": "PublicKey"
+        }
+      ]
+    },
+    {
+      "access": "Public",
+      "entryPointType": "Contract",
+      "name": "add_bid",
+      "ret": "U512",
+      "args": [
+        {
+          "name": "public_key",
+          "clType": "PublicKey"
+        },
+        {
+          "name": "delegation_rate",
+          "clType": "U8"
+        },
+        {
+          "name": "amount",
+          "clType": "U512"
+        }
+      ]
+    },
+    {
+      "access": "Public",
+      "entryPointType": "Contract",
+      "name": "delegate",
+      "ret": "U512",
+      "args": [
+        {
+          "name": "delegator",
+          "clType": "PublicKey"
+        },
+        {
+          "name": "validator",
+          "clType": "PublicKey"
+        },
+        {
+          "name": "amount",
+          "clType": "U512"
+        }
+      ]
+    },
+    {
+      "access": "Public",
+      "entryPointType": "Contract",
+      "name": "distribute",
+      "ret": "Unit",
+      "args": [
+        {
+          "name": "reward_factors",
+          "clType": {
+            "Map": {
+              "key": "PublicKey",
+              "value": "U64"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "access": "Public",
+      "entryPointType": "Contract",
+      "name": "get_era_validators",
+      "ret": {
+        "Option": {
+          "Map": {
+            "key": "PublicKey",
+            "value": "U512"
+          }
+        }
+      },
+      "args": []
+    },
+    {
+      "access": "Public",
+      "entryPointType": "Contract",
+      "name": "read_era_id",
+      "ret": "U64",
+      "args": []
+    },
+    {
+      "access": "Public",
+      "entryPointType": "Contract",
+      "name": "run_auction",
+      "ret": "Unit",
+      "args": [
+        {
+          "name": "era_end_timestamp_millis",
+          "clType": "U64"
+        }
+      ]
+    },
+    {
+      "access": "Public",
+      "entryPointType": "Contract",
+      "name": "slash",
+      "ret": "Unit",
+      "args": []
+    },
+    {
+      "access": "Public",
+      "entryPointType": "Contract",
+      "name": "undelegate",
+      "ret": "U512",
+      "args": [
+        {
+          "name": "delegator",
+          "clType": "PublicKey"
+        },
+        {
+          "name": "validator",
+          "clType": "PublicKey"
+        },
+        {
+          "name": "amount",
+          "clType": "U512"
+        }
+      ]
+    },
+    {
+      "access": "Public",
+      "entryPointType": "Contract",
+      "name": "withdraw_bid",
+      "ret": "U512",
+      "args": [
+        {
+          "name": "public_key",
+          "clType": "PublicKey"
+        },
+        {
+          "name": "amount",
+          "clType": "U512"
+        }
+      ]
+    }
+  ],
+  "namedKeys": [
+    {
+      "name": "auction_delay",
+      "key": "uref-928427e4ab2781ed13672499fffc1a3cc92a56a811c91c5dbf2ef8e508d07da8-007"
+    },
+    {
+      "name": "era_end_timestamp_millis",
+      "key": "uref-0061a68c3aa40357de889ce1b6685263496b7feb6932628e423bfa9f212c19d7-007"
+    },
+    {
+      "name": "era_id",
+      "key": "uref-f7330251e20a9d288a77353157f57f8b3f68d2249444b4b3b87d807be499207d-007"
+    },
+    {
+      "name": "locked_funds_period",
+      "key": "uref-1bf5b0d8bbf6a276482b104f0b1c520b2ef79d997e9e85a97ee911be39c50c0e-007"
+    },
+    {
+      "name": "seigniorage_recipients_snapshot",
+      "key": "uref-84f5ed5c5ec2de4cd4172149b0a9d97836dd1ecd793d5ebf4651c2eb4e54c129-007"
+    },
+    {
+      "name": "unbonding_delay",
+      "key": "uref-0ca3106ef95f578d07d9d55f5e0a2e973d5e8f6f9404c0a9ce30f5743b6173c5-007"
+    },
+    {
+      "name": "validator_slots",
+      "key": "uref-e24d4f4639e042dc22ed3841625c92ad9b0793e1d1e6e9050f41b6f80736d995-007"
+    }
+  ],
+  "protocolVersion": "1.4.5",
+  "rawData": {
+    "ContractPackage": {
+      "access_key": "uref-be3a9a586b10eba01dc1392bcef73139ea2482be3af469eca12c5ae91a7ed6b4-007",
+      "versions": [
+        {
+          "protocol_version_major": 1,
+          "contract_version": 1,
+          "contract_hash": "contract-ccb576d6ce6dec84a551e48f0d0b7af89ddba44c7390b690036257a04a3ae9ea"
+        },
+        {
+          "protocol_version_major": 1,
+          "contract_version": 2,
+          "contract_hash": "contract-ccb576d6ce6dec84a551e48f0d0b7af89ddba44c7390b690036257a04a3ae9ea"
+        }
+      ],
+      "disabled_versions": [
+        {
+          "protocol_version_major": 1,
+          "contract_version": 1
+        }
+      ],
+      "groups": []
+    }
+  }
+}
+```
+
+### Contract Transactions (Deploys)
+
+This returns a list of deploys where the contract was called.
+
+Endpoint: `https://api.cspr.fyi/v1/contracts/{contractHash/contractPackageHash}/deploys?startIndex=1&count=10`
+
+Method: `GET`
+
+Params: `contractHash` or `contractPackageHash`
+
+Query: `startIndex` and `count`.
+
+e.g. https://api.cspr.fyi/v1/contracts/86f2d45f024d7bb7fb5266b2390d7c253b588a0a16ebd946a60cb4314600af74/deploys?startIndex=1&count=10
+
+```json
+[
+  {
+    "_id": "6356a67da28076da5c9bceb9",
+    "deployHash": "09511411fc659cbbb0ee0878d15430aa5c8bc3e7730efbab9a58104fc42b2319",
+    "amount": 10400,
+    "blockHash": "a81d9e5407adcf49f7d4b7183be203c7f48a2944fe750b55ba9a456d08e82694",
+    "contractHash": "ccb576d6ce6dec84a551e48f0d0b7af89ddba44c7390b690036257a04a3ae9ea",
+    "cost": 2.5,
+    "deployType": "deploy",
+    "entryPoint": "delegate",
+    "fromAccountBalance": 0,
+    "fromAccountHash": "",
+    "publicKey": "0141af94462f6c05208755ba55bc42688eadf20e50076901808a40a66fbf51b05a",
+    "status": "success",
+    "timestamp": "2022-10-24T14:50:06.801Z",
+    "toAccountBalance": 0,
+    "toAccountHash": "",
+    "validator": "0167e08c3b05017d329444dc7d22518ba652cecb2c54669a69e5808ebcab25e42c"
+  },
+  ...
+]
+```
+
+### Uref
+
+This returns urefs raw data from the chain.
+
+Endpoint: `https://api.cspr.fyi/v1/contracts/uref/{uref}
+
+Method: `GET`
+
+Params: `uref`
+
+e.g. https://api.cspr.fyi/v1/contracts/uref/uref-857cff86f3f15734787bcb63fc6445ff940f18bdb4348fe514d3c06efbbe4a0f-007
+
+```json
+{
+  "CLValue": {
+    "cl_type": {
+      "List": "Key"
+    },
+    "bytes": "03000000019431cafe98ca1ef6e3e53cadba95c719bfbfb25d6bebf76b79e9373afbd1c1b10198eebe77fc76b51f39968deb805ebeaecdb577295ea3701c5b89e47ceb237409018d671ac222f169d957757e33756a3fec2e13ec93ec8a7caf6472da5d543a59f8",
+    "parsed": [
+      {
+        "Hash": "hash-9431cafe98ca1ef6e3e53cadba95c719bfbfb25d6bebf76b79e9373afbd1c1b1"
+      },
+      {
+        "Hash": "hash-98eebe77fc76b51f39968deb805ebeaecdb577295ea3701c5b89e47ceb237409"
+      },
+      {
+        "Hash": "hash-8d671ac222f169d957757e33756a3fec2e13ec93ec8a7caf6472da5d543a59f8"
+      }
+    ]
+  }
+}
+```
