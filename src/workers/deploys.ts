@@ -90,11 +90,13 @@ export const QueryDeploy = async (deployHash: string) => {
       deployRes.deploy?.header?.account,
       new Date(deployRes.deploy.header.timestamp)
     );
-    const validatorPublicKey = deployRes.deploy?.session?.StoredContractByHash?.args?.find(
-      (value) => {
-        return value[0] === 'validator';
-      }
-    )[1]?.parsed;
+    const validatorPublicKey =
+      deployRes.deploy.session.StoredContractByHash?.entry_point == 'delegate' ||
+      deployRes.deploy.session.StoredContractByHash?.entry_point == 'undelegate'
+        ? deployRes.deploy.session.StoredContractByHash?.args?.find((value) => {
+            return value[0] == 'validator';
+          })[1]?.parsed
+        : '';
     if (validatorPublicKey) {
       await addAccountUpdate(validatorPublicKey, new Date(deployRes.deploy.header.timestamp));
     }

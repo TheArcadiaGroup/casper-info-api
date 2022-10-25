@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const rewardSchema = new mongoose.Schema(
   {
-    reward: { type: {}, index: true },
+    reward: { type: {} },
     eraId: { type: Number, index: true },
     eraTimestamp: { type: Date, index: true }
   },

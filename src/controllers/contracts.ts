@@ -7,7 +7,10 @@ import { getContractMonthlyDeployCount } from './deploy';
 export const setContract = async (contract: ContractJson) => {
   try {
     await Contract.findOneAndUpdate(
-      { contractHash: contract?.contractHash, contractPackageHash: contract?.contractPackageHash },
+      {
+        contractHash: contract?.contractHash,
+        contractPackageHash: contract?.contractPackageHash
+      },
       {
         ...contract
       },
