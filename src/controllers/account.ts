@@ -59,10 +59,10 @@ export const getAccountTransfers = async (req: Request, res: Response) => {
     const { publicKey } = await processPublicKeyAndAccountHash(address);
     let transfers = await getDeploysByTypeAndPublicKeyOrAccountHash(
       publicKey,
+      'transfer',
       Number(startIndex),
       Number(count)
     );
-    transfers = transfers.filter((transfer) => transfer.deployType == 'transfer');
     res.status(200).json(transfers);
   } catch (err) {
     res.status(500).send(`Could not fetch transfer history: ${err}`);
@@ -76,6 +76,7 @@ export const getAccountDeploys = async (req: Request, res: Response) => {
     const { publicKey } = await processPublicKeyAndAccountHash(address);
     const deploys = await getDeploysByTypeAndPublicKeyOrAccountHash(
       publicKey,
+      'deploy',
       Number(startIndex),
       Number(count)
     );
@@ -87,8 +88,14 @@ export const getAccountDeploys = async (req: Request, res: Response) => {
 export const getAccountDelegations = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
+    const { startIndex, count } = req.query;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    const delegations = await getDeploysByEntryPointAndPublicKey(publicKey, 'delegate');
+    const delegations = await getDeploysByEntryPointAndPublicKey(
+      publicKey,
+      'delegate',
+      Number(startIndex),
+      Number(count)
+    );
     res.status(200).json(delegations);
   } catch (err) {
     res.status(500).send(`Could not fetch delegation history: ${err}`);
@@ -98,8 +105,14 @@ export const getAccountDelegations = async (req: Request, res: Response) => {
 export const getAccountUndelegations = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
+    const { startIndex, count } = req.query;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    const undelegations = await getDeploysByEntryPointAndPublicKey(publicKey, 'undelegate');
+    const undelegations = await getDeploysByEntryPointAndPublicKey(
+      publicKey,
+      'undelegate',
+      Number(startIndex),
+      Number(count)
+    );
     res.status(200).json(undelegations);
   } catch (err) {
     res.status(500).send(`Could not fetch delegation history: ${err}`);
@@ -133,8 +146,7 @@ export const getAccountEraRewards = async (req: Request, res: Response) => {
 
 export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
   const accountDetails = await accountDetailCalculation(publicKey);
-  let deploys = await getDeploysByTypeAndPublicKeyOrAccountHash(publicKey);
-  deploys = deploys.filter((deploy) => deploy.deployType === 'deploy');
+  let deploys = await getDeploysByTypeAndPublicKeyOrAccountHash(publicKey, 'deploy');
   await Account.findOneAndUpdate(
     { publicKey },
     [
@@ -147,7 +159,7 @@ export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
           transferrable: accountDetails.availableBalance,
           stakedAmount: accountDetails.totalStaked,
           balance: accountDetails.totalBalance,
-          transactionCount: deploys.length,
+          transactionCount: deploys?.length,
           activeDate: {
             $cond: {
               if: { $lte: [Date.parse('$activeDate'), Date.parse(newActiveDate.toLocaleString())] },

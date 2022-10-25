@@ -148,14 +148,24 @@ const getToAccountHash = (hash): string => {
     return hash;
   }
 };
-export const getDeploysByEntryPointAndPublicKey = async (publicKey: string, entryPoint: string) => {
-  return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] }).catch((err) => {
-    // TODO handle error
-    throw new Error(err);
-  });
+export const getDeploysByEntryPointAndPublicKey = async (
+  publicKey: string,
+  entryPoint: string,
+  startIndex?: number,
+  count?: number
+) => {
+  return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] })
+    .sort({ timestamp: 'desc' })
+    .skip(startIndex - 1)
+    .limit(count)
+    .catch((err) => {
+      // TODO handle error
+      throw new Error(err);
+    });
 };
 export const getDeploysByTypeAndPublicKeyOrAccountHash = async (
   address: string,
+  deployType: 'transfer' | 'deploy',
   startIndex?: number,
   count?: number
 ) => {
