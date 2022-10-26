@@ -76,58 +76,53 @@ export const QueryEraSummary = async (switchBlockHash: string, eraTimestamp) => 
     });
 };
 export const matchEra = async () => {
-  try {
-    isMatchReady = false;
-    // check if any pending work
-    const waitingRewardsSaves = await rewardSaving.getJobCounts();
-    if (
-      waitingRewardsSaves.active > 1 ||
-      waitingRewardsSaves.delayed > 1 ||
-      waitingRewardsSaves.waiting > 1 ||
-      waitingRewardsSaves.failed > 1
-    ) {
-      isMatchReady = true;
-      return;
-    }
-    // fetch most recently checked era
-    let latestMatchedEra = await getLatestMatchedEra();
-    // check if last added era
-    const chainState = await getLatestState();
-    if (latestMatchedEra[0]?.eraId === chainState.last_added_block_info.era_id) return;
-    // determine next era to check
-    let nextEra: number;
-    latestMatchedEra.length < 1 ? (nextEra = 0) : (nextEra = latestMatchedEra[0]?.eraId + 1);
-    console.log(`Era to match: ${nextEra}`);
-    // fetch next switch block
-    const nextSwitchBlock = await getSwitchBlockByEraId(nextEra);
-    if (!nextSwitchBlock) {
-      isMatchReady = true;
-      return;
-    }
-    // fetch the era summary
-    const eraSummary =
-      nextSwitchBlock && (await casperService.getEraInfoBySwitchBlock(nextSwitchBlock?.blockHash));
-    const { seigniorageAllocations } = eraSummary && eraSummary.StoredValue.EraInfo;
-    // fetch era saved rewards count
-    const savedEraRewards = await getEraRewards(nextEra);
-    // compare saved rewards vs fetched rewards
-    console.log(`${savedEraRewards.length} <> ${seigniorageAllocations.length}`);
-    if (savedEraRewards.length === seigniorageAllocations.length) {
-      await setMatchedEra(nextEra);
-      isMatchReady = true;
-      return;
-    }
-    // if no match, update rewards
-    seigniorageAllocations?.forEach(async (reward) => {
-      await addRewardSave(reward, eraSummary.eraId, nextSwitchBlock.timestamp);
-    });
-    // add new checked era
+  isMatchReady = false;
+  // check if any pending work
+  const waitingRewardsSaves = await rewardSaving.getJobCounts();
+  if (
+    waitingRewardsSaves.active > 1 ||
+    waitingRewardsSaves.delayed > 1 ||
+    waitingRewardsSaves.waiting > 1 ||
+    waitingRewardsSaves.failed > 1
+  ) {
+    isMatchReady = true;
+    return;
+  }
+  // fetch most recently checked era
+  let latestMatchedEra = await getLatestMatchedEra();
+  // check if last added era
+  const chainState = await getLatestState();
+  if (latestMatchedEra[0]?.eraId === chainState?.last_added_block_info?.era_id) return;
+  // determine next era to check
+  let nextEra: number;
+  latestMatchedEra.length < 1 ? (nextEra = 0) : (nextEra = latestMatchedEra[0]?.eraId + 1);
+  console.log(`Era to match: ${nextEra}`);
+  // fetch next switch block
+  const nextSwitchBlock = await getSwitchBlockByEraId(nextEra);
+  if (!nextSwitchBlock) {
+    isMatchReady = true;
+    return;
+  }
+  // fetch the era summary
+  const eraSummary =
+    nextSwitchBlock && (await casperService.getEraInfoBySwitchBlock(nextSwitchBlock?.blockHash));
+  const { seigniorageAllocations } = eraSummary && eraSummary.StoredValue.EraInfo;
+  // fetch era saved rewards count
+  const savedEraRewards = await getEraRewards(nextEra);
+  // compare saved rewards vs fetched rewards
+  console.log(`${savedEraRewards.length} <> ${seigniorageAllocations.length}`);
+  if (savedEraRewards.length === seigniorageAllocations.length) {
     await setMatchedEra(nextEra);
     isMatchReady = true;
-  } catch (error) {
-    console.log('Update error: ', error);
-    throw new Error(error);
+    return;
   }
+  // if no match, update rewards
+  seigniorageAllocations?.forEach(async (reward) => {
+    await addRewardSave(reward, eraSummary.eraId, nextSwitchBlock.timestamp);
+  });
+  // add new checked era
+  await setMatchedEra(nextEra);
+  isMatchReady = true;
 };
 export const eraMatchTrigger = () => {
   setInterval(() => {

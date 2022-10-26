@@ -44,36 +44,32 @@ export const getBlockByHashFromDB = async (blockHash: string) => {
   }
 };
 export const getBlockFromChain = async (address: string) => {
-  try {
-    const chainStatus = await getLatestState();
-    const currentHeight = chainStatus.last_added_block_info.height;
-    const addressType = checkBlockID(address, currentHeight);
-    let getBlockResult;
-    if (addressType === 'hash') {
-      getBlockResult = await casperService.getBlockInfo(address).catch((err) => {
-        console.log('Could not get block by hash: ', err);
-      });
-    } else if (addressType === 'height') {
-      getBlockResult = await casperService.getBlockInfoByHeight(parseInt(address)).catch((err) => {
-        console.log('Could not get block by height: ', err);
-      });
-    }
-    const block = getBlockResult?.block ?? null;
-    let _block;
-    _block = {
-      height: block.header.height,
-      eraID: block.header.era_id,
-      transactions: block.body.deploy_hashes.length,
-      timestamp: Date.parse(block.header.timestamp.toString()),
-      hash: block.hash,
-      validatorPublicKey: block.body.proposer,
-      stateRootHash: block.header.state_root_hash,
-      proofs: block.proofs
-    };
-    return _block;
-  } catch (error) {
-    throw new Error(`Could not fetch block from chain: ${error}`);
+  const chainStatus = await getLatestState();
+  const currentHeight = chainStatus?.last_added_block_info?.height;
+  const addressType = checkBlockID(address, currentHeight);
+  let getBlockResult;
+  if (addressType === 'hash') {
+    getBlockResult = await casperService.getBlockInfo(address).catch((err) => {
+      console.log('Could not get block by hash: ', err);
+    });
+  } else if (addressType === 'height') {
+    getBlockResult = await casperService.getBlockInfoByHeight(parseInt(address)).catch((err) => {
+      console.log('Could not get block by height: ', err);
+    });
   }
+  const block = getBlockResult?.block ?? null;
+  let _block;
+  _block = {
+    height: block.header.height,
+    eraID: block.header.era_id,
+    transactions: block.body.deploy_hashes.length,
+    timestamp: Date.parse(block.header.timestamp.toString()),
+    hash: block.hash,
+    validatorPublicKey: block.body.proposer,
+    stateRootHash: block.header.state_root_hash,
+    proofs: block.proofs
+  };
+  return _block;
 };
 export const getBlockByHashOrHeight = async (req: Request, res: Response) => {
   try {
@@ -86,20 +82,10 @@ export const getBlockByHashOrHeight = async (req: Request, res: Response) => {
 };
 
 export const getSwitchBlocks = async () => {
-  try {
-    return await Block.find({ isSwitchBlock: true }).sort({ blockHeight: 'desc' });
-  } catch (error) {
-    // TODO handle error
-    throw new Error(`Could fetch switch blocks ${error}`);
-  }
+  return await Block.find({ isSwitchBlock: true }).sort({ blockHeight: 'desc' });
 };
 export const getSwitchBlockByEraId = async (eraID: number) => {
-  try {
-    return await Block.findOne({ isSwitchBlock: true, eraID });
-  } catch (error) {
-    // TODO handle error
-    throw new Error(`Could fetch switch blocks ${error}`);
-  }
+  return await Block.findOne({ isSwitchBlock: true, eraID });
 };
 export const getBlockByHash = async (req: Request, res: Response) => {
   try {

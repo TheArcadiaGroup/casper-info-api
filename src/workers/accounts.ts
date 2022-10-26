@@ -20,10 +20,11 @@ export const addAccountUpdate = async (publicKey: string, activeDate: Date) => {
 };
 export const processAccountUpdate = () => {
   accountUpdate.process(100, async (job, done) => {
-    updateAccount(job.data.publicKey, job.data.activeDate)
-      .then(() => {
-        done();
-      })
-      .catch((err) => done(new Error(err)));
+    try {
+      updateAccount(job.data.publicKey, job.data.activeDate);
+      done();
+    } catch (error) {
+      done(new Error(error));
+    }
   });
 };

@@ -74,7 +74,7 @@ const getChainContract = async (contractHash: string, timestamp: Date) => {
   try {
     const chainState = await getLatestState();
     let blockState = await casperService.getBlockState(
-      chainState?.last_added_block_info.state_root_hash,
+      chainState?.last_added_block_info?.state_root_hash,
       `hash-${contractHash}`,
       []
     );
@@ -86,7 +86,7 @@ const getChainContract = async (contractHash: string, timestamp: Date) => {
     );
     const contractWasmHash = chainContract.contractWasmHash.replace('contract-wasm-', '');
     blockState = await casperService.getBlockState(
-      chainState?.last_added_block_info.state_root_hash,
+      chainState?.last_added_block_info?.state_root_hash,
       `hash-${contractPackageHash}` as string,
       []
     );
@@ -109,7 +109,8 @@ export const seedContracts = async () => {
   // while not all deploys haven't been queried, fetch deploy
   // if nothing in deploy and contract queue, add deploy query to queue
   let i = (await getLatestMatchedDeployIndex())[0]?.index || 1;
-  while (i <= (await getDeploysCount())) {
+  const deploysCount = await getDeploysCount().catch(() => seedContracts());
+  while (i <= deploysCount) {
     // If deploy queries are in queue, wait
     const deployQueryJobsCount = await queryDeploy.getJobCounts();
     const deploySaveJobsCount = await saveDeploy.getJobCounts();
@@ -141,6 +142,7 @@ export const seedContracts = async () => {
       continue;
     }
     const deploys = await getDeploysFromDB(i, 1, 'asc');
+    if (!deploys) continue;
     await addDeployHash(deploys[0].deployHash);
     await addMatchedDeployToSave(i);
     i++;

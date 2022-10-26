@@ -5,22 +5,16 @@ import { Request, Response } from 'express';
 import { getContractMonthlyDeployCount } from './deploy';
 
 export const setContract = async (contract: ContractJson) => {
-  try {
-    await Contract.findOneAndUpdate(
-      {
-        contractHash: contract?.contractHash,
-        contractPackageHash: contract?.contractPackageHash
-      },
-      {
-        ...contract
-      },
-      { new: true, upsert: true }
-    );
-  } catch (error) {
-    // TODO handle error
-    console.log(`Err: ${error}`);
-    throw new Error(`Could not save contract in DB: ${error}`);
-  }
+  await Contract.findOneAndUpdate(
+    {
+      contractHash: contract?.contractHash,
+      contractPackageHash: contract?.contractPackageHash
+    },
+    {
+      ...contract
+    },
+    { new: true, upsert: true }
+  );
 };
 export const getContracts = async (req: Request, res: Response) => {
   try {
@@ -39,11 +33,7 @@ export const getContracts = async (req: Request, res: Response) => {
 };
 
 export const getContractFromDB = async (hash: string) => {
-  try {
-    return await Contract.findOne({ $or: [{ contractHash: hash }, { contractPackageHash: hash }] });
-  } catch (error) {
-    throw new Error(`Could not fetch contract from DB: ${error}`);
-  }
+  return await Contract.findOne({ $or: [{ contractHash: hash }, { contractPackageHash: hash }] });
 };
 export const getContract = async (req: Request, res: Response) => {
   try {

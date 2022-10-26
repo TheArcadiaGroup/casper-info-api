@@ -4,16 +4,11 @@ import CoinGecko from 'coingecko-api';
 export const casperService = new CasperServiceByJsonRPC(process.env.RPC_URL as string);
 export const casperClient = new CasperClient(process.env.RPC_URL as string);
 export const coinGeckoClient = new CoinGecko();
+
 export const getCurrentEra = async (): Promise<number | void> => {
-  return await casperService
-    .getLatestBlockInfo()
-    .then((blockResult) => {
-      return blockResult.block.header.era_id;
-    })
-    .catch((err) => {
-      // TODO handle error
-      console.log(err);
-    });
+  return await casperService.getLatestBlockInfo().then((blockResult) => {
+    return blockResult.block.header.era_id;
+  });
 };
 
 export const getBlockEra = async (blockHash: string): Promise<number | void> => {
@@ -26,13 +21,7 @@ export const getBlockEra = async (blockHash: string): Promise<number | void> => 
 };
 
 export const getLatestState = async (): Promise<GetStatusResult> => {
-  try {
-    return await casperService.getStatus();
-  } catch (error) {
-    // TODO Handle error
-    // throw new Error(error);
-    console.log(error);
-  }
+  return await casperService.getStatus();
 };
 
 export const checkBlockID = (id: any, currentHeight: number): 'hash' | 'height' | 'unknown' => {
@@ -46,24 +35,19 @@ export const checkBlockID = (id: any, currentHeight: number): 'hash' | 'height' 
 };
 
 export const rpcRequest = async (method: string, params: any) => {
-  try {
-    const config = {
-      url: process.env.RPC_URL,
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      data: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 'id',
-        method,
-        params
-      })
-    };
-    const res = await axios.request(config);
-    return res.data.result && res.data.result;
-  } catch (error) {
-    // TODO handle error
-    console.log(`RPC Error: ${error}`);
-  }
+  const config = {
+    url: process.env.RPC_URL,
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    data: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'id',
+      method,
+      params
+    })
+  };
+  const res = await axios.request(config);
+  return res.data.result && res.data.result;
 };

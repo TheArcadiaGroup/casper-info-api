@@ -3,7 +3,7 @@ import { logger } from '@logger';
 import Bull from 'bull';
 import { addAccountUpdate } from './accounts';
 import { casperService, getLatestState } from '@utils';
-import { GetDeployResult } from 'casper-js-sdk';
+import { GetDeployResult, GetStatusResult } from 'casper-js-sdk';
 import { addQueryContract } from './contracts';
 import { getBlockByHeightFromDB } from '@controllers/block';
 import { addBlockToQueryQueue } from './blocks';
@@ -114,8 +114,8 @@ export const QueryDeploy = async (deployHash: string) => {
 
 export const matchDeploys = async () => {
   // Loop through blocks
-  const chainState = await getLatestState();
-  for (let i = 0; i < chainState.last_added_block_info.height; i++) {
+  const chainState = <GetStatusResult>await getLatestState().catch(() => matchDeploys());
+  for (let i = 0; i < chainState?.last_added_block_info?.height; i++) {
     // check if deploys are in querying queue
     const deployQueries = await queryDeploy.getJobCounts();
     if (
@@ -129,11 +129,11 @@ export const matchDeploys = async () => {
     // Fetch number of deploys and transfers for the block
     const block = await getBlockByHeightFromDB(i);
     // Fetch number of saved deploys and transfers for the block
+    // TODO handle error from getDeploysByBlockHash
     const blockDeploys = block && (await getDeploysByBlockHash(block.blockHash));
     // Compare number of block deploys/transfers - if number doesn't match, fetch chain deploys for the block and save them
     if (block?.transfers + block?.deploys !== blockDeploys?.length) {
       addBlockToQueryQueue(block?.blockHeight);
-      console.log(`Block deploys matched: ${block?.blockHeight}`);
     }
   }
 };

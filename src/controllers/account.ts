@@ -13,11 +13,13 @@ import {
   getValidatorDelegatorsFromDB
 } from '@controllers/validator';
 import {
+  getDeploysByAccountPublicKey,
   getDeploysByEntryPointAndPublicKey,
-  getDeploysByTypeAndPublicKeyOrAccountHash
+  getTransfersByAccountPublicKey
 } from './deploy';
 import { Account } from '@models/accounts';
 import {} from '@controllers/block';
+import { logger } from '@logger';
 
 type AccountDetails = {
   publicKey?: string;
@@ -57,9 +59,8 @@ export const getAccountTransfers = async (req: Request, res: Response) => {
     const { address } = req.params;
     const { startIndex, count } = req.query;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    let transfers = await getDeploysByTypeAndPublicKeyOrAccountHash(
+    const transfers = await getTransfersByAccountPublicKey(
       publicKey,
-      'transfer',
       Number(startIndex),
       Number(count)
     );
@@ -74,9 +75,8 @@ export const getAccountDeploys = async (req: Request, res: Response) => {
     const { address } = req.params;
     const { startIndex, count } = req.query;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    const deploys = await getDeploysByTypeAndPublicKeyOrAccountHash(
+    const deploys = await getDeploysByAccountPublicKey(
       publicKey,
-      'deploy',
       Number(startIndex),
       Number(count)
     );
@@ -146,7 +146,7 @@ export const getAccountEraRewards = async (req: Request, res: Response) => {
 
 export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
   const accountDetails = await accountDetailCalculation(publicKey);
-  let deploys = await getDeploysByTypeAndPublicKeyOrAccountHash(publicKey, 'deploy');
+  let deploys = await getDeploysByAccountPublicKey(publicKey);
   await Account.findOneAndUpdate(
     { publicKey },
     [
@@ -171,36 +171,30 @@ export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
       }
     ],
     { new: true, upsert: true }
-  ).catch((err) => {
-    throw new Error(err);
-  });
+  );
 };
 
 export const accountDetailCalculation = async (publicKey: string): Promise<AccountDetails> => {
-  try {
-    let account: AccountDetails = { totalStaked: 0 };
-    account.publicKey = publicKey;
-    const bids = await getAllBidsFromDB();
-    bids?.forEach(async (bid) => {
-      if (account.publicKey === bid.publicKey) {
-        account.totalStaked += bid.selfStake;
+  let account: AccountDetails = { totalStaked: 0 };
+  account.publicKey = publicKey;
+  const bids = await getAllBidsFromDB();
+  bids?.forEach(async (bid) => {
+    if (account.publicKey === bid.publicKey) {
+      account.totalStaked += bid.selfStake;
+    }
+    const delegators = await getValidatorDelegatorsFromDB(bid.publicKey);
+    delegators?.forEach((delegator) => {
+      if (account.publicKey === delegator.publicKey) {
+        account.totalStaked += delegator.stakedAmount;
       }
-      const delegators = await getValidatorDelegatorsFromDB(bid.publicKey);
-      delegators?.forEach((delegator) => {
-        if (account.publicKey === delegator.publicKey) {
-          account.totalStaked += delegator.stakedAmount;
-        }
-      });
     });
-    const reward = await getTotalRewardsByPublicKey(account.publicKey);
-    account.totalReward = reward[0]?.totalReward;
-    account.unstaking = await getUnstakingAmount(account.publicKey);
-    account.availableBalance = await getAccountBalanceByAddress(account.publicKey);
-    account.totalBalance = account.availableBalance + account.totalStaked + account.unstaking;
-    return account;
-  } catch (error) {
-    throw new Error(`Could calculate account details ${error}`);
-  }
+  });
+  const reward = await getTotalRewardsByPublicKey(account.publicKey);
+  account.totalReward = reward[0]?.totalReward;
+  account.unstaking = await getUnstakingAmount(account.publicKey);
+  account.availableBalance = await getAccountBalanceByAddress(account.publicKey);
+  account.totalBalance = account.availableBalance + account.totalStaked + account.unstaking;
+  return account;
 };
 
 export const getAccountPublicKeyFromAccountHash = async (accountHash: string) => {
@@ -208,7 +202,7 @@ export const getAccountPublicKeyFromAccountHash = async (accountHash: string) =>
     const publicKey = await Account.findOne({ accountHash }).select('publicKey -_id');
     return publicKey;
   } catch (error) {
-    throw new Error(error);
+    logger.error({ getAccountPublicKeyFromAccountHash: { accountHash, errMessage: error } });
   }
 };
 

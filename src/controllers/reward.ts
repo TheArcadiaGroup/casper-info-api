@@ -61,27 +61,16 @@ export const setReward = async (
   }
 };
 export const setMatchedEra = async (eraId: number) => {
-  try {
-    await MatchedEra.create({ eraId });
-  } catch (error) {
-    throw new Error(error);
-  }
+  await MatchedEra.create({ eraId });
 };
 export const getLatestMatchedEra = async () => {
-  try {
-    return await MatchedEra.find().sort({ eraId: 'desc' }).limit(1);
-  } catch (error) {
-    throw new Error(error);
-  }
+  return await MatchedEra.find().sort({ eraId: 'desc' }).limit(1);
 };
 export const getBidPerformanceAggregation = async (eraId: number) => {
   return await Reward.aggregate([
     { $match: { eraId: { $gte: eraId - 360 } } },
     { $group: { _id: '$reward.validatorPublicKey', count: { $sum: 1 } } }
-  ]).catch((err) => {
-    // TODO handle error
-    throw new Error(err);
-  });
+  ]);
 };
 export const getTotalRewardsByPublicKey = async (
   publicKey: string
@@ -97,10 +86,7 @@ export const getTotalRewardsByPublicKey = async (
     },
     { $group: { _id: null, totalReward: { $sum: '$reward.amount' } } },
     { $limit: 1 }
-  ]).catch((err) => {
-    // TODO handle error
-    throw new Error(err);
-  });
+  ]);
 };
 export const getRewardsByPublicKey = async (
   publicKey: string,
@@ -126,9 +112,7 @@ export const getRewardsByPublicKey = async (
     { $sort: { _id: -1 } },
     { $skip: startIndex - 1 },
     { $limit: count }
-  ]).catch((err) => {
-    throw new Error(err);
-  });
+  ]);
 };
 export const getEraRewardsByPublicKey = async (publicKey: string, limitEra: number) => {
   return await Reward.aggregate([
@@ -153,10 +137,7 @@ export const getEraRewardsByPublicKey = async (publicKey: string, limitEra: numb
       }
     },
     { $sort: { _id: -1 } }
-  ]).catch((err) => {
-    // TODO handle error
-    throw new Error(err);
-  });
+  ]);
 };
 export const getTotalEraRewardsByEraId = async (
   eraId: number
@@ -187,8 +168,6 @@ export const matchRewards = async () => {
     try {
       let switchBlocks = await getSwitchBlocks();
       let missingEras = await getMissingEras(switchBlocks[0].eraID);
-      // missingEras = missingEras.sort((a, b) => b - a);
-      // console.log(missingEras.length);
       missingEras = missingEras.slice(0, 20);
       missingEras.forEach((era) => {
         const block = switchBlocks.find((block) => block.eraID === era);
@@ -196,32 +175,24 @@ export const matchRewards = async () => {
         block && addEraSwitchBlockHash(block?.blockHash, block?.timestamp);
       });
     } catch (error) {
-      throw new Error(`Could not fetch match rewards: ${error}`);
+      logger.error({ matchRewards: { errMessage: error } });
     }
   }, 5000);
 };
 export const getMissingEras = async (currentEraId: number) => {
-  try {
-    let missingEras = [];
-    for (let i = 0; i <= currentEraId; i++) {
-      const reward = await Reward.aggregate([
-        { $match: { eraId: i } },
-        { $sort: { eraId: -1 } },
-        { $group: { _id: '$eraId' } }
-      ]);
-      if (reward.length < 1) {
-        missingEras.push(i);
-      }
+  let missingEras = [];
+  for (let i = 0; i <= currentEraId; i++) {
+    const reward = await Reward.aggregate([
+      { $match: { eraId: i } },
+      { $sort: { eraId: -1 } },
+      { $group: { _id: '$eraId' } }
+    ]);
+    if (reward.length < 1) {
+      missingEras.push(i);
     }
-    return missingEras;
-  } catch (error) {
-    throw new Error(error);
   }
+  return missingEras;
 };
 export const getEraRewards = async (eraId: number) => {
-  try {
-    return await Reward.find({ eraId });
-  } catch (error) {
-    throw new Error(error);
-  }
+  return await Reward.find({ eraId });
 };
