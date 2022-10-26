@@ -109,8 +109,8 @@ export const seedContracts = async () => {
   // while not all deploys haven't been queried, fetch deploy
   // if nothing in deploy and contract queue, add deploy query to queue
   let i = (await getLatestMatchedDeployIndex())[0]?.index || 1;
-  // TODO handle error from getDeploysCount
-  while (i <= (await getDeploysCount())) {
+  const deploysCount = await getDeploysCount().catch(() => seedContracts());
+  while (i <= deploysCount) {
     // If deploy queries are in queue, wait
     const deployQueryJobsCount = await queryDeploy.getJobCounts();
     const deploySaveJobsCount = await saveDeploy.getJobCounts();
@@ -141,8 +141,8 @@ export const seedContracts = async () => {
     ) {
       continue;
     }
-    // TODO handle error from get deploys
     const deploys = await getDeploysFromDB(i, 1, 'asc');
+    if (!deploys) continue;
     await addDeployHash(deploys[0].deployHash);
     await addMatchedDeployToSave(i);
     i++;

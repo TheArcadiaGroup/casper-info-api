@@ -178,13 +178,11 @@ export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
 export const accountDetailCalculation = async (publicKey: string): Promise<AccountDetails> => {
   let account: AccountDetails = { totalStaked: 0 };
   account.publicKey = publicKey;
-  // TODO handle error from getAllBidsFromDB
   const bids = await getAllBidsFromDB();
   bids?.forEach(async (bid) => {
     if (account.publicKey === bid.publicKey) {
       account.totalStaked += bid.selfStake;
     }
-    // TODO handle error from getValidatorDelegatorsFromDB
     const delegators = await getValidatorDelegatorsFromDB(bid.publicKey);
     delegators?.forEach((delegator) => {
       if (account.publicKey === delegator.publicKey) {

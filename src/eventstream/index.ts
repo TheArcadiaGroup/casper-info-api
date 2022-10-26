@@ -1,4 +1,4 @@
-import { EventName, EventStream, GetBlockResult } from 'casper-js-sdk';
+import { EventName, EventStream, GetBlockResult, GetStatusResult } from 'casper-js-sdk';
 import { casperService, getLatestState } from '@utils';
 import { addBlockToQueryQueue, addBlockToSaveQueue } from '@workers/blocks';
 import { addDeployHash } from '@workers/deploys';
@@ -10,7 +10,9 @@ class EventStreamHandler {
     if (process.env.INDEXER !== 'true') this.match();
   }
   async match() {
-    const chainState = await getLatestState();
+    const chainState = <GetStatusResult>await getLatestState().catch(() => {
+      this.match();
+    });
     const latestBlockHeight = chainState?.last_added_block_info?.height;
     for (let i = latestBlockHeight - 100; i <= latestBlockHeight; i++) {
       const block = await getBlockByHeightFromDB(i);

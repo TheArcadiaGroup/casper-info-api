@@ -27,26 +27,16 @@ export const getStats = async (req, res) => {
     const latestState = <GetStatusResult>await getLatestState();
     stats.currentBlockHeight = latestState?.last_added_block_info?.height;
     stats.currentBlockTime = latestState?.last_added_block_info?.timestamp;
-    // TODO handle error from getAllBidsFromDB
     const bids = await getAllBidsFromDB();
     const activeBids = bids?.filter((bid: any) => bid?.inactive == false);
-    // TODO handle error from getAllCurrentEraValidatorsFromDB
     const currentEraValidators = await getAllCurrentEraValidatorsFromDB();
     stats.activeValidators = currentEraValidators.length;
     stats.activeBids = activeBids?.length;
     currentEraValidators?.forEach((validator) => {
       stats.totalStakeBonded += validator.totalBid;
     });
-    // TODO handle error from getTransfersCount
     stats.totalTransfers = (await getTransfersCount())[0].count;
-    const marketData = (
-      await coinGeckoClient.coins.fetch('casper-network', {
-        // tickers: false,
-        // community_data: false,
-        // developer_data: false,
-        // localization: false
-      })
-    ).data.market_data;
+    const marketData = (await coinGeckoClient.coins.fetch('casper-network')).data.market_data;
     stats.currentPrice = marketData?.current_price?.usd;
     stats.marketCap = marketData?.market_cap?.usd;
     stats.circulatingSupply = marketData?.circulating_supply;
@@ -55,7 +45,6 @@ export const getStats = async (req, res) => {
     const latestEraReward =
       (await getTotalEraRewardsByEraId(latestState?.last_added_block_info?.era_id - 1))[0]
         ?.totalReward || 0;
-    // TODO review APY calculations
     stats.apy =
       100 *
       (Math.pow(
