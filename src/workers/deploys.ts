@@ -115,7 +115,7 @@ export const QueryDeploy = async (deployHash: string) => {
 export const matchDeploys = async () => {
   // Loop through blocks
   const chainState = await getLatestState();
-  for (let i = 0; i < chainState.last_added_block_info.height; i++) {
+  for (let i = 0; i < chainState?.last_added_block_info?.height; i++) {
     // check if deploys are in querying queue
     const deployQueries = await queryDeploy.getJobCounts();
     if (

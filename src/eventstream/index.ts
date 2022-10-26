@@ -11,7 +11,7 @@ class EventStreamHandler {
   }
   async match() {
     const chainState = await getLatestState();
-    const latestBlockHeight = chainState?.last_added_block_info.height;
+    const latestBlockHeight = chainState?.last_added_block_info?.height;
     for (let i = latestBlockHeight - 100; i <= latestBlockHeight; i++) {
       const block = await getBlockByHeightFromDB(i);
       if (!block) addBlockToQueryQueue(i);

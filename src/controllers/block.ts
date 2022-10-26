@@ -45,7 +45,7 @@ export const getBlockByHashFromDB = async (blockHash: string) => {
 };
 export const getBlockFromChain = async (address: string) => {
   const chainStatus = await getLatestState();
-  const currentHeight = chainStatus.last_added_block_info.height;
+  const currentHeight = chainStatus?.last_added_block_info?.height;
   const addressType = checkBlockID(address, currentHeight);
   let getBlockResult;
   if (addressType === 'hash') {

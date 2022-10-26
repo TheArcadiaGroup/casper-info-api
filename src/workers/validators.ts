@@ -174,6 +174,7 @@ export const updateBid = async (eraId: number) => {
       (await getBidRewards(validator._id))[0]?.totalRewards || 0;
     const totalDelegatorRewards: number =
       (await getBidDelegatorRewards(validator._id))[0]?.totalDelegatorRewards || 0;
+    // TODO handle error from updateBidPerformanceAndRewards
     validator._id &&
       (await updateBidPerformanceAndRewards(
         validator._id,

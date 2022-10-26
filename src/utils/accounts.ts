@@ -24,7 +24,7 @@ export const getUnstakingAmount = async (publicKey): Promise<number> => {
     if (accountDeploys[i].status !== 'success') return;
     const deployEra = await getBlockEra(accountDeploys[i].blockHash);
     const latestState = <GetStatusResult>await getLatestState();
-    const currentEra = latestState.last_added_block_info.era_id;
+    const currentEra = latestState?.last_added_block_info?.era_id;
     if (<number>deployEra + 8 <= <number>currentEra) return;
     unstaking += accountDeploys[i].amount;
   }

@@ -94,7 +94,7 @@ export const matchEra = async () => {
     let latestMatchedEra = await getLatestMatchedEra();
     // check if last added era
     const chainState = await getLatestState();
-    if (latestMatchedEra[0]?.eraId === chainState.last_added_block_info.era_id) return;
+    if (latestMatchedEra[0]?.eraId === chainState?.last_added_block_info?.era_id) return;
     // determine next era to check
     let nextEra: number;
     latestMatchedEra.length < 1 ? (nextEra = 0) : (nextEra = latestMatchedEra[0]?.eraId + 1);

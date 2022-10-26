@@ -25,10 +25,12 @@ export const getStats = async (req, res) => {
       totalTransfers: 0
     };
     const latestState = <GetStatusResult>await getLatestState();
-    stats.currentBlockHeight = latestState.last_added_block_info.height;
-    stats.currentBlockTime = latestState.last_added_block_info.timestamp;
+    stats.currentBlockHeight = latestState?.last_added_block_info?.height;
+    stats.currentBlockTime = latestState?.last_added_block_info?.timestamp;
+    // TODO handle error from getAllBidsFromDB
     const bids = await getAllBidsFromDB();
     const activeBids = bids?.filter((bid: any) => bid?.inactive == false);
+    // TODO handle error from getAllCurrentEraValidatorsFromDB
     const currentEraValidators = await getAllCurrentEraValidatorsFromDB();
     stats.activeValidators = currentEraValidators.length;
     stats.activeBids = activeBids?.length;
@@ -51,7 +53,7 @@ export const getStats = async (req, res) => {
     stats.totalSupply = marketData?.total_supply;
 
     const latestEraReward =
-      (await getTotalEraRewardsByEraId(latestState.last_added_block_info.era_id - 1))[0]
+      (await getTotalEraRewardsByEraId(latestState?.last_added_block_info?.era_id - 1))[0]
         ?.totalReward || 0;
     // TODO review APY calculations
     stats.apy =
