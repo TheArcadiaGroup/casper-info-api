@@ -99,6 +99,7 @@ export const matchEra = async () => {
     latestMatchedEra.length < 1 ? (nextEra = 0) : (nextEra = latestMatchedEra[0]?.eraId + 1);
     console.log(`Era to match: ${nextEra}`);
     // fetch next switch block
+    // TODO handle error from getSwitchBlockByEraId
     const nextSwitchBlock = await getSwitchBlockByEraId(nextEra);
     if (!nextSwitchBlock) {
       isMatchReady = true;

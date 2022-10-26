@@ -185,6 +185,7 @@ export const getBidDelegatorRewards = async (
 export const matchRewards = async () => {
   setInterval(async () => {
     try {
+      // TODO handle error from getSwitchBlocks
       let switchBlocks = await getSwitchBlocks();
       let missingEras = await getMissingEras(switchBlocks[0].eraID);
       // missingEras = missingEras.sort((a, b) => b - a);
