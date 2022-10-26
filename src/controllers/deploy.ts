@@ -6,6 +6,7 @@ import { CLPublicKey } from 'casper-js-sdk';
 import { casperService } from '@utils';
 import { getAccountBalanceByAddress } from '@utils/accounts';
 import { getContractFromDB } from './contracts';
+import { DeployJson } from 'casper-js-sdk/dist/lib/DeployUtil';
 // import { Deploy } from 'casper-js-sdk/dist/lib/DeployUtil';
 let amountInNextParsed = false;
 let amount: number;
@@ -31,15 +32,12 @@ export const setDeploy = async (deployResult) => {
         : '';
     hashType = deployResult.deploy?.session?.Transfer ? 'transfer' : 'deploy';
     const fromAccountHash =
-      hashType === 'transfer'
+      entryPoint === 'transfer' || 'delegate'
         ? CLPublicKey.fromHex(deployResult.deploy?.header?.account)
             .toAccountHashStr()
             .replace('account-hash-', '')
         : '';
-    const toAccountHash =
-      hashType === 'transfer'
-        ? getToAccountHash(deployResult.deploy.session?.Transfer?.args[1][1]?.parsed)
-        : '';
+    const toAccountHash = getToAccountHash(deployResult.deploy.session) || '';
     await Deploy.findOneAndUpdate(
       { deployHash: deployResult.deploy?.hash },
       {
@@ -129,7 +127,15 @@ const getAmount = (session): number => {
   // console.log(amount);
   return amount ?? 0;
 };
-const getToAccountHash = (hash): string => {
+const getToAccountHash = (session: any): string => {
+  let hash: string = session?.Transfer
+    ? session?.Transfer?.args[1]?.[1]?.parsed
+    : session.StoredContractByHash?.entry_point == 'delegate'
+    ? session.StoredContractByHash?.args?.find((value) => {
+        return value[0] == 'validator';
+      })[1]?.parsed
+    : '';
+
   try {
     return CLPublicKey.fromHex(hash).toAccountHashStr().replace('account-hash-', '');
   } catch (error) {
