@@ -17,6 +17,7 @@ export const getAccountBalanceByAddress = async (address: string): Promise<numbe
 };
 
 export const getUnstakingAmount = async (publicKey): Promise<number> => {
+  // TODO handle error from getDeploysByEntryPointAndPublicKey
   const accountDeploys = await getDeploysByEntryPointAndPublicKey(publicKey, 'undelegate');
   let unstaking = 0;
   for (let i = 0; i < accountDeploys.length; i++) {
@@ -29,5 +30,3 @@ export const getUnstakingAmount = async (publicKey): Promise<number> => {
   }
   return unstaking;
 };
-
-// TODO determine address type (Validator Public Key || Account Public Key || Account Hash)

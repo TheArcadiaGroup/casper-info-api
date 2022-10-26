@@ -129,6 +129,7 @@ export const matchDeploys = async () => {
     // Fetch number of deploys and transfers for the block
     const block = await getBlockByHeightFromDB(i);
     // Fetch number of saved deploys and transfers for the block
+    // TODO handle error from getDeploysByBlockHash
     const blockDeploys = block && (await getDeploysByBlockHash(block.blockHash));
     // Compare number of block deploys/transfers - if number doesn't match, fetch chain deploys for the block and save them
     if (block?.transfers + block?.deploys !== blockDeploys?.length) {

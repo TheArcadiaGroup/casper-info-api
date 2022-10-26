@@ -82,18 +82,10 @@ export const setDeploy = async (deployResult) => {
   amount = 0;
 };
 export const setMatchedDeployIndex = async (index: number) => {
-  try {
-    await MatchedDeploy.findOneAndUpdate({ index }, { index }, { upsert: true });
-  } catch (error) {
-    throw new Error(`Could not save match deploy index: ${error}`);
-  }
+  await MatchedDeploy.findOneAndUpdate({ index }, { index }, { upsert: true });
 };
 export const getLatestMatchedDeployIndex = async () => {
-  try {
-    return await MatchedDeploy.find().sort({ index: 'desc' }).limit(1);
-  } catch (error) {
-    throw new Error(`Could not get latest matched deploy index: ${error}`);
-  }
+  return await MatchedDeploy.find().sort({ index: 'desc' }).limit(1);
 };
 export const getDeploys = async (req: Request, res: Response) => {
   try {
@@ -105,14 +97,10 @@ export const getDeploys = async (req: Request, res: Response) => {
   }
 };
 export const getDeploysFromDB = async (startIndex: number, count: number, sort: 'asc' | 'desc') => {
-  try {
-    return await Deploy.find()
-      .sort({ timestamp: sort })
-      .skip(startIndex - 1)
-      .limit(count);
-  } catch (error) {
-    throw new Error(`Could not fetch deploys from DB: ${error}`);
-  }
+  return await Deploy.find()
+    .sort({ timestamp: sort })
+    .skip(startIndex - 1)
+    .limit(count);
 };
 export const getDeployByHash = async (req: Request, res: Response) => {
   try {
@@ -157,11 +145,7 @@ export const getDeploysByEntryPointAndPublicKey = async (
   return await Deploy.find({ $and: [{ publicKey }, { entryPoint }] })
     .sort({ timestamp: 'desc' })
     .skip(startIndex - 1)
-    .limit(count)
-    .catch((err) => {
-      // TODO handle error
-      throw new Error(err);
-    });
+    .limit(count);
 };
 export const getDeploysByTypeAndPublicKeyOrAccountHash = async (
   address: string,
@@ -170,29 +154,21 @@ export const getDeploysByTypeAndPublicKeyOrAccountHash = async (
   count?: number
 ) => {
   if (count > 0) {
-    return await Deploy.find({ $or: [{ publicKey: address }, { toAccountHash: address }] })
+    return await Deploy.find({
+      $and: [{ $or: [{ publicKey: address }, { toAccountHash: address }] }, { deployType }]
+    })
       .sort({ timestamp: 'desc' })
       .skip(startIndex - 1)
-      .limit(count)
-      .catch((err) => {
-        // TODO handle error
-        throw new Error(err);
-      });
+      .limit(count);
   } else {
-    return await Deploy.find({ $or: [{ publicKey: address }, { toAccountHash: address }] }).catch(
-      (err) => {
-        // TODO handle error
-        throw new Error(err);
-      }
-    );
+    return await Deploy.find({
+      $and: [{ $or: [{ publicKey: address }, { toAccountHash: address }] }, { deployType }]
+    });
   }
 };
 
 export const getDeploysByBlockHash = async (blockHash: string) => {
-  return await Deploy.find({ blockHash }).catch((err) => {
-    // TODO handle error
-    throw new Error(err);
-  });
+  return await Deploy.find({ blockHash });
 };
 export const getDeploysByContractHash = async (req: Request, res: Response) => {
   try {
@@ -209,18 +185,11 @@ export const getDeploysByContractHash = async (req: Request, res: Response) => {
   }
 };
 export const getContractMonthlyDeployCount = async () => {
-  try {
-    const thirtyDaysAgo = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 30).toISOString();
-    // return await Deploy.find({
-    //   timestamp: { $gte: new Date(thirtyDaysAgo) }
-    // });
-    return await Deploy.aggregate([
-      { $match: { timestamp: { $gte: new Date(thirtyDaysAgo) } } },
-      { $group: { _id: '$contractHash', count: { $sum: 1 } } }
-    ]);
-  } catch (error) {
-    throw new Error(`Could not fetch contract deploy count: ${error}`);
-  }
+  const thirtyDaysAgo = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 30).toISOString();
+  return await Deploy.aggregate([
+    { $match: { timestamp: { $gte: new Date(thirtyDaysAgo) } } },
+    { $group: { _id: '$contractHash', count: { $sum: 1 } } }
+  ]);
 };
 export const getDeployVolumes = async (req: Request, res: Response) => {
   try {
@@ -252,24 +221,13 @@ export const getTransfersCount = async (): Promise<{ _id: string; count: number 
   return await Deploy.aggregate([
     { $match: { entryPoint: 'transfer' } },
     { $group: { _id: '$entryPoint', count: { $sum: 1 } } }
-  ]).catch((err) => {
-    // TODO handle error
-    throw new Error(err);
-  });
+  ]);
 };
 
 export const getDeploysCount = async (): Promise<number> => {
-  try {
-    return await Deploy.find().count();
-  } catch (error) {
-    throw new Error(`Could not fetch all deploys: ${error}`);
-  }
+  return await Deploy.find().count();
 };
 
 export const getDeployByPublicKey = async (deployHash: string) => {
-  try {
-    return await Deploy.findOne({ deployHash });
-  } catch (error) {
-    throw new Error(`Could not fetch deploy by public key: ${error}`);
-  }
+  return await Deploy.findOne({ deployHash });
 };

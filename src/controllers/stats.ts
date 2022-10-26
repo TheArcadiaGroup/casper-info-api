@@ -35,6 +35,7 @@ export const getStats = async (req, res) => {
     currentEraValidators?.forEach((validator) => {
       stats.totalStakeBonded += validator.totalBid;
     });
+    // TODO handle error from getTransfersCount
     stats.totalTransfers = (await getTransfersCount())[0].count;
     const marketData = (
       await coinGeckoClient.coins.fetch('casper-network', {

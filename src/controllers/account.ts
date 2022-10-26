@@ -146,6 +146,7 @@ export const getAccountEraRewards = async (req: Request, res: Response) => {
 
 export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
   const accountDetails = await accountDetailCalculation(publicKey);
+  // TODO handle error from getDeploysByTypeAndPublicKeyOrAccountHash
   let deploys = await getDeploysByTypeAndPublicKeyOrAccountHash(publicKey, 'deploy');
   await Account.findOneAndUpdate(
     { publicKey },
