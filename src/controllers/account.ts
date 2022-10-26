@@ -13,8 +13,9 @@ import {
   getValidatorDelegatorsFromDB
 } from '@controllers/validator';
 import {
+  getDeploysByAccountPublicKey,
   getDeploysByEntryPointAndPublicKey,
-  getDeploysByTypeAndPublicKeyOrAccountHash
+  getTransfersByAccountPublicKey
 } from './deploy';
 import { Account } from '@models/accounts';
 import {} from '@controllers/block';
@@ -58,9 +59,8 @@ export const getAccountTransfers = async (req: Request, res: Response) => {
     const { address } = req.params;
     const { startIndex, count } = req.query;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    let transfers = await getDeploysByTypeAndPublicKeyOrAccountHash(
+    const transfers = await getTransfersByAccountPublicKey(
       publicKey,
-      'transfer',
       Number(startIndex),
       Number(count)
     );
@@ -75,9 +75,8 @@ export const getAccountDeploys = async (req: Request, res: Response) => {
     const { address } = req.params;
     const { startIndex, count } = req.query;
     const { publicKey } = await processPublicKeyAndAccountHash(address);
-    const deploys = await getDeploysByTypeAndPublicKeyOrAccountHash(
+    const deploys = await getDeploysByAccountPublicKey(
       publicKey,
-      'deploy',
       Number(startIndex),
       Number(count)
     );
@@ -147,7 +146,7 @@ export const getAccountEraRewards = async (req: Request, res: Response) => {
 
 export const updateAccount = async (publicKey: string, newActiveDate: Date) => {
   const accountDetails = await accountDetailCalculation(publicKey);
-  let deploys = await getDeploysByTypeAndPublicKeyOrAccountHash(publicKey, 'deploy');
+  let deploys = await getDeploysByAccountPublicKey(publicKey);
   await Account.findOneAndUpdate(
     { publicKey },
     [

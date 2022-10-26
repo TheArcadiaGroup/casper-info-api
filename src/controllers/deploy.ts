@@ -147,26 +147,40 @@ export const getDeploysByEntryPointAndPublicKey = async (
     .skip(startIndex - 1)
     .limit(count);
 };
-export const getDeploysByTypeAndPublicKeyOrAccountHash = async (
+
+export const getTransfersByAccountPublicKey = async (
   address: string,
-  deployType: 'transfer' | 'deploy',
+  startIndex?: number,
+  count?: number
+) => {
+  return await Deploy.find({
+    $and: [
+      { $or: [{ publicKey: address }, { toAccountHash: address }] },
+      { $or: [{ entryPoint: 'transfer' }, { entryPoint: 'delegate' }] }
+    ]
+  })
+    .sort({ timestamp: 'desc' })
+    .skip(startIndex - 1)
+    .limit(count);
+};
+export const getDeploysByAccountPublicKey = async (
+  address: string,
   startIndex?: number,
   count?: number
 ) => {
   if (count > 0) {
     return await Deploy.find({
-      $and: [{ $or: [{ publicKey: address }, { toAccountHash: address }] }, { deployType }]
+      $and: [{ publicKey: address }, { $not: { toAccountHash: address } }]
     })
       .sort({ timestamp: 'desc' })
       .skip(startIndex - 1)
       .limit(count);
   } else {
     return await Deploy.find({
-      $and: [{ $or: [{ publicKey: address }, { toAccountHash: address }] }, { deployType }]
+      $and: [{ publicKey: address }, { $not: { toAccountHash: address } }]
     });
   }
 };
-
 export const getDeploysByBlockHash = async (blockHash: string) => {
   return await Deploy.find({ blockHash });
 };
