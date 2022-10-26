@@ -167,6 +167,7 @@ export const processValidatorUpdate = async () => {
   });
 };
 export const updateBid = async (eraId: number) => {
+  // TODO handle error from getBidPerformanceAggregation
   const validatorPerformanceAggregation = await getBidPerformanceAggregation(eraId);
   validatorPerformanceAggregation?.forEach(async (validator) => {
     const totalValidatorRewards: number =

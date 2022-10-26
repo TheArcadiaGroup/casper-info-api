@@ -90,6 +90,7 @@ export const matchEra = async () => {
       return;
     }
     // fetch most recently checked era
+    // TODO handle error from getLatestMatchedEra
     let latestMatchedEra = await getLatestMatchedEra();
     // check if last added era
     const chainState = await getLatestState();
@@ -110,10 +111,12 @@ export const matchEra = async () => {
       nextSwitchBlock && (await casperService.getEraInfoBySwitchBlock(nextSwitchBlock?.blockHash));
     const { seigniorageAllocations } = eraSummary && eraSummary.StoredValue.EraInfo;
     // fetch era saved rewards count
+    // TODO handle error from getEraRewards
     const savedEraRewards = await getEraRewards(nextEra);
     // compare saved rewards vs fetched rewards
     console.log(`${savedEraRewards.length} <> ${seigniorageAllocations.length}`);
     if (savedEraRewards.length === seigniorageAllocations.length) {
+      // TODO handle error from setMatchedEra
       await setMatchedEra(nextEra);
       isMatchReady = true;
       return;
@@ -123,6 +126,7 @@ export const matchEra = async () => {
       await addRewardSave(reward, eraSummary.eraId, nextSwitchBlock.timestamp);
     });
     // add new checked era
+    // TODO handle error from setMatchedEra
     await setMatchedEra(nextEra);
     isMatchReady = true;
   } catch (error) {
