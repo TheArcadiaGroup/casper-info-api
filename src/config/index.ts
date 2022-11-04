@@ -10,7 +10,7 @@ import {
   processDeploySave,
   processMatchedDeployToSave
 } from '@workers/deploys';
-import { eraMatchTrigger, processEraMatch, processEraSummaryQuery } from '@workers/era';
+import { processEraMatch, processEraSummaryQuery } from '@workers/era';
 import {
   processBidDelegatorSave,
   processBidOrValidatorSave,
@@ -84,7 +84,6 @@ export const Init = async () => {
             failedContractSavesHandler();
             break;
           case workerType.eraSummaryandPerfomanceCalculation:
-            eraMatchTrigger();
             processEraSummaryQuery();
             processValidatorUpdate();
             processRewardSave();
@@ -104,7 +103,7 @@ export const Init = async () => {
         }
       } else {
         eventStream.connect();
-        eraMatchTrigger();
+
         validatorInfoFetchCron();
         processBlockQuery();
         processSaveBlock();
